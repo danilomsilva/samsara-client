@@ -1,41 +1,35 @@
-import type { V2_MetaFunction } from "@remix-run/node";
+import { json, type V2_MetaFunction } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
 
 export const meta: V2_MetaFunction = () => {
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: 'New Remix App' },
+    { name: 'description', content: 'Welcome to Remix!' },
   ];
 };
 
+export async function loader() {
+  try {
+    const response = await fetch(
+      'https://samsara-api-m38hl.ondigitalocean.app/api/operadores'
+    );
+    const data = await response.json();
+    return json({ data: data.data });
+  } catch (error) {}
+}
+
 export default function Index() {
+  const { data } = useLoaderData();
+
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docs
-          </a>
-        </li>
-      </ul>
+    <div>
+      {data.map((operador: any) => {
+        return (
+          <div key={operador.id}>
+            <div>{operador.attributes.nome_completo}</div>
+          </div>
+        );
+      })}
     </div>
   );
 }
