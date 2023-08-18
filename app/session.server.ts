@@ -2,11 +2,10 @@ import { createCookieSessionStorage, redirect } from '@remix-run/node';
 
 // types
 export type User = {
-  jwt: number;
-  user: {
+  token: number;
+  record: {
     id: number;
     username: string;
-    email: string;
   };
 };
 
@@ -56,9 +55,9 @@ export async function createUserSession(
 ) {
   const session = await getSession(request);
 
-  session.set(USER_SESSION_KEY, user.user.id);
-  session.set(USER_TOKEN_KEY, user.jwt);
-  session.set(USER_USERNAME_KEY, user.user.username);
+  session.set(USER_SESSION_KEY, user.record.id);
+  session.set(USER_TOKEN_KEY, user.token);
+  session.set(USER_USERNAME_KEY, user.record.username);
 
   return redirect(redirectTo, {
     headers: {
