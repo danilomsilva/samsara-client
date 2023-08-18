@@ -5,7 +5,7 @@ import {
   type V2_MetaFunction,
   type ActionArgs,
 } from '@remix-run/node';
-import { Form, useActionData } from '@remix-run/react';
+import { Form, useActionData, useLoaderData } from '@remix-run/react';
 import { verifyCredentials } from '~/models/auth.server';
 import { createUserSession, getUserSession } from '~/session.server';
 
@@ -19,11 +19,13 @@ export const meta: V2_MetaFunction = () => {
 // when page is reloaded, will redirect user to dashboard if token stored in cookies
 export async function loader({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
-  if (userToken) {
-    return redirect('/dashboard');
-  } else {
-    return json({});
-  }
+
+  const data = await fetch("http://157.245.39.126/api/collections/operadores/records");
+
+  
+    return json({data});
+  
+
 }
 
 // when submitting login form, will verify credentials and store or return errors
@@ -60,12 +62,16 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Index() {
+  const loaderData = useLoaderData();
   const actionData = useActionData();
   const errors = actionData?.errors;
 
   return (
     <>
       <div className="">Hello World!!</div>
+      {loaderData.data.items.map((item,id) => {
+      return <div key={id}>{JSON.parse(item)}</div>
+        )}
       <Form method="post" className="flex flex-col w-24">
         <input type="text" name="username" className="border" />
         {errors?.username && <div>{errors?.username}</div>}
