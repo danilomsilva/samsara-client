@@ -1,8 +1,17 @@
+import type { User } from '~/session.server';
+
 // if valid will retrieve jwt token from strapi and user data
-export async function getOperadores() {
+export async function getOperadores(userToken: User['token']) {
   try {
     const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/operadores/records`
+      `${process.env.BASE_API_URL}/collections/operadores/records`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
     );
 
     return await response.json();
