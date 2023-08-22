@@ -2,9 +2,8 @@
 export async function verifyCredentials(username: string, password: string) {
   try {
     const response = await fetch(
-      `http://159.223.244.247/api/collections/usuario/auth-with-password`,
-      
-      
+      `${process.env.BASE_API_URL}/collections/usuario/auth-with-password`,
+
       {
         method: 'POST',
         headers: {
