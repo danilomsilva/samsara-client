@@ -34,7 +34,7 @@ export default function Dashboard() {
 
       <ul>
         {data.items.map((item) => {
-          return <li key={item.id}>{item.full_name}</li>;
+          return <li key={item.id}>{item.nome_completo}</li>;
         })}
       </ul>
     </>

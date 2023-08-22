@@ -4,7 +4,7 @@ import type { User } from '~/session.server';
 export async function getOperadores(userToken: User['token']) {
   try {
     const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/operadores/records`,
+      `${process.env.BASE_API_URL}/collections/operador/records`,
       {
         method: 'GET',
         headers: {
