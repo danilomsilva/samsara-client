@@ -52,15 +52,18 @@ export default function MyPage() {
   const actionData = useActionData();
 
   return (
-    <>
-      <ValidatedForm validator={validator} method="post">
-        <Input name="username" label="username" />
-        <Input name="password" label="Senha" />
-        <Button />
-      </ValidatedForm>
-      {actionData && (
-        <div className="text-red">{actionData.invalidLoginError}</div>
-      )}
-    </>
+    <div className="w-full h-screen flex items-center justify-center flex-col">
+      <div className="bg-grey-light p-10 rounded-lg flex flex-col items-center gap-6">
+        <img src="/assets/logo.png" alt="logo" width={50} height={50} />
+        <ValidatedForm validator={validator} method="post">
+          <Input name="username" label="username" />
+          <Input name="password" label="Senha" />
+          <Button />
+        </ValidatedForm>
+        {actionData && (
+          <div className="text-red">{actionData.invalidLoginError}</div>
+        )}
+      </div>
+    </div>
   );
 }

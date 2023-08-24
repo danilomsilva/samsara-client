@@ -8,7 +8,7 @@ type PropTypes = {
 export default function Input({ name, label }: PropTypes) {
   const { error, getInputProps } = useField(name);
   return (
-    <div>
+    <div className="flex flex-col">
       <label htmlFor={name}>{label}</label>
       <input {...getInputProps({ id: name })} />
       {error && <span className="text-red">{error}</span>}
