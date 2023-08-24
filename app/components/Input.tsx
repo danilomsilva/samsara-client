@@ -1,22 +1,23 @@
-import { useField } from "remix-validated-form";
+import { useField } from 'remix-validated-form';
 
 type PropTypes = {
   name: string;
   label: string;
+  className: string;
 };
 
-export default function Input({ name, label }: PropTypes) {
+export default function Input({ name, label, className }: PropTypes) {
   const { error, getInputProps } = useField(name);
   return (
-    <div className="flex flex-col gap-2 text-sm">
-      <label htmlFor={name} className=" text-grey-dark">
+    <div className="flex flex-col gap-1 text-sm">
+      <label htmlFor={name} className=" text-grey-dark ml-1">
         {label}
       </label>
       <input
         {...getInputProps({ id: name })}
-        className="rounded-lg p-2 px-4 focus:outline-blue"
+        className={`${className} rounded-lg p-2 px-4 focus:outline-blue`}
       />
-      {error && <span className="text-red">{error}</span>}
+      {error && <span className="text-red ml-1">{error}</span>}
     </div>
   );
 }
