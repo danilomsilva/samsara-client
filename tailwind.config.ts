@@ -1,8 +1,19 @@
-import type { Config } from 'tailwindcss';
+import type { Config } from "tailwindcss";
 
 export default {
-  content: ['./app/**/*.{js,jsx,ts,tsx}'],
+  content: ["./app/**/*.{js,jsx,ts,tsx}"],
   theme: {
+    colors: {
+      "white": "#FFFFFF",
+      "grey-light": "#ECECEC",
+      "grey": "#838383",
+      // "grey-dark": "",
+      "black": "#000000",
+      // "blue-50-transparency": "#0071A7",
+      "blue": "#0071A7",
+      "orange": "#F58634",
+      "red": "#F54B34",
+    },
     extend: {},
   },
   plugins: [],

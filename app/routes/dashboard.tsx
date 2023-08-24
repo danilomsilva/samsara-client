@@ -1,42 +1,28 @@
 import {
   type ActionArgs,
-  json,
   type LoaderArgs,
   redirect,
-} from '@remix-run/node';
-import { Form, useLoaderData } from '@remix-run/react';
-import { getOperadores } from '~/models/operadores.server';
-import { getUserSession, logout } from '~/session.server';
+  json,
+} from "@remix-run/node";
+import { Form } from "@remix-run/react";
+import { getUserSession, logout } from "~/session.server";
 
+// if user token do not exists in cookies, will redirect to login
 export async function loader({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
-
-  if (userToken) {
-    const data = await getOperadores(userToken);
-    return json({ data });
-  } else {
-    return redirect('/');
-  }
+  if (!userToken) return redirect("/login");
+  return json({});
 }
 
+// will destroy cookie session and logout user
 export async function action({ request }: ActionArgs) {
   return await logout(request);
 }
 
 export default function Dashboard() {
-  const { data } = useLoaderData();
-  console.log('DATA >>>', data);
   return (
-    <>
-      <Form method="post">
-        <button type="submit">Logout</button>
-      </Form>
-
-      <ul>
-        {data.items.map((item) => {
-          return <li key={item.id}>{item.nome_completo}</li>;
-        })}
-      </ul>
-    </>
+    <Form method="post">
+      <button type="submit">Logout</button>
+    </Form>
   );
 }

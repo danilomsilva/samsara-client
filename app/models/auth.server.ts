@@ -1,13 +1,12 @@
-// if valid will retrieve jwt token from strapi and user data
+// if valid will retrieve jwt token and user data
 export async function verifyCredentials(username: string, password: string) {
   try {
     const response = await fetch(
       `${process.env.BASE_API_URL}/collections/usuario/auth-with-password`,
-
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-type': 'application/json',
+          "Content-type": "application/json",
         },
         body: JSON.stringify({
           identity: username,
@@ -17,6 +16,6 @@ export async function verifyCredentials(username: string, password: string) {
     );
     return await response.json();
   } catch (error) {
-    throw new Error('An error occured when verifying credentials!');
+    throw new Error("An error occured when verifying credentials!");
   }
 }
