@@ -7,7 +7,7 @@ export default {
       "white": "#FFFFFF",
       "grey-light": "#ECECEC",
       "grey": "#838383",
-      // "grey-dark": "",
+      "grey-dark": "#606060",
       "black": "#000000",
       // "blue-50-transparency": "#0071A7",
       "blue": "#0071A7",

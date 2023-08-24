@@ -55,10 +55,14 @@ export default function MyPage() {
     <div className="w-full h-screen flex items-center justify-center flex-col">
       <div className="bg-grey-light p-10 rounded-lg flex flex-col items-center gap-6">
         <img src="/assets/logo.png" alt="logo" width={50} height={50} />
-        <ValidatedForm validator={validator} method="post">
-          <Input name="username" label="username" />
+        <ValidatedForm
+          validator={validator}
+          method="post"
+          className="flex flex-col gap-4"
+        >
+          <Input name="username" label="Username" />
           <Input name="password" label="Senha" />
-          <Button />
+          <Button text="Avancar" />
         </ValidatedForm>
         {actionData && (
           <div className="text-red">{actionData.invalidLoginError}</div>

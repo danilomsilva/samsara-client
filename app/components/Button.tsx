@@ -1,10 +1,14 @@
 import { useIsSubmitting } from "remix-validated-form";
 
-export default function Button() {
+type PropTypes = {
+  text: string;
+};
+
+export default function Button({ text }: PropTypes) {
   const isSubmitting = useIsSubmitting();
   return (
     <button type="submit" disabled={isSubmitting}>
-      {isSubmitting ? "Submitting..." : "Submit"}
+      {isSubmitting ? "Carregando..." : text}
     </button>
   );
 }
