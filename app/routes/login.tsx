@@ -14,6 +14,7 @@ import Button from '~/components/Button';
 import { verifyCredentials } from '~/models/auth.server';
 import { useActionData } from '@remix-run/react';
 import ArrowRight from '~/components/icons/ArrowRight';
+import Tooltip from '~/components/Tooltip';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -69,11 +70,28 @@ export default function MyPage() {
             className="w-72"
           />
           {actionData && (
-            <div className="text-red ml-1">{actionData.invalidLoginError}</div>
+            <div className="text-red ml-1 text-sm">
+              {actionData.invalidLoginError}
+            </div>
           )}
           <div className="mt-4 flex flex-col gap-4 items-center w-full">
-            <Button text="Avançar" icon={<ArrowRight />} className="w-32" />
-            <div className="text-sm text-grey">Esqueci minha senha</div>
+            <Button
+              text="Avançar"
+              icon={<ArrowRight className="h-4 w-4" />}
+              className="w-32"
+            />
+            <div className="text-sm text-grey cursor-default">
+              <Tooltip
+                contentClassName="w-[200px]"
+                content={
+                  <p>
+                    Ligue: <strong>19 99999-9999</strong>
+                  </p>
+                }
+              >
+                Esqueci minha senha
+              </Tooltip>
+            </div>
           </div>
         </ValidatedForm>
       </div>

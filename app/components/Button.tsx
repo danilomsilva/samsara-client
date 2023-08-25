@@ -19,7 +19,7 @@ export default function Button({ text, icon, className }: PropTypes) {
       {isSubmitting ? (
         <Spinner />
       ) : (
-        <div className="flex items-center text-white font-semibold uppercase text-sm gap-2">
+        <div className="flex items-center text-white font-semibold uppercase text-xs gap-4">
           {text}
           {icon}
         </div>
