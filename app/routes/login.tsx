@@ -61,8 +61,13 @@ export default function MyPage() {
           method="post"
           className="flex flex-col gap-2"
         >
-          <Input name="username" label="Usuário" className="w-72" />
-          <Input name="password" label="Senha" className="w-72" />
+          <Input type="text" name="username" label="Usuário" className="w-72" />
+          <Input
+            type="password"
+            name="password"
+            label="Senha"
+            className="w-72"
+          />
           {actionData && (
             <div className="text-red ml-1">{actionData.invalidLoginError}</div>
           )}
