@@ -2,9 +2,9 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "pre:build": "npm i",
-    "build": "npx remix build",
-    "dev": "npx remix dev",
+    "pre:build": "npm i --production=false",
+    "build": "remix build",
+    "dev": "remix dev",
     "start": "remix-serve build",
     "typecheck": "tsc"
   },
