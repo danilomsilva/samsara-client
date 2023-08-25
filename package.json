@@ -6,7 +6,8 @@
     "build": "remix build",
     "dev": "remix dev",
     "start": "remix-serve build",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "build:digitalocean": "npm install --production=false && npm run build && npm ci"
   },
   "dependencies": {
     "@remix-run/css-bundle": "^1.19.3",
