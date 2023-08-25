@@ -3,8 +3,8 @@
   "sideEffects": false,
   "scripts": {
     "pre:build": "npm i",
-    "build": "remix build",
-    "dev": "remix dev",
+    "build": "npx remix build",
+    "dev": "npx remix dev",
     "start": "remix-serve build",
     "typecheck": "tsc"
   },
