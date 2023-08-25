@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useIsSubmitting } from 'remix-validated-form';
-import Spinner from '~/icons/Spinner';
+import Spinner from '~/components/icons/Spinner';
 
 type PropTypes = {
   text: string;

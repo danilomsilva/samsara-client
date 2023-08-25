@@ -13,7 +13,7 @@ import Input from '~/components/Input';
 import Button from '~/components/Button';
 import { verifyCredentials } from '~/models/auth.server';
 import { useActionData } from '@remix-run/react';
-import ArrowRight from '~/icons/ArrowRight';
+import ArrowRight from '~/components/icons/ArrowRight';
 
 // page title
 export const meta: V2_MetaFunction = () => {
