@@ -3,14 +3,14 @@ import {
   type LoaderArgs,
   redirect,
   json,
-} from "@remix-run/node";
-import { Form } from "@remix-run/react";
-import { getUserSession, logout } from "~/session.server";
+} from '@remix-run/node';
+import { Form } from '@remix-run/react';
+import { getUserSession, logout } from '~/session.server';
 
 // if user token do not exists in cookies, will redirect to login
 export async function loader({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
-  if (!userToken) return redirect("/login");
+  if (!userToken) return redirect('/login');
   return json({});
 }
 
