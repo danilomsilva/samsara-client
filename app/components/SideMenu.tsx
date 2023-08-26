@@ -62,7 +62,7 @@ export default function SideMenu({ children }: { children: ReactNode }) {
         </div>
       </div>
       <div className="w-full">
-        <div className="border-t-blue border-t-8 w-full h-screen p-4">
+        <div className="border-t-blue border-t-8 w-full h-screen p-4 pl-6">
           {children}
         </div>
       </div>
