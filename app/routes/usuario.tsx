@@ -1,8 +1,29 @@
+import { json, type LoaderArgs } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
 import DataTable from '~/components/DataTable';
 import LinkButton from '~/components/LinkButton';
 import Add from '~/components/icons/Add';
+import { type Usuario, getUsuarios } from '~/models/usuarios.server';
+import { getUserSession } from '~/session.server';
+
+export async function loader({ request }: LoaderArgs) {
+  const { userToken } = await getUserSession(request);
+  const searchParams = new URL(request.url).searchParams;
+  const sortParam = searchParams.get('sort');
+  const [sortColumn, order] = sortParam?.split(':') ?? [];
+  const sortingBy =
+    order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
+
+  if (userToken) {
+    const usuarios = await getUsuarios(userToken, sortingBy);
+    return json({ usuarios });
+  }
+  return json({});
+}
 
 export default function Usuario() {
+  const { usuarios }: { usuarios: Usuario } = useLoaderData();
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -15,23 +36,14 @@ export default function Usuario() {
       </div>
       <DataTable
         columns={[
-          'Data de criação',
-          'Código',
-          'Nome completo',
-          'Email',
-          'Tipo de acesso',
-          'Alocado à obra',
+          { name: 'created', displayName: 'Data de criação' },
+          { name: 'codigo', displayName: 'Código' },
+          { name: 'nome_completo', displayName: 'Nome completo' },
+          { name: 'email', displayName: 'Email' },
+          { name: 'tipo_acesso', displayName: 'Tipo de acesso' },
+          { name: 'obra', displayName: 'Alocado à obra' },
         ]}
-        rows={[
-          { name: 'Alfreds Futterkiste', country: 'Germany' },
-          { name: 'Berglunds snabbkop', country: 'Sweden' },
-          { name: 'Island Trading', country: 'UK' },
-          { name: 'Koniglich Essen', country: 'Germany' },
-          { name: 'Laughing Bacchus Winecellars', country: 'Canada' },
-          { name: 'Magazzini Alimentari Riuniti', country: 'Italy' },
-          { name: 'North/South', country: 'UK' },
-          { name: 'Paris specialites', country: 'France' },
-        ]}
+        rows={usuarios}
       />
     </>
   );
