@@ -1,4 +1,4 @@
-import { NavLink } from '@remix-run/react';
+import { Form, NavLink } from '@remix-run/react';
 import type { ReactNode } from 'react';
 
 export default function SideMenu({ children }: { children: ReactNode }) {
@@ -30,9 +30,14 @@ export default function SideMenu({ children }: { children: ReactNode }) {
             <NavItem to="/usuario" text="Usuário" />
           </div>
         </div>
-        <div className="border-grey-light border-t pt-2">
-          <NavItem to="/logout" text="Sair" />
-        </div>
+        <Form action="/logout" method="post">
+          <button
+            type="submit"
+            className="border-grey-light border-t w-full pt-1 text-sm text-left"
+          >
+            Sair
+          </button>
+        </Form>
       </div>
       <div className="w-full">
         <div className="border-t-blue border-t-8 w-full h-screen p-4">
