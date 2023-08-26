@@ -38,7 +38,7 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body className="text-grey-dark">
+      <body className="text-grey">
         {isNotOnLoginRoute ? (
           <SideMenu>
             <Outlet />
