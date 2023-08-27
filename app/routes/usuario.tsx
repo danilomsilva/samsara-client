@@ -1,8 +1,8 @@
 import { json, type V2_MetaFunction, type LoaderArgs } from '@remix-run/node';
-import { useLoaderData } from '@remix-run/react';
+import { Outlet, useLoaderData } from '@remix-run/react';
 import DataTable from '~/components/DataTable';
 import LinkButton from '~/components/LinkButton';
-import Add from '~/components/icons/Add';
+import Add from '~/components/icons/PlusCircleIcon';
 import { type Usuario, getUsuarios } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
 
@@ -34,7 +34,7 @@ export default function UsuarioPage() {
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Usuários</h1>
         <div className="flex gap-4">
-          <LinkButton to="" className="bg-blue" icon={<Add />}>
+          <LinkButton to="./new" className="bg-blue" icon={<Add />}>
             Adicionar
           </LinkButton>
         </div>
@@ -50,6 +50,7 @@ export default function UsuarioPage() {
         ]}
         rows={usuarios}
       />
+      <Outlet />
     </>
   );
 }

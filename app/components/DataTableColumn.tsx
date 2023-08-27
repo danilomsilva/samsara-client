@@ -1,5 +1,5 @@
 import { Link, useLocation } from '@remix-run/react';
-import ChevronDown from './icons/ChrevronDown';
+import ChrevronDownIcon from './icons/ChrevronDownIcon';
 import clsx from 'clsx';
 
 type PropTypes = {
@@ -28,7 +28,7 @@ export default function Column({ column, children }: PropTypes) {
       >
         <div className="flex items-center gap-2 group">
           {children}
-          <ChevronDown
+          <ChrevronDownIcon
             className={clsx(
               {
                 'rotate-180': currentSort === `${column}:desc`,

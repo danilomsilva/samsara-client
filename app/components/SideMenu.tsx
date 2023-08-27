@@ -1,7 +1,7 @@
 import { Form, NavLink } from '@remix-run/react';
 import { useState, type ReactNode } from 'react';
-import DoubleLeftArrow from './icons/DoubleLeftArrow';
-import DoubleRightArrow from './icons/DoubleRightArrow';
+import DoubleLeftArrowIcon from './icons/DoubleLeftArrowIcon';
+import DoubleRightArrowIcon from './icons/DoubleRightArrowIcon';
 import clsx from 'clsx';
 
 export default function SideMenu({ children }: { children: ReactNode }) {
@@ -58,7 +58,7 @@ export default function SideMenu({ children }: { children: ReactNode }) {
           className="p-1 rounded-full bg-white hover:bg-grey-light cursor-pointer absolute bottom-11 -right-2"
           onClick={() => setIsOpen(!isOpen)}
         >
-          {isOpen ? <DoubleLeftArrow /> : <DoubleRightArrow />}
+          {isOpen ? <DoubleLeftArrowIcon /> : <DoubleRightArrowIcon />}
         </div>
       </div>
       <div className="w-full">

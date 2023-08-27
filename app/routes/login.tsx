@@ -13,7 +13,7 @@ import Input from '~/components/Input';
 import Button from '~/components/Button';
 import { verifyCredentials } from '~/models/auth.server';
 import { useActionData } from '@remix-run/react';
-import ArrowRight from '~/components/icons/ArrowRight';
+import ArrowRightIcon from '~/components/icons/ArrowRightIcon';
 import Tooltip from '~/components/Tooltip';
 
 // page title
@@ -77,7 +77,7 @@ export default function MyPage() {
           <div className="mt-4 flex flex-col gap-4 items-center w-full">
             <Button
               text="Avançar"
-              icon={<ArrowRight className="h-4 w-4" />}
+              icon={<ArrowRightIcon className="h-4 w-4" />}
               className="w-32"
             />
             <div className="text-sm text-grey cursor-default">
