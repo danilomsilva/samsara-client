@@ -1,10 +1,15 @@
-import { json, type LoaderArgs } from '@remix-run/node';
+import { json, type V2_MetaFunction, type LoaderArgs } from '@remix-run/node';
 import { useLoaderData } from '@remix-run/react';
 import DataTable from '~/components/DataTable';
 import LinkButton from '~/components/LinkButton';
 import Add from '~/components/icons/Add';
 import { type Usuario, getUsuarios } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
+
+// page title
+export const meta: V2_MetaFunction = () => {
+  return [{ title: 'Usuario | Samsara' }];
+};
 
 export async function loader({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -21,7 +26,7 @@ export async function loader({ request }: LoaderArgs) {
   return json({});
 }
 
-export default function Usuario() {
+export default function UsuarioPage() {
   const { usuarios }: { usuarios: Usuario } = useLoaderData();
 
   return (

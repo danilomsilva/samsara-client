@@ -1,20 +1,33 @@
 import Cel from './DataTableCel';
 import Column from './DataTableColumn';
 
-type PropTypes = {
-  columns: any;
-  rows: any; // TODO: think how to type columns and rows
+type ColumnType = {
+  name: string;
+  displayName: string;
 };
+
+type PropTypes = {
+  columns: ColumnType[];
+  rows:
+    | {
+        [key: string]: string;
+      }[]
+    | any;
+};
+
 export default function DataTable({ columns, rows }: PropTypes) {
+  const rowKeys = Object.keys(rows[0]);
   return (
     <table className="bg-white w-full text-sm rounded mt-4 overflow-hidden">
       <thead>
         <tr className="text-left h-10 border-b border-b-grey/50">
-          {columns.map((col, i: number) => (
-            <Column column={col.name} key={i}>
-              {col.displayName}
-            </Column>
-          ))}
+          {columns.map(
+            (col: { name: string; displayName: string }, i: number) => (
+              <Column column={col.name} key={i}>
+                {col.displayName}
+              </Column>
+            )
+          )}
         </tr>
       </thead>
       <tbody>
@@ -24,12 +37,11 @@ export default function DataTable({ columns, rows }: PropTypes) {
               key={i}
               className="h-10 border-t-grey-light border-t hover:bg-blue/20"
             >
-              <Cel>{row.created}</Cel>
-              <Cel>{row.codigo}</Cel>
-              <Cel>{row.nome_completo}</Cel>
-              <Cel>{row.email}</Cel>
-              <Cel>{row.tipo_acesso}</Cel>
-              <Cel>{row.obra}</Cel>
+              {rowKeys.map((keys, i) => {
+                if (keys !== 'id') {
+                  return <Cel key={i}>{row[keys]}</Cel>;
+                }
+              })}
             </tr>
           );
         })}
