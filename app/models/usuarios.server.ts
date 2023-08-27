@@ -1,4 +1,5 @@
 import type { User } from '~/session.server';
+import { formatDate } from '~/utils/utils';
 
 export type Usuario = {
   id: string;
@@ -7,7 +8,11 @@ export type Usuario = {
   nome_completo: string;
   email: string;
   tipo_acesso: string;
-  obra: string;
+  expand: {
+    obra: {
+      nome: string;
+    };
+  };
 };
 
 // if valid will retrieve jwt token from strapi and user data
@@ -19,6 +24,8 @@ export async function getUsuarios(
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
+  //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
+  queryParams.set('expand', 'obra');
   if (queryParams.toString()) url += `?${queryParams.toString()}`;
   try {
     const response = await fetch(url, {
@@ -31,12 +38,12 @@ export async function getUsuarios(
     const data = await response.json();
     const transformedData = data.items.map((item: Usuario) => ({
       id: item.id,
-      created: item.created,
+      created: formatDate(item.created),
       codigo: item.codigo,
       nome_completo: item.nome_completo,
       email: item.email,
       tipo_acesso: item.tipo_acesso,
-      obra: item.obra,
+      obra: item.expand.obra.nome,
     }));
     return transformedData;
   } catch (error) {
