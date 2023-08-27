@@ -1,14 +1,21 @@
 import { type ReactNode } from 'react';
 import XIcon from './icons/XIcon';
 import { Link } from '@remix-run/react';
+import { ValidatedForm } from 'remix-validated-form';
 
 type PropTypes = {
   title: string;
   children: ReactNode;
   footerActions: ReactNode;
+  validator: any; //TODO: improve on this type
 };
 
-export default function Modal({ title, children, footerActions }: PropTypes) {
+export default function Modal({
+  title,
+  children,
+  footerActions,
+  validator,
+}: PropTypes) {
   return (
     // TODO: find a way to close modal by clicking on overlay making sure it will navigate back to previous route and not to initial route
     <div className="bg-black/30 absolute top-0 left-0 w-full h-screen flex justify-center items-center z-10">
@@ -19,10 +26,12 @@ export default function Modal({ title, children, footerActions }: PropTypes) {
             <XIcon className="h-6 w-6 text-blue stroke-2 z-50" />
           </Link>
         </div>
-        <div className="h-80 p-8">{children}</div>
-        <div className="border-t-grey/50 border-x-0 border-b-0 border-t h-16 flex items-center px-4 justify-end">
-          {footerActions}
-        </div>
+        <ValidatedForm method="post" validator={validator}>
+          <div className="p-8 gap-2 flex flex-col">{children}</div>
+          <div className="border-t-grey/50 border-x-0 border-b-0 border-t h-16 flex items-center px-4 justify-end">
+            {footerActions}
+          </div>
+        </ValidatedForm>
       </div>
     </div>
   );

@@ -1,18 +1,44 @@
-import LinkButton from '~/components/LinkButton';
+import { withZod } from '@remix-validated-form/with-zod';
+import { z } from 'zod';
+import Button from '~/components/Button';
+import Input from '~/components/Input';
 import Modal from '~/components/Modal';
+import Row from '~/components/Row';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
+
+// form validation scheme
+export const validator = withZod(
+  z.object({
+    username: z.string().min(1, { message: 'Campo obrigatório' }),
+    password: z.string().min(1, { message: 'Campo obrigatório' }),
+  })
+);
 
 export default function NewUsuario() {
   return (
     <Modal
       title="Adicionar Usuário"
+      validator={validator}
       footerActions={
-        <LinkButton to="./new" className="bg-blue" icon={<PlusCircleIcon />}>
-          Adicionar
-        </LinkButton>
+        <Button
+          className="bg-blue"
+          icon={<PlusCircleIcon />}
+          text="Adicionar"
+        />
       }
     >
-      some content
+      <Row>
+        <Input type="text" name="codigo" label="Código" className="w-40" />
+        <Input type="text" name="nome_completo" label="Nome completo" />
+      </Row>
+      <Row>
+        <Input type="text" name="email" label="Email" />
+        <Input type="text" name="senha" label="Senha" className="w-40" />
+      </Row>
+      <Row>
+        <Input type="text" name="tipo_acesso" label="Tipo de acesso" />
+        <Input type="text" name="obra" label="Alocado à obra" />
+      </Row>
     </Modal>
   );
 }
