@@ -24,16 +24,16 @@ export const validator = withZod(
 export async function action({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
   const formData = Object.fromEntries(await request.formData());
+  console.log('formData >>>>', formData);
+
   const body = {
     ...formData,
+    password: formData.password,
     passwordConfirm: formData.password,
   };
 
-  console.log(body);
-
   if (userToken) {
     const usuario: Usuario = await createUsuario(userToken, body);
-    console.log(usuario);
     return usuario;
   }
 

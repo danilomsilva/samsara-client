@@ -30,7 +30,7 @@ export default function Input({
         className={`${
           disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
         } rounded-lg p-2 px-4 focus:outline-blue`}
-        defaultValue={defaultValue}
+        // defaultValue={defaultValue}
         value={defaultValue}
       />
       {error && (
