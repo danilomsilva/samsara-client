@@ -18,7 +18,7 @@ export type Usuario = {
   };
 };
 
-// if valid will retrieve jwt token from strapi and user data
+// if valid will retrieve jwt token and user data
 export async function getUsuarios(
   userToken: User['token'],
   sortingBy: string | null

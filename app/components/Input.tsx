@@ -36,7 +36,6 @@ export default function Input({
         }`}
         // defaultValue={defaultValue}
         value={defaultValue}
-        autoComplete="new-password" // TODO: revisit and improve
         autoFocus={autoFocus}
       />
       {error && <ErrorMessage error={error} />}

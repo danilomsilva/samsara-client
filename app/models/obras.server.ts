@@ -1,10 +1,17 @@
 import type { User } from '~/session.server';
 
-// if valid will retrieve jwt token from strapi and user data
-export async function getOperadores(userToken: User['token']) {
+export type Obra = {
+  cidade?: string;
+  data_final_previsto?: string;
+  data_inicio?: string;
+  id?: string;
+  nome?: string;
+};
+
+export async function getObras(userToken: User['token']): Promise<Obra[]> {
   try {
     const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/operador/records`,
+      `${process.env.BASE_API_URL}/collections/obra/records`,
       {
         method: 'GET',
         headers: {
@@ -13,8 +20,8 @@ export async function getOperadores(userToken: User['token']) {
         },
       }
     );
-
-    return await response.json();
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw new Error('An error occured when verifying credentials!');
   }
