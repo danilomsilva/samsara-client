@@ -1,34 +1,42 @@
-import { redirect, type LoaderArgs } from '@remix-run/node';
+import { redirect, type LoaderArgs, json } from '@remix-run/node';
 import { useSearchParams } from '@remix-run/react';
 import { withZod } from '@remix-validated-form/with-zod';
+import { validationError } from 'remix-validated-form';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import Input from '~/components/Input';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
+import Select from '~/components/Select';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import { type Usuario, createUsuario } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
+import { TIPOS_ACESSO } from '~/utils/consts';
 
 // form validation scheme
 export const validator = withZod(
   z.object({
+    codigo: z.string(),
     nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
     email: z.string().min(1, { message: 'Campo obrigatório' }),
     password: z.string().min(1, { message: 'Campo obrigatório' }),
-    tipo_acesso: z.string().min(1, { message: 'Campo obrigatório' }),
+    tipo_acesso: z
+      .string()
+      .refine((val) => val !== '-', { message: 'Campo obrigatório' }),
     obra: z.string().min(1, { message: 'Campo obrigatório' }),
   })
 );
 
 export async function action({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
-  const formData = Object.fromEntries(await request.formData());
+  //server-side validation
+  const data = await validator.validate(await request.formData());
+  if (data.error) return validationError(data.error);
 
   const body: Partial<Usuario> = {
-    ...formData,
-    password: formData.password,
-    passwordConfirm: formData.password,
+    ...data.data,
+    password: data.data.password,
+    passwordConfirm: data.data.password,
     emailVisibility: true,
   };
 
@@ -36,6 +44,7 @@ export async function action({ request }: LoaderArgs) {
     await createUsuario(userToken, body);
     return redirect('..');
   }
+  return json({});
 }
 
 export default function NewUsuario() {
@@ -75,7 +84,7 @@ export default function NewUsuario() {
         <Input type="password" name="password" label="Senha" className="w-40" />
       </Row>
       <Row>
-        <Input type="text" name="tipo_acesso" label="Tipo de acesso" />
+        <Select name="tipo_acesso" options={TIPOS_ACESSO} />
         <Input type="text" name="obra" label="Alocado à obra" />
       </Row>
     </Modal>

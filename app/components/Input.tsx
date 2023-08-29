@@ -1,5 +1,5 @@
 import { useField } from 'remix-validated-form';
-import ExclamationTriangle from './icons/ExclamationTriangle';
+import ErrorMessage from './ErrorMessage';
 
 type PropTypes = {
   name: string;
@@ -31,18 +31,15 @@ export default function Input({
         type={type}
         className={`${
           disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
-        } rounded-lg p-2 px-4 focus:outline-blue`}
+        } rounded-lg p-2 px-4 focus:outline-blue ${
+          error && 'border border-red'
+        }`}
         // defaultValue={defaultValue}
         value={defaultValue}
         autoComplete="new-password" // TODO: revisit and improve
         autoFocus={autoFocus}
       />
-      {error && (
-        <div className="flex gap-1 items-center">
-          <ExclamationTriangle className="h-3 w-3 text-red" />
-          <span className="text-red ml-1">{error}</span>
-        </div>
-      )}
+      {error && <ErrorMessage error={error} />}
     </div>
   );
 }
