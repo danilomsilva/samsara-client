@@ -5,6 +5,7 @@ import LinkButton from '~/components/LinkButton';
 import Add from '~/components/icons/PlusCircleIcon';
 import { type Usuario, getUsuarios } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
+import { generateLastCodigo } from '~/utils/utils';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -27,14 +28,18 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export default function UsuarioPage() {
-  const { usuarios }: { usuarios: Usuario } = useLoaderData();
+  const { usuarios }: { usuarios: Usuario[] } = useLoaderData();
 
   return (
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Usuários</h1>
         <div className="flex gap-4">
-          <LinkButton to="./new" className="bg-blue" icon={<Add />}>
+          <LinkButton
+            to={`./new?user=U-${generateLastCodigo(usuarios)}`}
+            className="bg-blue"
+            icon={<Add />}
+          >
             Adicionar
           </LinkButton>
         </div>

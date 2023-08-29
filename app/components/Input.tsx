@@ -1,13 +1,23 @@
 import { useField } from 'remix-validated-form';
+import ExclamationTriangle from './icons/ExclamationTriangle';
 
 type PropTypes = {
   name: string;
   label: string;
   className?: string;
   type: 'text' | 'number' | 'password';
+  disabled?: boolean;
+  defaultValue?: string;
 };
 
-export default function Input({ name, label, className, type }: PropTypes) {
+export default function Input({
+  name,
+  label,
+  className,
+  type,
+  disabled,
+  defaultValue,
+}: PropTypes) {
   const { error, getInputProps } = useField(name);
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
@@ -17,9 +27,18 @@ export default function Input({ name, label, className, type }: PropTypes) {
       <input
         {...getInputProps({ id: name })}
         type={type}
-        className="rounded-lg p-2 px-4 focus:outline-blue"
+        className={`${
+          disabled && 'border border-grey/50'
+        } rounded-lg p-2 px-4 focus:outline-blue`}
+        disabled={disabled}
+        defaultValue={defaultValue}
       />
-      {error && <span className="text-red ml-1">{error}</span>}
+      {error && (
+        <div className="flex gap-1 items-center">
+          <ExclamationTriangle className="h-3 w-3 text-red" />
+          <span className="text-red ml-1">{error}</span>
+        </div>
+      )}
     </div>
   );
 }
