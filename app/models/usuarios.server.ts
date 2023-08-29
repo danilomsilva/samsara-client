@@ -2,13 +2,16 @@ import type { User } from '~/session.server';
 import { formatDate } from '~/utils/utils';
 
 export type Usuario = {
-  id: string;
-  created: string;
-  codigo: string;
-  nome_completo: string;
-  email: string;
-  tipo_acesso: string;
-  expand: {
+  id?: string;
+  created?: string;
+  codigo?: string;
+  nome_completo?: string;
+  email?: string;
+  password?: FormDataEntryValue;
+  passwordConfirm?: FormDataEntryValue;
+  emailVisibility?: boolean;
+  tipo_acesso?: string;
+  expand?: {
     obra: {
       nome: string;
     };
@@ -32,18 +35,18 @@ export async function getUsuarios(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
     const transformedData = data.items.map((item: Usuario) => ({
       id: item.id,
-      created: formatDate(item.created),
+      created: item?.created && formatDate(item.created),
       codigo: item.codigo,
       nome_completo: item.nome_completo,
       email: item.email,
       tipo_acesso: item.tipo_acesso,
-      obra: item.expand.obra.nome,
+      obra: item?.expand?.obra.nome,
     }));
     return transformedData;
   } catch (error) {
@@ -59,11 +62,9 @@ export async function createUsuario(userToken: User['token'], body: Usuario) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
-        body: JSON.stringify({
-          body,
-        }),
+        body: JSON.stringify(body),
       }
     );
     const data = await response.json();

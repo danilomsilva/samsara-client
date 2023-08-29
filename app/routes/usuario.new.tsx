@@ -1,4 +1,4 @@
-import type { LoaderArgs } from '@remix-run/node';
+import { redirect, type LoaderArgs } from '@remix-run/node';
 import { useSearchParams } from '@remix-run/react';
 import { withZod } from '@remix-validated-form/with-zod';
 import { z } from 'zod';
@@ -24,20 +24,18 @@ export const validator = withZod(
 export async function action({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
   const formData = Object.fromEntries(await request.formData());
-  console.log('formData >>>>', formData);
 
-  const body = {
+  const body: Partial<Usuario> = {
     ...formData,
     password: formData.password,
     passwordConfirm: formData.password,
+    emailVisibility: true,
   };
 
   if (userToken) {
-    const usuario: Usuario = await createUsuario(userToken, body);
-    return usuario;
+    await createUsuario(userToken, body);
+    return redirect('..');
   }
-
-  return 'something';
 }
 
 export default function NewUsuario() {
