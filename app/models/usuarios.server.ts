@@ -32,7 +32,7 @@ export async function getUsuarios(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -46,6 +46,28 @@ export async function getUsuarios(
       obra: item.expand.obra.nome,
     }));
     return transformedData;
+  } catch (error) {
+    throw new Error('An error occured when verifying credentials!');
+  }
+}
+
+export async function createUsuario(userToken: User['token'], body: Usuario) {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_API_URL}/collections/usuario/records`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`,
+        },
+        body: JSON.stringify({
+          body,
+        }),
+      }
+    );
+    const data = await response.json();
+    return data;
   } catch (error) {
     throw new Error('An error occured when verifying credentials!');
   }

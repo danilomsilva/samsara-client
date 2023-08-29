@@ -1,4 +1,4 @@
-import { LoaderArgs } from '@remix-run/node';
+import type { LoaderArgs } from '@remix-run/node';
 import { useSearchParams } from '@remix-run/react';
 import { withZod } from '@remix-validated-form/with-zod';
 import { z } from 'zod';
@@ -7,21 +7,36 @@ import Input from '~/components/Input';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
+import { type Usuario, createUsuario } from '~/models/usuarios.server';
+import { getUserSession } from '~/session.server';
 
 // form validation scheme
 export const validator = withZod(
   z.object({
     nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
     email: z.string().min(1, { message: 'Campo obrigatório' }),
-    senha: z.string().min(1, { message: 'Campo obrigatório' }),
+    password: z.string().min(1, { message: 'Campo obrigatório' }),
     tipo_acesso: z.string().min(1, { message: 'Campo obrigatório' }),
     obra: z.string().min(1, { message: 'Campo obrigatório' }),
   })
 );
 
 export async function action({ request }: LoaderArgs) {
+  const { userToken } = await getUserSession(request);
   const formData = Object.fromEntries(await request.formData());
-  console.log(formData);
+  const body = {
+    ...formData,
+    passwordConfirm: formData.password,
+  };
+
+  console.log(body);
+
+  if (userToken) {
+    const usuario: Usuario = await createUsuario(userToken, body);
+    console.log(usuario);
+    return usuario;
+  }
+
   return 'something';
 }
 
@@ -54,7 +69,7 @@ export default function NewUsuario() {
       </Row>
       <Row>
         <Input type="text" name="email" label="Email" />
-        <Input type="password" name="senha" label="Senha" className="w-40" />
+        <Input type="password" name="password" label="Senha" className="w-40" />
       </Row>
       <Row>
         <Input type="text" name="tipo_acesso" label="Tipo de acesso" />
