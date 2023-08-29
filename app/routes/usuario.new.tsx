@@ -5,9 +5,7 @@ import {
   type ActionArgs,
 } from '@remix-run/node';
 import { useLoaderData, useSearchParams } from '@remix-run/react';
-import { withZod } from '@remix-validated-form/with-zod';
 import { validationError } from 'remix-validated-form';
-import { z } from 'zod';
 import Button from '~/components/Button';
 import Input from '~/components/Input';
 import Modal from '~/components/Modal';
@@ -18,22 +16,7 @@ import { type Obra, getObras } from '~/models/obras.server';
 import { type Usuario, createUsuario } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
 import { type Option, TIPOS_ACESSO } from '~/utils/consts';
-
-// form validation scheme
-export const validator = withZod(
-  z.object({
-    codigo: z.string(),
-    nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
-    email: z.string().min(1, { message: 'Campo obrigatório' }),
-    password: z.string().min(1, { message: 'Campo obrigatório' }),
-    tipo_acesso: z
-      .string()
-      .refine((val) => val !== '-', { message: 'Campo obrigatório' }),
-    obra: z
-      .string()
-      .refine((val) => val !== '-', { message: 'Campo obrigatório' }),
-  })
-);
+import { newUsuarioScheme } from '~/utils/validators';
 
 export async function loader({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -47,11 +30,15 @@ export async function loader({ request }: LoaderArgs) {
 export async function action({ request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
   //server-side validation
-  const data = await validator.validate(await request.formData());
+  const data = await newUsuarioScheme.validate(await request.formData());
   if (data.error) return validationError(data.error);
+
+  console.log(data);
 
   const body: Partial<Usuario> = {
     ...data.data,
+    tipo_acesso: data.data.tipo_acesso.name,
+    obra: data.data.obra.name,
     password: data.data.password,
     passwordConfirm: data.data.password,
     emailVisibility: true,
@@ -82,7 +69,7 @@ export default function NewUsuario() {
   return (
     <Modal
       title="Adicionar Usuário"
-      validator={validator}
+      validator={newUsuarioScheme}
       footerActions={
         <Button
           className="bg-blue"

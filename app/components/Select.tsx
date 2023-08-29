@@ -1,34 +1,56 @@
-import { useField } from 'remix-validated-form';
+import { Combobox } from '@headlessui/react';
+import { useControlField, useField } from 'remix-validated-form';
+import ChevronDownIcon from './icons/ChrevronDownIcon';
 import type { Option } from '~/utils/consts';
 import ErrorMessage from './ErrorMessage';
 
 type PropTypes = {
-  label: string;
   name: string;
   options: Option[];
+  label: string;
 };
 
-//TODO: replace by headless UI: https://codesandbox.io/s/multistep-form-in-remix-f9siim?file=/app/components/ApproverSelector.tsx:0-3934
-export default function Select({ label, name, options }: PropTypes) {
-  const { error } = useField(name);
+export default function Select({ name, options, label }: PropTypes) {
+  const { error, validate } = useField(name);
+  const [selected, setSelected] = useControlField<Option>(name);
+
+  const handleChange = (option: Option) => {
+    setSelected(option);
+    validate();
+  };
+
   return (
-    <div className="flex flex-col gap-1 w-full text-sm">
-      <label htmlFor="tipo_acesso" className=" text-grey-dark ml-1">
-        {label}
-      </label>
-      <div className="pr-3 pl-1.5 rounded-lg bg-white">
-        <select name="tipo_acesso" className="p-2 w-full outline-none">
-          <option value="-">Selecione</option>
-          {options.map((tipo) => {
-            return (
-              <option key={tipo.name} value={tipo.name}>
-                {tipo.displayName}
-              </option>
-            );
-          })}
-        </select>
-      </div>
+    <fieldset className="flex flex-col gap-1">
+      <Combobox value={selected} onChange={handleChange} name={name}>
+        <div className="relative text-sm flex flex-col gap-1">
+          <Combobox.Label className="ml-1 text-grey-dark">
+            {label}
+          </Combobox.Label>
+          <div className="relative">
+            <Combobox.Input
+              className="w-full rounded-lg p-2 pr-10 focus:outline-blue"
+              displayValue={(option: Option) => option?.displayName}
+              placeholder="-"
+            />
+            <Combobox.Button className="absolute inset-y-0 right-1 flex items-center pr-2 w-fit translate-y-0.5">
+              <ChevronDownIcon className="text-blue w-4 h-4" />
+            </Combobox.Button>
+          </div>
+
+          <Combobox.Options className="absolute mt-1 py-1 max-h-60 w-full overflow-auto rounded-md bg-white  shadow-lg">
+            {options.map((option: Option) => (
+              <Combobox.Option
+                key={option.name}
+                className="relative py-1 px-2 flex items-center cursor-pointer hover:bg-grey-light "
+                value={option}
+              >
+                {option.displayName}
+              </Combobox.Option>
+            ))}
+          </Combobox.Options>
+        </div>
+      </Combobox>
       {error && <ErrorMessage error={error} />}
-    </div>
+    </fieldset>
   );
 }
