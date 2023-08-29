@@ -1,3 +1,4 @@
+import { LoaderArgs } from '@remix-run/node';
 import { useSearchParams } from '@remix-run/react';
 import { withZod } from '@remix-validated-form/with-zod';
 import { z } from 'zod';
@@ -17,6 +18,12 @@ export const validator = withZod(
     obra: z.string().min(1, { message: 'Campo obrigatório' }),
   })
 );
+
+export async function action({ request }: LoaderArgs) {
+  const formData = Object.fromEntries(await request.formData());
+  console.log(formData);
+  return 'something';
+}
 
 export default function NewUsuario() {
   const [searchParams] = useSearchParams();
@@ -40,7 +47,7 @@ export default function NewUsuario() {
           name="codigo"
           label="Código"
           className="w-40"
-          defaultValue={userCodigo || 'N/A'}
+          defaultValue={userCodigo ? userCodigo : 'N/A'}
           disabled
         />
         <Input type="text" name="nome_completo" label="Nome completo" />

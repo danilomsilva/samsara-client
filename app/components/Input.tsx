@@ -28,10 +28,10 @@ export default function Input({
         {...getInputProps({ id: name })}
         type={type}
         className={`${
-          disabled && 'border border-grey/50'
+          disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
         } rounded-lg p-2 px-4 focus:outline-blue`}
-        disabled={disabled}
         defaultValue={defaultValue}
+        value={defaultValue}
       />
       {error && (
         <div className="flex gap-1 items-center">
