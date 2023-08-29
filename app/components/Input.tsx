@@ -8,6 +8,7 @@ type PropTypes = {
   type: 'text' | 'number' | 'password';
   disabled?: boolean;
   defaultValue?: string;
+  autoFocus?: boolean;
 };
 
 export default function Input({
@@ -17,6 +18,7 @@ export default function Input({
   type,
   disabled,
   defaultValue,
+  autoFocus,
 }: PropTypes) {
   const { error, getInputProps } = useField(name);
   return (
@@ -32,6 +34,8 @@ export default function Input({
         } rounded-lg p-2 px-4 focus:outline-blue`}
         // defaultValue={defaultValue}
         value={defaultValue}
+        autoComplete="new-password" // TODO: revisit and improve
+        autoFocus={autoFocus}
       />
       {error && (
         <div className="flex gap-1 items-center">

@@ -63,7 +63,12 @@ export default function NewUsuario() {
           defaultValue={userCodigo ? userCodigo : 'N/A'}
           disabled
         />
-        <Input type="text" name="nome_completo" label="Nome completo" />
+        <Input
+          type="text"
+          name="nome_completo"
+          label="Nome completo"
+          autoFocus
+        />
       </Row>
       <Row>
         <Input type="text" name="email" label="Email" />
