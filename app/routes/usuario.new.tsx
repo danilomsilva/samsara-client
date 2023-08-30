@@ -4,9 +4,14 @@ import {
   json,
   type ActionArgs,
 } from '@remix-run/node';
-import { useLoaderData, useSearchParams } from '@remix-run/react';
+import {
+  useActionData,
+  useLoaderData,
+  useSearchParams,
+} from '@remix-run/react';
 import { validationError } from 'remix-validated-form';
 import Button from '~/components/Button';
+import ErrorMessage from '~/components/ErrorMessage';
 import Input from '~/components/Input';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
@@ -30,31 +35,34 @@ export async function loader({ request }: LoaderArgs) {
 export async function action({ request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
   //server-side validation
-  const data = await newUsuarioScheme.validate(await request.formData());
-  if (data.error) return validationError(data.error);
-
-  console.log(data);
+  const formData = await newUsuarioScheme.validate(await request.formData());
+  if (formData.error) return validationError(formData.error);
 
   const body: Partial<Usuario> = {
-    ...data.data,
-    tipo_acesso: data.data.tipo_acesso.name,
-    obra: data.data.obra.name,
-    password: data.data.password,
-    passwordConfirm: data.data.password,
+    ...formData.data,
+    tipo_acesso: formData.data.tipo_acesso.name,
+    obra: formData.data.obra.name,
+    password: formData.data.password,
+    passwordConfirm: formData.data.password,
     emailVisibility: true,
   };
 
-  if (userToken) {
-    await createUsuario(userToken, body);
-    return redirect('..');
+  const user = await createUsuario(userToken, body);
+  if (user.data) {
+    return json({ error: user.data });
   }
-  return json({});
+  return redirect('..');
 }
 
 export default function NewUsuario() {
   const { obras } = useLoaderData();
+  const actionData = useActionData();
   const [searchParams] = useSearchParams();
   const userCodigo = searchParams.get('user');
+
+  const emailAlreadyExists =
+    actionData?.error?.email?.message ===
+    'The email is invalid or already in use.';
 
   const sortedObras: Option[] = obras.items
     .map((item: Obra) => {
@@ -95,7 +103,14 @@ export default function NewUsuario() {
         />
       </Row>
       <Row>
-        <Input type="text" name="email" label="Email" />
+        <div className="flex flex-col w-full">
+          <Input type="text" name="email" label="Email" />
+          {emailAlreadyExists && (
+            <div className="mt-1">
+              <ErrorMessage error="Email já utilizado" />
+            </div>
+          )}
+        </div>
         <Input type="password" name="password" label="Senha" className="w-40" />
       </Row>
       <Row>

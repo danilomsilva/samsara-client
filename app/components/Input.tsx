@@ -31,9 +31,7 @@ export default function Input({
         type={type}
         className={`${
           disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
-        } rounded-lg p-2 px-4 focus:outline-blue ${
-          error && 'border border-red'
-        }`}
+        } rounded-lg p-2 px-4 focus:outline-blue`}
         // defaultValue={defaultValue}
         value={defaultValue}
         autoFocus={autoFocus}

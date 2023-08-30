@@ -4,7 +4,10 @@ import { zfd } from 'zod-form-data';
 
 export const loginScheme = withZod(
   z.object({
-    username: z.string().min(1, { message: 'Campo obrigatório' }),
+    email: z
+      .string()
+      .email('Digite um email válido')
+      .min(1, { message: 'Campo obrigatório' }),
     password: z.string().min(1, { message: 'Campo obrigatório' }),
   })
 );
@@ -13,7 +16,10 @@ export const newUsuarioScheme = withZod(
   z.object({
     codigo: z.string(),
     nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
-    email: z.string().min(1, { message: 'Campo obrigatório' }),
+    email: z
+      .string()
+      .email('Digite um email válido')
+      .min(1, { message: 'Campo obrigatório' }),
     password: z.string().min(1, { message: 'Campo obrigatório' }),
     tipo_acesso: z.object(
       {

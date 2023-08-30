@@ -6,7 +6,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import { createUserSession, getUserSession } from '~/session.server';
-import { ValidatedForm } from 'remix-validated-form';
+import { ValidatedForm, validationError } from 'remix-validated-form';
 import Input from '~/components/Input';
 import Button from '~/components/Button';
 import { verifyCredentials } from '~/models/auth.server';
@@ -14,6 +14,7 @@ import { useActionData } from '@remix-run/react';
 import ArrowRightIcon from '~/components/icons/ArrowRightIcon';
 import Tooltip from '~/components/Tooltip';
 import { loginScheme } from '~/utils/validators';
+import ErrorMessage from '~/components/ErrorMessage';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -29,15 +30,16 @@ export async function loader({ request }: LoaderArgs) {
 
 // will verify credentials and if valid, create user session and redirect to dashboard
 export async function action({ request }: ActionArgs) {
-  const formData = await request.formData();
-  const username = formData.get('username');
-  const password = formData.get('password');
+  const formData = await loginScheme.validate(await request.formData());
+  if (formData.error) return validationError(formData.error);
+  const user = await verifyCredentials(
+    formData.data.email,
+    formData.data.password
+  );
 
-  //TODO: server side validation
-
-  const user = await verifyCredentials(username as string, password as string);
-
-  if (user.token) return createUserSession(request, user, '/dashboard');
+  if (user.token) {
+    return createUserSession(request, user, '/dashboard');
+  }
   return json({
     invalidLoginError: 'Usuário ou senha inválido',
   });
@@ -53,20 +55,11 @@ export default function MyPage() {
         <ValidatedForm
           validator={loginScheme}
           method="post"
-          className="flex flex-col gap-2"
+          className="flex flex-col gap-2 w-[250px]"
         >
-          <Input type="text" name="username" label="Usuário" className="w-72" />
-          <Input
-            type="password"
-            name="password"
-            label="Senha"
-            className="w-72"
-          />
-          {actionData && (
-            <div className="text-red ml-1 text-sm">
-              {actionData.invalidLoginError}
-            </div>
-          )}
+          <Input type="text" name="email" label="Email" />
+          <Input type="password" name="password" label="Senha" />
+          {actionData && <ErrorMessage error={actionData.invalidLoginError} />}
           <div className="mt-4 flex flex-col gap-4 items-center w-full">
             <Button
               text="Avançar"
