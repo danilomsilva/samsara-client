@@ -91,7 +91,7 @@ export default function NewUsuario() {
           type="text"
           name="codigo"
           label="Código"
-          className="w-40"
+          className="w-[100px]"
           defaultValue={userCodigo ? userCodigo : 'N/A'}
           disabled
         />
@@ -104,7 +104,7 @@ export default function NewUsuario() {
       </Row>
       <Row>
         <div className="flex flex-col w-full">
-          <Input type="text" name="email" label="Email" />
+          <Input type="text" name="email" label="Email" className="w-60" />
           {emailAlreadyExists && (
             <div className="mt-1">
               <ErrorMessage error="Email já utilizado" />
@@ -115,11 +115,16 @@ export default function NewUsuario() {
       </Row>
       <Row>
         <Select
+          name="obra"
+          options={sortedObras}
+          label="Alocado à obra"
+          className="w-60"
+        />
+        <Select
           name="tipo_acesso"
           options={TIPOS_ACESSO}
           label="Tipo de acesso"
         />
-        <Select name="obra" options={sortedObras} label="Alocado à obra" />
       </Row>
     </Modal>
   );

@@ -9,9 +9,10 @@ type PropTypes = {
   name: string;
   options: Option[];
   label: string;
+  className: string;
 };
 
-export default function Select({ name, options, label }: PropTypes) {
+export default function Select({ name, options, label, className }: PropTypes) {
   const { error, validate } = useField(name);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useControlField<Option>(name);
@@ -39,7 +40,7 @@ export default function Select({ name, options, label }: PropTypes) {
             </Combobox.Label>
             <div className="relative">
               <Combobox.Input
-                className="w-full rounded-lg p-2 pr-10 focus:outline-blue"
+                className={`${className} w-full rounded-lg p-2 pr-10 focus:outline-blue`}
                 displayValue={(option: Option) => option?.displayName}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="-"
