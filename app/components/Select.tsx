@@ -20,13 +20,13 @@ export default function Select({
   className,
   defaultValue,
 }: PropTypes) {
-  const { error, validate } = useField(name);
+  // const { error, validate } = useField(name);
   const [query, setQuery] = useState('');
-  const [selected, setSelected] = useControlField<Option>(name);
+  // const [selected, setSelected] = useControlField<Option>(name);
 
   const handleChange = (option: Option) => {
-    setSelected(option);
-    validate();
+    // setSelected(option);
+    // validate();
   };
 
   const filteredOptions = options.filter((option) =>
@@ -40,7 +40,7 @@ export default function Select({
   return (
     <fieldset className="flex flex-col gap-1">
       <Combobox
-        value={selected}
+        // value={selected}
         onChange={handleChange}
         name={name}
         defaultValue={{ name: '', displayName: defaultValue }}
@@ -76,7 +76,7 @@ export default function Select({
           </Combobox.Options>
         </div>
       </Combobox>
-      {error && <ErrorMessage error={error} />}
+      {/* {error && <ErrorMessage error={error} />} */}
     </fieldset>
   );
 }

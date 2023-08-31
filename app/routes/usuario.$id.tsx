@@ -6,6 +6,7 @@ import {
 } from '@remix-run/node';
 import { useActionData, useLoaderData } from '@remix-run/react';
 import { validationError } from 'remix-validated-form';
+import { z } from 'zod';
 import Button from '~/components/Button';
 import ErrorMessage from '~/components/ErrorMessage';
 import Input from '~/components/Input';
@@ -37,29 +38,40 @@ export async function loader({ params, request }: LoaderArgs) {
     const usuario = await getUsuario(userToken, params.id as string);
     return json({ obras, usuario });
   }
-
-  return json({});
 }
 
 export async function action({ request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
   //server-side validation
-  const formData = await newUsuarioScheme.validate(await request.formData());
-  if (formData.error) return validationError(formData.error);
+  const formData = Object.fromEntries(await request.formData());
 
-  const body: Partial<Usuario> = {
-    ...formData.data,
-    tipo_acesso: formData.data.tipo_acesso.name,
-    obra: formData.data.obra.name,
-    password: formData.data.password,
-    passwordConfirm: formData.data.password,
-    emailVisibility: true,
-  };
+  const validationScheme = z.object({
+    codigo: z.string(),
+    nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
+    email: z
+      .string()
+      .email('Digite um email válido')
+      .min(1, { message: 'Campo obrigatório' }),
+    password: z.string().min(1, { message: 'Campo obrigatório' }),
+    tipo_acesso: z.string(),
+    obra: z.string(),
+  });
 
-  const user = await createUsuario(userToken, body);
-  if (user.data) {
-    return json({ error: user.data });
-  }
+  console.log(validationScheme);
+
+  // const body: Partial<Usuario> = {
+  //   ...formData.data,
+  //   tipo_acesso: formData.data.tipo_acesso.name,
+  //   obra: formData.data.obra.name,
+  //   password: formData.data.password,
+  //   passwordConfirm: formData.data.password,
+  //   emailVisibility: true,
+  // };
+
+  // const user = await createUsuario(userToken, body);
+  // if (user.data) {
+  //   return json({ error: user.data });
+  // }
   return redirect('..');
 }
 
@@ -86,7 +98,6 @@ export default function NewUsuario() {
   return (
     <Modal
       title="Adicionar Usuário"
-      validator={newUsuarioScheme}
       footerActions={
         <Button
           className="bg-blue"

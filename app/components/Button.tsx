@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { useIsSubmitting } from 'remix-validated-form';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 
 type PropTypes = {
@@ -9,21 +8,24 @@ type PropTypes = {
 };
 
 export default function Button({ text, icon, className }: PropTypes) {
-  const isSubmitting = useIsSubmitting();
   return (
     <button
       type="submit"
-      disabled={isSubmitting}
+      // disabled={isSubmitting}
       className={`${className} bg-blue flex gap-2 p-2 px-4 rounded-lg justify-center h-10 items-center hover:bg-blue/50`}
     >
-      {isSubmitting ? (
+      {/* {isSubmitting ? (
         <SpinnerIcon />
       ) : (
         <div className="flex items-center text-white font-semibold uppercase text-xs gap-4">
           {text}
           {icon}
         </div>
-      )}
+      )} */}
+      <div className="flex items-center text-white font-semibold uppercase text-xs gap-4">
+        {text}
+        {icon}
+      </div>
     </button>
   );
 }

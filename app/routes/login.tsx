@@ -6,11 +6,10 @@ import {
   redirect,
 } from '@remix-run/node';
 import { createUserSession, getUserSession } from '~/session.server';
-import { ValidatedForm, validationError } from 'remix-validated-form';
 import Input from '~/components/Input';
 import Button from '~/components/Button';
 import { verifyCredentials } from '~/models/auth.server';
-import { useActionData } from '@remix-run/react';
+import { Form, useActionData } from '@remix-run/react';
 import ArrowRightIcon from '~/components/icons/ArrowRightIcon';
 import Tooltip from '~/components/Tooltip';
 import { loginScheme } from '~/utils/validators';
@@ -31,7 +30,6 @@ export async function loader({ request }: LoaderArgs) {
 // will verify credentials and if valid, create user session and redirect to dashboard
 export async function action({ request }: ActionArgs) {
   const formData = await loginScheme.validate(await request.formData());
-  if (formData.error) return validationError(formData.error);
   const user = await verifyCredentials(
     formData.data.email,
     formData.data.password
@@ -52,11 +50,7 @@ export default function MyPage() {
     <div className="w-full h-screen flex items-center justify-center flex-col">
       <div className="bg-grey-light p-10 pt-16 rounded-lg flex flex-col items-center gap-6">
         <img src="/assets/logo.png" alt="logo" width={60} height={60} />
-        <ValidatedForm
-          validator={loginScheme}
-          method="post"
-          className="flex flex-col gap-2 w-[250px]"
-        >
+        <Form method="post" className="flex flex-col gap-2 w-[250px]">
           <Input type="text" name="email" label="Email" />
           <Input type="password" name="password" label="Senha" />
           {actionData && <ErrorMessage error={actionData.invalidLoginError} />}
@@ -79,7 +73,7 @@ export default function MyPage() {
               </Tooltip>
             </div>
           </div>
-        </ValidatedForm>
+        </Form>
       </div>
     </div>
   );

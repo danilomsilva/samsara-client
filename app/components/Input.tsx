@@ -1,6 +1,3 @@
-import { useField } from 'remix-validated-form';
-import ErrorMessage from './ErrorMessage';
-
 type PropTypes = {
   name: string;
   label: string;
@@ -20,14 +17,12 @@ export default function Input({
   defaultValue,
   autoFocus,
 }: PropTypes) {
-  const { error, getInputProps } = useField(name);
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
       <label htmlFor={name} className=" text-grey-dark ml-1">
         {label}
       </label>
       <input
-        {...getInputProps({ id: name })}
         type={type}
         className={`${
           disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
@@ -36,7 +31,6 @@ export default function Input({
         value={defaultValue}
         autoFocus={autoFocus}
       />
-      {error && <ErrorMessage error={error} />}
     </div>
   );
 }

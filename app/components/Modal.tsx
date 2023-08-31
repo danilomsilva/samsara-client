@@ -1,13 +1,12 @@
 import { type ReactNode } from 'react';
 import XIcon from './icons/XIcon';
-import { Link } from '@remix-run/react';
-import { ValidatedForm } from 'remix-validated-form';
+import { Form, Link } from '@remix-run/react';
 
 type PropTypes = {
   title: string;
   children: ReactNode;
   footerActions: ReactNode;
-  validator: any; //TODO: improve on this type
+  validator?: any; //TODO: improve on this type
 };
 
 export default function Modal({
@@ -26,12 +25,12 @@ export default function Modal({
             <XIcon className="h-6 w-6 text-blue stroke-2 z-50" />
           </Link>
         </div>
-        <ValidatedForm method="post" validator={validator}>
+        <Form method="post">
           <div className="p-8 gap-2 flex flex-col">{children}</div>
           <div className="border-t-grey/50 border-x-0 border-b-0 border-t h-16 flex items-center px-4 justify-end">
             {footerActions}
           </div>
-        </ValidatedForm>
+        </Form>
       </div>
     </div>
   );
