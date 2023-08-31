@@ -49,7 +49,11 @@ export default function DataTable({ columns, rows }: PropTypes) {
                   if (keys !== 'id') {
                     return (
                       <Cel key={i}>
-                        <Link to={`?selected=${row.id}`}>{row[keys]}</Link>
+                        <Link to={`?selected=${row.id}`}>
+                          <div className="h-9 flex items-center">
+                            {row[keys]}
+                          </div>
+                        </Link>
                       </Cel>
                     );
                   }
