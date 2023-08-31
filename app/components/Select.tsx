@@ -9,7 +9,7 @@ type PropTypes = {
   name: string;
   options: Option[];
   label: string;
-  className: string;
+  className?: string;
 };
 
 export default function Select({ name, options, label, className }: PropTypes) {

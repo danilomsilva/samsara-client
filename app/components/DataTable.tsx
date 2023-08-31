@@ -20,7 +20,6 @@ type PropTypes = {
 export default function DataTable({ columns, rows }: PropTypes) {
   if (rows.length) {
     const rowKeys = Object.keys(rows[0]);
-    console.log('=================', rows);
     return (
       <table className="bg-white w-full text-sm rounded mt-4 overflow-hidden">
         <thead>
@@ -46,7 +45,7 @@ export default function DataTable({ columns, rows }: PropTypes) {
                   if (keys !== 'id') {
                     return (
                       <Cel key={i}>
-                        <Link to={`?row=${row['id']}`}>{row[keys]}</Link>
+                        <Link to={`?selected=${row['id']}`}>{row[keys]}</Link>
                       </Cel>
                     );
                   }

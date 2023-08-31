@@ -1,7 +1,14 @@
 import { json, type V2_MetaFunction, type LoaderArgs } from '@remix-run/node';
-import { Outlet, useLoaderData } from '@remix-run/react';
+import {
+  Outlet,
+  useLoaderData,
+  useParams,
+  useSearchParams,
+} from '@remix-run/react';
 import DataTable from '~/components/DataTable';
 import LinkButton from '~/components/LinkButton';
+import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
+import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
 import { type Usuario, getUsuarios } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
@@ -28,20 +35,37 @@ export async function loader({ request }: LoaderArgs) {
 }
 
 export default function UsuarioPage() {
+  const [searchParams] = useSearchParams();
   const { usuarios }: { usuarios: Usuario[] } = useLoaderData();
+  const rowSelected = searchParams.get('selected');
 
   return (
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Usuários</h1>
         <div className="flex gap-4">
-          <LinkButton
-            to={`./new?user=U-${generateLastCodigo(usuarios)}`}
-            className="bg-blue"
-            icon={<Add />}
-          >
-            Adicionar
-          </LinkButton>
+          {rowSelected ? (
+            <>
+              <LinkButton
+                to={`./${rowSelected}`}
+                className="bg-grey-dark"
+                icon={<PencilIcon className="h-4 w-4" />}
+              >
+                Editar
+              </LinkButton>
+              <LinkButton
+                to={`.`}
+                className="bg-red"
+                icon={<MinusCircleIcon className="h-4 w-4" />}
+              >
+                Remover
+              </LinkButton>
+            </>
+          ) : (
+            <LinkButton to="./new" className="bg-blue" icon={<Add />}>
+              Adicionar
+            </LinkButton>
+          )}
         </div>
       </div>
       <DataTable
