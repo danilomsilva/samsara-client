@@ -1,3 +1,4 @@
+import { Link } from '@remix-run/react';
 import Cel from './DataTableCel';
 import Column from './DataTableColumn';
 import ExclamationTriangle from './icons/ExclamationTriangle';
@@ -19,6 +20,7 @@ type PropTypes = {
 export default function DataTable({ columns, rows }: PropTypes) {
   if (rows.length) {
     const rowKeys = Object.keys(rows[0]);
+    console.log('=================', rows);
     return (
       <table className="bg-white w-full text-sm rounded mt-4 overflow-hidden">
         <thead>
@@ -39,9 +41,14 @@ export default function DataTable({ columns, rows }: PropTypes) {
                 key={i}
                 className="h-10 border-t-grey-light border-t hover:bg-blue/20"
               >
+                {/* <Link to={`?row=${row.}`} */}
                 {rowKeys.map((keys, i) => {
                   if (keys !== 'id') {
-                    return <Cel key={i}>{row[keys]}</Cel>;
+                    return (
+                      <Cel key={i}>
+                        <Link to={`?row=${row['id']}`}>{row[keys]}</Link>
+                      </Cel>
+                    );
                   }
                 })}
               </tr>
