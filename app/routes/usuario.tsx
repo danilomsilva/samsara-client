@@ -42,21 +42,21 @@ export default function UsuarioPage() {
             <>
               <LinkButton
                 to={`./${rowSelected}`}
-                className="bg-grey-dark"
+                variant="grey"
                 icon={<PencilIcon className="h-4 w-4" />}
               >
                 Editar
               </LinkButton>
               <LinkButton
                 to={`.`}
-                className="bg-red"
+                variant="red"
                 icon={<MinusCircleIcon className="h-4 w-4" />}
               >
                 Remover
               </LinkButton>
             </>
           ) : (
-            <LinkButton to="./new" className="bg-blue" icon={<Add />}>
+            <LinkButton to="./new" variant="blue" icon={<Add />}>
               Adicionar
             </LinkButton>
           )}
