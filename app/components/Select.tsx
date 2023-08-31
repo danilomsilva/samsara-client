@@ -10,9 +10,16 @@ type PropTypes = {
   options: Option[];
   label: string;
   className?: string;
+  defaultValue?: string;
 };
 
-export default function Select({ name, options, label, className }: PropTypes) {
+export default function Select({
+  name,
+  options,
+  label,
+  className,
+  defaultValue,
+}: PropTypes) {
   const { error, validate } = useField(name);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useControlField<Option>(name);
@@ -32,7 +39,12 @@ export default function Select({ name, options, label, className }: PropTypes) {
 
   return (
     <fieldset className="flex flex-col gap-1">
-      <Combobox value={selected} onChange={handleChange} name={name}>
+      <Combobox
+        value={selected}
+        onChange={handleChange}
+        name={name}
+        defaultValue={{ name: '', displayName: defaultValue }}
+      >
         <div className="relative text-sm">
           <div className="flex flex-col gap-1">
             <Combobox.Label className="ml-1 text-grey-dark">

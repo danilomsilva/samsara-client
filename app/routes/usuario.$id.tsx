@@ -4,11 +4,7 @@ import {
   json,
   type ActionArgs,
 } from '@remix-run/node';
-import {
-  useActionData,
-  useLoaderData,
-  useSearchParams,
-} from '@remix-run/react';
+import { useActionData, useLoaderData } from '@remix-run/react';
 import { validationError } from 'remix-validated-form';
 import Button from '~/components/Button';
 import ErrorMessage from '~/components/ErrorMessage';
@@ -18,18 +14,30 @@ import Row from '~/components/Row';
 import Select from '~/components/Select';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import { type Obra, getObras } from '~/models/obras.server';
-import { type Usuario, createUsuario } from '~/models/usuarios.server';
+import {
+  type Usuario,
+  createUsuario,
+  getUsuario,
+  getUsuarios,
+} from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
 import { type Option, TIPOS_ACESSO } from '~/utils/consts';
+import { generateCodigo } from '~/utils/utils';
 import { newUsuarioScheme } from '~/utils/validators';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
-  console.log('=================', params.id);
-  if (userToken) {
-    const obras: Obra[] = await getObras(userToken);
-    return json({ obras });
+
+  const obras: Obra[] = await getObras(userToken);
+  if (params.id === 'new') {
+    const usuarios = await getUsuarios(userToken, 'created');
+    const generatedCodigo = generateCodigo('U', usuarios);
+    return json({ obras, generatedCodigo });
+  } else {
+    const usuario = await getUsuario(userToken, params.id as string);
+    return json({ obras, usuario });
   }
+
   return json({});
 }
 
@@ -56,24 +64,24 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function NewUsuario() {
-  const { obras } = useLoaderData();
+  const { usuario, obras, generatedCodigo } = useLoaderData();
   const actionData = useActionData();
-  const [searchParams] = useSearchParams();
-  const userCodigo = searchParams.get('user');
 
   const emailAlreadyExists =
     actionData?.error?.email?.message ===
     'The email is invalid or already in use.';
 
-  const sortedObras: Option[] = obras.items
-    .map((item: Obra) => {
+  const sortedObras: Option[] = obras?.items
+    ?.map((item: Obra) => {
       const { id, nome } = item;
       return {
         name: id,
         displayName: nome,
       };
     })
-    .sort((a: Option, b: Option) => a.displayName.localeCompare(b.displayName));
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
 
   return (
     <Modal
@@ -93,38 +101,54 @@ export default function NewUsuario() {
           name="codigo"
           label="Código"
           className="w-[100px]"
-          defaultValue={userCodigo ? userCodigo : 'N/A'}
+          defaultValue={usuario ? usuario?.codigo : generatedCodigo}
           disabled
         />
         <Input
           type="text"
           name="nome_completo"
           label="Nome completo"
+          defaultValue={usuario?.nome_completo}
           autoFocus
         />
       </Row>
       <Row>
         <div className="flex flex-col w-full">
-          <Input type="text" name="email" label="Email" className="w-60" />
+          <Input
+            type="text"
+            name="email"
+            label="Email"
+            defaultValue={usuario?.email}
+            className="w-60"
+          />
           {emailAlreadyExists && (
             <div className="mt-1">
               <ErrorMessage error="Email já utilizado" />
             </div>
           )}
         </div>
-        <Input type="password" name="password" label="Senha" className="w-40" />
+        <Input
+          type="password"
+          name="password"
+          label="Senha"
+          defaultValue={usuario?.email}
+          disabled={usuario}
+          className="w-40"
+        />
       </Row>
       <Row>
         <Select
           name="obra"
           options={sortedObras}
           label="Alocado à obra"
+          defaultValue={usuario?.expand?.obra?.nome}
           className="w-60"
         />
         <Select
           name="tipo_acesso"
           options={TIPOS_ACESSO}
           label="Tipo de acesso"
+          defaultValue={usuario?.tipo_acesso}
         />
       </Row>
     </Modal>

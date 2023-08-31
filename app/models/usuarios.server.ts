@@ -1,6 +1,12 @@
 import type { User } from '~/session.server';
 import { formatDate } from '~/utils/utils';
 
+// export enum TipoAcesso { // TODO: To be used when editing usuario avoiding showing option name
+//   'administrador' = 'Administrador',
+//   'gerente_frota' = 'Gerente de Frota',
+//   'encarregado' = 'Encarregado',
+// }
+
 export type Usuario = {
   id?: string;
   created?: string;
@@ -35,7 +41,7 @@ export async function getUsuarios(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -54,6 +60,25 @@ export async function getUsuarios(
   }
 }
 
+export async function getUsuario(userToken: User['token'], userId: string) {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_API_URL}/collections/usuario/records/${userId}?expand=obra`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`,
+        },
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error('An error occured when verifying credentials!');
+  }
+}
+
 export async function createUsuario(userToken: User['token'], body: Usuario) {
   try {
     const response = await fetch(
@@ -62,7 +87,7 @@ export async function createUsuario(userToken: User['token'], body: Usuario) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
