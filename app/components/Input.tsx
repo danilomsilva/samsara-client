@@ -1,3 +1,5 @@
+import ErrorMessage from './ErrorMessage';
+
 type PropTypes = {
   name: string;
   label: string;
@@ -6,6 +8,7 @@ type PropTypes = {
   disabled?: boolean;
   defaultValue?: string;
   autoFocus?: boolean;
+  error?: string;
 };
 
 export default function Input({
@@ -16,6 +19,7 @@ export default function Input({
   disabled,
   defaultValue,
   autoFocus,
+  error,
 }: PropTypes) {
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
@@ -23,14 +27,15 @@ export default function Input({
         {label}
       </label>
       <input
+        name={name}
         type={type}
         className={`${
           disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
         } rounded-lg p-2 px-4 focus:outline-blue`}
-        // defaultValue={defaultValue}
         value={defaultValue}
         autoFocus={autoFocus}
       />
+      {error && <ErrorMessage error={error} />}
     </div>
   );
 }
