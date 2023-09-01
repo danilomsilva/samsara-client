@@ -42,22 +42,23 @@ export async function loader({ params, request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
-  //server-side validation
   const formData = Object.fromEntries(await request.formData());
 
-  const validationScheme = z.object({
-    codigo: z.string(),
-    nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
-    email: z
-      .string()
-      .email('Digite um email válido')
-      .min(1, { message: 'Campo obrigatório' }),
-    password: z.string().min(1, { message: 'Campo obrigatório' }),
-    tipo_acesso: z.string(),
-    obra: z.string(),
-  });
+  console.log(formData);
 
-  console.log(validationScheme);
+  // const validationScheme = z.object({
+  //   codigo: z.string(),
+  //   nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
+  //   email: z
+  //     .string()
+  //     .email('Digite um email válido')
+  //     .min(1, { message: 'Campo obrigatório' }),
+  //   password: z.string().min(1, { message: 'Campo obrigatório' }),
+  //   tipo_acesso: z.string(),
+  //   obra: z.string(),
+  // });
+
+  // console.log(validationScheme);
 
   // const body: Partial<Usuario> = {
   //   ...formData.data,
@@ -72,7 +73,8 @@ export async function action({ request }: ActionArgs) {
   // if (user.data) {
   //   return json({ error: user.data });
   // }
-  return redirect('..');
+  // return redirect('..');
+  return json({});
 }
 
 export default function NewUsuario() {
@@ -103,6 +105,8 @@ export default function NewUsuario() {
           className="bg-blue"
           icon={<PlusCircleIcon />}
           text="Adicionar"
+          name="_action"
+          value="create"
         />
       }
     >

@@ -35,8 +35,8 @@ export async function action({ request }: ActionArgs) {
   const validationScheme = z.object({
     email: z
       .string()
-      .email('Digite um email válido')
-      .min(1, { message: 'Campo obrigatório' }),
+      .min(1, { message: 'Campo obrigatório' })
+      .email('Digite um email válido'),
     password: z.string().min(1, { message: 'Campo obrigatório' }),
   });
 
