@@ -2,7 +2,7 @@ import { Combobox } from '@headlessui/react';
 import ChevronDownIcon from './icons/ChrevronDownIcon';
 import type { Option } from '~/utils/consts';
 import ErrorMessage from './ErrorMessage';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 type PropTypes = {
   name: string;
@@ -10,7 +10,8 @@ type PropTypes = {
   label: string;
   className?: string;
   placeholder?: string;
-  // defaultValue?: string;
+  error?: string;
+  defaultValue?: string;
 };
 
 export default function Select({
@@ -19,10 +20,18 @@ export default function Select({
   label,
   className,
   placeholder,
-}: // defaultValue,
-PropTypes) {
-  const [selected, setSelected] = useState<Option>();
+  error,
+  defaultValue,
+}: PropTypes) {
+  const [selected, setSelected] = useState<Option | null>(null);
   const [query, setQuery] = useState('');
+
+  useEffect(() => {
+    // Update the selected state with the defaultValue when it changes
+    setSelected(
+      defaultValue ? { name: defaultValue, displayName: defaultValue } : null
+    );
+  }, [defaultValue]);
 
   const handleChange = (option: Option) => {
     setSelected(option);
@@ -42,7 +51,7 @@ PropTypes) {
   return (
     <fieldset className="flex flex-col gap-1">
       {/* hidden input only way to send id to backend */}
-      <input type="hidden" name={name} value={selected?.name} />
+      <input type="hidden" name={name} value={selected?.name || ''} />
       <Combobox onChange={handleChange} name={name}>
         <div className="relative text-sm">
           <div className="flex flex-col gap-1">
@@ -52,9 +61,15 @@ PropTypes) {
             <div className="relative">
               <Combobox.Input
                 className={`${className} w-full rounded-lg p-2 pr-10 focus:outline-blue`}
-                displayValue={(option: Option) => option.displayName}
-                onChange={(event) => setQuery(event.target.value)}
+                displayValue={(option: Option) =>
+                  defaultValue ? defaultValue : option.displayName
+                }
+                onChange={(event) => {
+                  setQuery(event.target.value);
+                  setSelected(null);
+                }}
                 placeholder={placeholder}
+                value={selected?.displayName || query}
               />
               <Combobox.Button className="absolute inset-y-0 right-1 flex items-center pr-2 w-fit translate-y-0.5">
                 <ChevronDownIcon className="text-blue w-4 h-4" />
@@ -63,21 +78,27 @@ PropTypes) {
           </div>
 
           <Combobox.Options className="absolute mt-1 py-1 max-h-60 w-full overflow-auto rounded-md bg-white  shadow-lg">
-            {filteredOptions.map((option: Option) => {
-              return (
-                <Combobox.Option
-                  key={option.name}
-                  className="relative py-1 px-2 flex items-center cursor-pointer hover:bg-grey-light "
-                  value={option}
-                >
-                  {option.displayName}
-                </Combobox.Option>
-              );
-            })}
+            {filteredOptions.length === 0 && query !== '' ? (
+              <div className="relative cursor-default select-none py-1 px-2">
+                Nenhum resultado!
+              </div>
+            ) : (
+              filteredOptions.map((option: Option) => {
+                return (
+                  <Combobox.Option
+                    key={option.name}
+                    className="relative py-1 px-2 flex items-center cursor-pointer hover:bg-grey-light "
+                    value={option}
+                  >
+                    {option.displayName}
+                  </Combobox.Option>
+                );
+              })
+            )}
           </Combobox.Options>
         </div>
       </Combobox>
-      {/* {error && <ErrorMessage error={error} />} */}
+      {error && <ErrorMessage error={error} />}
     </fieldset>
   );
 }

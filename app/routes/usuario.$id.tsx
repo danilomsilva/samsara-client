@@ -1,11 +1,10 @@
 import {
-  redirect,
   type LoaderArgs,
-  json,
   type ActionArgs,
+  redirect,
+  json,
 } from '@remix-run/node';
-import { useActionData, useLoaderData } from '@remix-run/react';
-import { validationError } from 'remix-validated-form';
+import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import ErrorMessage from '~/components/ErrorMessage';
@@ -14,6 +13,7 @@ import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import Select from '~/components/Select';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
+import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Obra, getObras } from '~/models/obras.server';
 import {
   type Usuario,
@@ -24,7 +24,6 @@ import {
 import { getUserSession } from '~/session.server';
 import { type Option, TIPOS_ACESSO } from '~/utils/consts';
 import { generateCodigo } from '~/utils/utils';
-import { newUsuarioScheme } from '~/utils/validators';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -44,42 +43,62 @@ export async function action({ request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  console.log(formData);
+  const validationScheme = z.object({
+    codigo: z.string(),
+    nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
+    email: z
+      .string()
+      .min(1, { message: 'Campo obrigatório' })
+      .email('Digite um email válido'),
+    password: z.string().min(1, { message: 'Campo obrigatório' }),
+    tipo_acesso: z
+      .string()
+      .refine((val) => val, { message: 'Campo obrigatório' }),
+    obra: z.string().refine((val) => val, { message: 'Campo obrigatório' }),
+  });
 
-  // const validationScheme = z.object({
-  //   codigo: z.string(),
-  //   nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
-  //   email: z
-  //     .string()
-  //     .email('Digite um email válido')
-  //     .min(1, { message: 'Campo obrigatório' }),
-  //   password: z.string().min(1, { message: 'Campo obrigatório' }),
-  //   tipo_acesso: z.string(),
-  //   obra: z.string(),
-  // });
+  const validatedScheme = validationScheme.safeParse(formData);
 
-  // console.log(validationScheme);
+  if (!validatedScheme.success) {
+    const errors = validatedScheme.error.format();
+    return {
+      errors: {
+        codigo: errors.codigo?._errors[0],
+        nome_completo: errors.nome_completo?._errors[0],
+        email: errors.email?._errors[0],
+        password: errors.password?._errors[0],
+        tipo_acesso: errors.tipo_acesso?._errors[0],
+        obra: errors.obra?._errors[0],
+      },
+    };
+  }
 
-  // const body: Partial<Usuario> = {
-  //   ...formData.data,
-  //   tipo_acesso: formData.data.tipo_acesso.name,
-  //   obra: formData.data.obra.name,
-  //   password: formData.data.password,
-  //   passwordConfirm: formData.data.password,
-  //   emailVisibility: true,
-  // };
+  const body: Partial<Usuario> = {
+    ...formData,
+    password: formData.password,
+    passwordConfirm: formData.password,
+    emailVisibility: true,
+  };
 
-  // const user = await createUsuario(userToken, body);
-  // if (user.data) {
-  //   return json({ error: user.data });
-  // }
-  // return redirect('..');
-  return json({});
+  if (formData._action === 'create') {
+    const user = await createUsuario(userToken, body);
+    if (user.data) {
+      return json({ error: user.data });
+    }
+  }
+
+  if (formData._action === 'edit') {
+    console.log('EDIT ACTION');
+  }
+  return redirect('..');
 }
 
 export default function NewUsuario() {
   const { usuario, obras, generatedCodigo } = useLoaderData();
   const actionData = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting =
+    navigation.state === 'submitting' || navigation.state === 'loading';
 
   const emailAlreadyExists =
     actionData?.error?.email?.message ===
@@ -103,10 +122,10 @@ export default function NewUsuario() {
       footerActions={
         <Button
           className="bg-blue"
-          icon={<PlusCircleIcon />}
-          text="Adicionar"
+          icon={isSubmitting ? <SpinnerIcon /> : <PlusCircleIcon />}
+          text={usuario ? 'Editar' : 'Adicionar'}
           name="_action"
-          value="create"
+          value={usuario ? 'edit' : 'create'}
         />
       }
     >
@@ -117,6 +136,7 @@ export default function NewUsuario() {
           label="Código"
           className="w-[100px]"
           defaultValue={usuario ? usuario?.codigo : generatedCodigo}
+          error={actionData?.errors?.codigo}
           disabled
         />
         <Input
@@ -124,6 +144,7 @@ export default function NewUsuario() {
           name="nome_completo"
           label="Nome completo"
           defaultValue={usuario?.nome_completo}
+          error={actionData?.errors?.nome_completo}
           autoFocus
         />
       </Row>
@@ -134,6 +155,7 @@ export default function NewUsuario() {
             name="email"
             label="Email"
             defaultValue={usuario?.email}
+            error={actionData?.errors?.email}
             className="w-60"
           />
           {emailAlreadyExists && (
@@ -147,6 +169,7 @@ export default function NewUsuario() {
           name="password"
           label="Senha"
           defaultValue={usuario?.email}
+          error={actionData?.errors?.password}
           disabled={usuario}
           className="w-40"
         />
@@ -157,6 +180,7 @@ export default function NewUsuario() {
           options={sortedObras}
           label="Alocado à obra"
           defaultValue={usuario?.expand?.obra?.nome}
+          error={actionData?.errors?.obra}
           className="w-60"
         />
         <Select
@@ -164,6 +188,7 @@ export default function NewUsuario() {
           options={TIPOS_ACESSO}
           label="Tipo de acesso"
           defaultValue={usuario?.tipo_acesso}
+          error={actionData?.errors?.tipo_acesso}
         />
       </Row>
     </Modal>
