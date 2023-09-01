@@ -87,7 +87,11 @@ export default function Select({
                 return (
                   <Combobox.Option
                     key={option.name}
-                    className="relative py-1 px-2 flex items-center cursor-pointer hover:bg-grey-light "
+                    className={({ active }) =>
+                      `${
+                        active && 'bg-grey-light'
+                      } relative py-1 px-2 flex items-center cursor-pointer`
+                    }
                     value={option}
                   >
                     {option.displayName}

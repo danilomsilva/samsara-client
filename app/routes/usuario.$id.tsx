@@ -180,6 +180,7 @@ export default function NewUsuario() {
           options={sortedObras}
           label="Alocado à obra"
           defaultValue={usuario?.expand?.obra?.nome}
+          placeholder="-"
           error={actionData?.errors?.obra}
           className="w-60"
         />
@@ -188,6 +189,7 @@ export default function NewUsuario() {
           options={TIPOS_ACESSO}
           label="Tipo de acesso"
           defaultValue={usuario?.tipo_acesso}
+          placeholder="-"
           error={actionData?.errors?.tipo_acesso}
         />
       </Row>
