@@ -1,3 +1,4 @@
+import { Link, useSearchParams } from '@remix-run/react';
 import Cel from './DataTableCel';
 import Column from './DataTableColumn';
 import ExclamationTriangle from './icons/ExclamationTriangle';
@@ -17,6 +18,9 @@ type PropTypes = {
 };
 
 export default function DataTable({ columns, rows }: PropTypes) {
+  const [searchParams] = useSearchParams();
+  const selectedRow = searchParams.get('selected');
+
   if (rows.length) {
     const rowKeys = Object.keys(rows[0]);
     return (
@@ -37,11 +41,21 @@ export default function DataTable({ columns, rows }: PropTypes) {
             return (
               <tr
                 key={i}
-                className="h-10 border-t-grey-light border-t hover:bg-blue/20"
+                className={`${
+                  selectedRow === row.id && 'bg-blue/20 text-blue'
+                } h-10 border-t-grey-light border-t hover:bg-blue/20`}
               >
                 {rowKeys.map((keys, i) => {
                   if (keys !== 'id') {
-                    return <Cel key={i}>{row[keys]}</Cel>;
+                    return (
+                      <Cel key={i}>
+                        <Link to={`?selected=${row.id}`}>
+                          <div className="h-9 flex items-center">
+                            {row[keys]}
+                          </div>
+                        </Link>
+                      </Cel>
+                    );
                   }
                 })}
               </tr>

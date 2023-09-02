@@ -1,4 +1,3 @@
-import { useField } from 'remix-validated-form';
 import ErrorMessage from './ErrorMessage';
 
 type PropTypes = {
@@ -9,6 +8,7 @@ type PropTypes = {
   disabled?: boolean;
   defaultValue?: string;
   autoFocus?: boolean;
+  error?: string;
 };
 
 export default function Input({
@@ -19,22 +19,22 @@ export default function Input({
   disabled,
   defaultValue,
   autoFocus,
+  error,
 }: PropTypes) {
-  const { error, getInputProps } = useField(name);
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
       <label htmlFor={name} className=" text-grey-dark ml-1">
         {label}
       </label>
       <input
-        {...getInputProps({ id: name })}
+        name={name}
         type={type}
         className={`${
           disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
         } rounded-lg p-2 px-4 focus:outline-blue`}
-        // defaultValue={defaultValue}
-        value={defaultValue}
+        defaultValue={defaultValue}
         autoFocus={autoFocus}
+        autoComplete="off"
       />
       {error && <ErrorMessage error={error} />}
     </div>
