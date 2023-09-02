@@ -51,7 +51,9 @@ export default function DataTable({ columns, rows }: PropTypes) {
                       <Cel key={i}>
                         <Link to={`?selected=${row.id}`}>
                           <div className="h-9 flex items-center">
-                            {row[keys]}
+                            {keys === 'tipo_acesso'
+                              ? row[keys].replaceAll('_', ' ')
+                              : row[keys]}
                           </div>
                         </Link>
                       </Cel>

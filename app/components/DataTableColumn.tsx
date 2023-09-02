@@ -22,7 +22,7 @@ export default function Column({ column, children }: PropTypes) {
   }
 
   return (
-    <th className="pl-4 font-semibold cursor-pointer">
+    <th className="pl-4 font-semibold cursor-pointer truncate">
       <Link
         to={{ pathname: location.pathname, search: searchParams.toString() }}
       >
