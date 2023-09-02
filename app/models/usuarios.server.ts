@@ -98,7 +98,6 @@ export async function updateUsuario(
   userId: string,
   body: Usuario
 ) {
-  console.log(body);
   try {
     const response = await fetch(
       `${process.env.BASE_API_URL}/collections/usuario/records/${userId}`,
