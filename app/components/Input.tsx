@@ -34,6 +34,7 @@ export default function Input({
         } rounded-lg p-2 px-4 focus:outline-blue`}
         defaultValue={defaultValue}
         autoFocus={autoFocus}
+        autoComplete="off"
       />
       {error && <ErrorMessage error={error} />}
     </div>

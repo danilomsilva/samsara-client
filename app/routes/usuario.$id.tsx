@@ -20,6 +20,7 @@ import {
   createUsuario,
   getUsuario,
   getUsuarios,
+  updateUsuario,
 } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
 import { type Option, TIPOS_ACESSO } from '~/utils/consts';
@@ -39,7 +40,7 @@ export async function loader({ params, request }: LoaderArgs) {
   }
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ params, request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
   const formData = Object.fromEntries(await request.formData());
 
@@ -88,7 +89,17 @@ export async function action({ request }: ActionArgs) {
   }
 
   if (formData._action === 'edit') {
-    console.log('EDIT ACTION');
+    // to reset password, must include password, passwordConfirm and oldPassword
+    const editBody = {
+      nome_completo: formData?.nome_completo,
+      tipo_acesso: formData?.tipo_acesso,
+      obra: formData?.obra,
+    };
+    await updateUsuario(
+      userToken,
+      params.id as string,
+      editBody as Partial<Usuario>
+    );
   }
   return redirect('..');
 }
@@ -156,6 +167,7 @@ export default function NewUsuario() {
             label="Email"
             defaultValue={usuario?.email}
             error={actionData?.errors?.email}
+            disabled={usuario}
             className="w-60"
           />
           {emailAlreadyExists && (
@@ -179,7 +191,7 @@ export default function NewUsuario() {
           name="obra"
           options={sortedObras}
           label="Alocado à obra"
-          defaultValue={usuario?.expand?.obra?.nome}
+          defaultValue={usuario?.obra}
           placeholder="-"
           error={actionData?.errors?.obra}
           className="w-60"

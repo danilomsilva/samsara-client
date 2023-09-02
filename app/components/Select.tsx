@@ -27,11 +27,9 @@ export default function Select({
   const [query, setQuery] = useState('');
 
   useEffect(() => {
-    // Update the selected state with the defaultValue when it changes
-    setSelected(
-      defaultValue ? { name: defaultValue, displayName: defaultValue } : null
-    );
-  }, [defaultValue]);
+    const optionObj = options?.find((option) => option.name === defaultValue);
+    setSelected(optionObj as Option);
+  }, []);
 
   const handleChange = (option: Option) => {
     setSelected(option);
@@ -51,7 +49,7 @@ export default function Select({
   return (
     <fieldset className="flex flex-col gap-1">
       {/* hidden input only way to send id to backend */}
-      <input type="hidden" name={name} value={selected?.name || ''} />
+      <input type="hidden" name={name} value={selected?.name} />
       <Combobox onChange={handleChange} name={name}>
         <div className="relative text-sm">
           <div className="flex flex-col gap-1">
