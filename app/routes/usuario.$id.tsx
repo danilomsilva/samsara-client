@@ -12,6 +12,7 @@ import Input from '~/components/Input';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import Select from '~/components/Select';
+import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Obra, getObras } from '~/models/obras.server';
@@ -130,81 +131,93 @@ export default function NewUsuario() {
   return (
     <Modal
       title="Adicionar Usuário"
+      variant={usuario ? 'grey' : 'blue'}
+      content={
+        <>
+          <Row>
+            <Input
+              type="text"
+              name="codigo"
+              label="Código"
+              className="w-[100px]"
+              defaultValue={usuario ? usuario?.codigo : generatedCodigo}
+              error={actionData?.errors?.codigo}
+              disabled
+            />
+            <Input
+              type="text"
+              name="nome_completo"
+              label="Nome completo"
+              defaultValue={usuario?.nome_completo}
+              error={actionData?.errors?.nome_completo}
+              autoFocus
+            />
+          </Row>
+          <Row>
+            <div className="flex flex-col w-full">
+              <Input
+                type="text"
+                name="email"
+                label="Email"
+                defaultValue={usuario?.email}
+                error={actionData?.errors?.email}
+                disabled={usuario}
+                className="w-60"
+              />
+              {emailAlreadyExists && (
+                <div className="mt-1">
+                  <ErrorMessage error="Email já utilizado" />
+                </div>
+              )}
+            </div>
+            <Input
+              type="password"
+              name="password"
+              label="Senha"
+              defaultValue={usuario?.email}
+              error={actionData?.errors?.password}
+              disabled={usuario}
+              className="w-40"
+            />
+          </Row>
+          <Row>
+            <Select
+              name="obra"
+              options={sortedObras}
+              label="Alocado à obra"
+              defaultValue={usuario?.obra}
+              placeholder="-"
+              error={actionData?.errors?.obra}
+              className="w-60"
+            />
+            <Select
+              name="tipo_acesso"
+              options={TIPOS_ACESSO}
+              label="Tipo de acesso"
+              defaultValue={usuario?.tipo_acesso}
+              placeholder="-"
+              error={actionData?.errors?.tipo_acesso}
+            />
+          </Row>
+        </>
+      }
       footerActions={
         <Button
-          className="bg-blue"
-          icon={isSubmitting ? <SpinnerIcon /> : <PlusCircleIcon />}
+          variant={usuario ? 'grey' : 'blue'}
+          icon={
+            isSubmitting ? (
+              <SpinnerIcon />
+            ) : usuario ? (
+              <PencilIcon className="h-4 w-4" />
+            ) : (
+              <PlusCircleIcon />
+            )
+          }
           text={usuario ? 'Editar' : 'Adicionar'}
           name="_action"
           value={usuario ? 'edit' : 'create'}
         />
       }
-    >
-      <Row>
-        <Input
-          type="text"
-          name="codigo"
-          label="Código"
-          className="w-[100px]"
-          defaultValue={usuario ? usuario?.codigo : generatedCodigo}
-          error={actionData?.errors?.codigo}
-          disabled
-        />
-        <Input
-          type="text"
-          name="nome_completo"
-          label="Nome completo"
-          defaultValue={usuario?.nome_completo}
-          error={actionData?.errors?.nome_completo}
-          autoFocus
-        />
-      </Row>
-      <Row>
-        <div className="flex flex-col w-full">
-          <Input
-            type="text"
-            name="email"
-            label="Email"
-            defaultValue={usuario?.email}
-            error={actionData?.errors?.email}
-            disabled={usuario}
-            className="w-60"
-          />
-          {emailAlreadyExists && (
-            <div className="mt-1">
-              <ErrorMessage error="Email já utilizado" />
-            </div>
-          )}
-        </div>
-        <Input
-          type="password"
-          name="password"
-          label="Senha"
-          defaultValue={usuario?.email}
-          error={actionData?.errors?.password}
-          disabled={usuario}
-          className="w-40"
-        />
-      </Row>
-      <Row>
-        <Select
-          name="obra"
-          options={sortedObras}
-          label="Alocado à obra"
-          defaultValue={usuario?.obra}
-          placeholder="-"
-          error={actionData?.errors?.obra}
-          className="w-60"
-        />
-        <Select
-          name="tipo_acesso"
-          options={TIPOS_ACESSO}
-          label="Tipo de acesso"
-          defaultValue={usuario?.tipo_acesso}
-          placeholder="-"
-          error={actionData?.errors?.tipo_acesso}
-        />
-      </Row>
-    </Modal>
+    ></Modal>
   );
 }
