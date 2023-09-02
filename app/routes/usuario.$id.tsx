@@ -130,7 +130,7 @@ export default function NewUsuario() {
 
   return (
     <Modal
-      title="Adicionar Usuário"
+      title={`${usuario ? 'Editar' : 'Adicionar'} Usuário`}
       variant={usuario ? 'grey' : 'blue'}
       content={
         <>
