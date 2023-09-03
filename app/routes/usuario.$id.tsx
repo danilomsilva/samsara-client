@@ -208,7 +208,7 @@ export default function NewUsuario() {
             isSubmitting ? (
               <SpinnerIcon />
             ) : usuario ? (
-              <PencilIcon className="h-4 w-4" />
+              <PencilIcon />
             ) : (
               <PlusCircleIcon />
             )

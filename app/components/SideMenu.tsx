@@ -3,16 +3,23 @@ import { useState, type ReactNode } from 'react';
 import DoubleLeftArrowIcon from './icons/DoubleLeftArrowIcon';
 import DoubleRightArrowIcon from './icons/DoubleRightArrowIcon';
 import clsx from 'clsx';
+import { type Usuario } from '~/models/usuarios.server';
 
-export default function SideMenu({ children }: { children: ReactNode }) {
+type PropTypes = {
+  children: ReactNode;
+  user: Usuario['nome_completo'];
+};
+
+export default function SideMenu({ children, user }: PropTypes) {
   const [isOpen, setIsOpen] = useState(true);
+  const userFirstName = user?.split(' ')[0];
 
   return (
     <div className="bg-grey-light h-screen flex">
       <div
         className={clsx(
           ` ${
-            isOpen ? 'w-[250px]' : 'w-[50px]'
+            isOpen ? 'min-w-[180px] max-w-[180px]' : 'w-[50px]'
           } bg-white h-screen px-6 py-8 gap-8 flex flex-col relative`
         )}
       >
@@ -20,7 +27,7 @@ export default function SideMenu({ children }: { children: ReactNode }) {
           <>
             <div className="flex flex-col items-center gap-2">
               <img src="/assets/logo.png" alt="logo" width={60} height={60} />
-              <h1 className="font-semibold">Olá, usuário!</h1>
+              <h1 className="font-semibold">Olá, {userFirstName}!</h1>
             </div>
             <div className="border-grey-light border-t flex flex-col gap-2">
               <h2 className="uppercase text-xs font-semibold mt-2">
@@ -75,7 +82,9 @@ const NavItem = ({ to, text }: { to: string; text: string }) => {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `${isActive && 'text-blue font-semibold'} text-sm hover:text-blue/80`
+        `${
+          isActive && 'text-blue font-semibold'
+        } text-sm hover:text-blue/80 whitespace-nowrap`
       }
     >
       {text}

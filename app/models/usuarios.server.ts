@@ -11,6 +11,7 @@ export type Usuario = {
   passwordConfirm?: FormDataEntryValue;
   emailVisibility?: boolean;
   tipo_acesso?: string;
+  verified?: string;
   expand?: {
     obra: {
       nome: string;

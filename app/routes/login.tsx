@@ -56,6 +56,7 @@ export async function action({ request }: ActionArgs) {
     formData.email as string,
     formData.password as string
   );
+  console.log(user);
 
   if (user.token) {
     return createUserSession(request, user, '/dashboard');

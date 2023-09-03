@@ -85,14 +85,14 @@ export default function UsuarioPage() {
               <LinkButton
                 to={`./${rowSelected}`}
                 variant="grey"
-                icon={<PencilIcon className="h-4 w-4" />}
+                icon={<PencilIcon />}
               >
                 Editar
               </LinkButton>
               <Button
                 text="Remover"
                 variant="red"
-                icon={<MinusCircleIcon className="h-4 w-4" />}
+                icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
               />
             </>
@@ -131,7 +131,7 @@ export default function UsuarioPage() {
                 value="delete"
                 variant="red"
                 text="Remover"
-                icon={<MinusCircleIcon className="h-5 w-5" />}
+                icon={<MinusCircleIcon />}
               />
             </Form>
           }

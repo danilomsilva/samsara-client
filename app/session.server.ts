@@ -1,18 +1,20 @@
 import { createCookieSessionStorage, redirect } from '@remix-run/node';
+import { type Usuario } from './models/usuarios.server';
 
 // types
 export type User = {
   token: number;
-  record: {
-    id: number;
-    username: string;
-  };
+  record: Usuario;
 };
 
 // consts
-const USER_SESSION_KEY = 'userId';
-const USER_TOKEN_KEY = 'userToken';
-const USER_USERNAME_KEY = 'username';
+const USER_SESSION_CODIGO = 'codigo';
+const USER_SESSION_TOKEN = 'userToken';
+const USER_SESSION_EMAIL = 'email';
+const USER_SESSION_ID = 'id';
+const USER_SESSION_NOME_COMPLETO = 'nome_completo';
+const USER_SESSION_TIPO_ACESSO = 'tipo_acesso';
+const USER_SESSION_VERIFIED = 'verified';
 
 // functions
 export const sessionStorage = createCookieSessionStorage({
@@ -32,12 +34,16 @@ export const sessionStorage = createCookieSessionStorage({
 export async function getUserSession(request: Request) {
   const session = await getSession(request);
 
-  const userId = session.get(USER_SESSION_KEY);
-  const userToken = session.get(USER_TOKEN_KEY);
-  const username = session.get(USER_USERNAME_KEY);
+  const userId = session.get(USER_SESSION_CODIGO);
+  const userToken = session.get(USER_SESSION_TOKEN);
+  const email = session.get(USER_SESSION_EMAIL);
+  const id = session.get(USER_SESSION_ID);
+  const nomeCompleto = session.get(USER_SESSION_NOME_COMPLETO);
+  const tipoAcesso = session.get(USER_SESSION_TIPO_ACESSO);
+  const verified = session.get(USER_SESSION_VERIFIED);
 
   if (session) {
-    return { userId, userToken, username };
+    return { userId, userToken, email, id, nomeCompleto, tipoAcesso, verified };
   } else {
     throw await logout(request);
   }
@@ -57,9 +63,13 @@ export async function createUserSession(
 ) {
   const session = await getSession(request);
 
-  session.set(USER_SESSION_KEY, user.record.id);
-  session.set(USER_TOKEN_KEY, user.token);
-  session.set(USER_USERNAME_KEY, user.record.username);
+  session.set(USER_SESSION_CODIGO, user.record.id);
+  session.set(USER_SESSION_TOKEN, user.token);
+  session.set(USER_SESSION_EMAIL, user.record.email);
+  session.set(USER_SESSION_ID, user.record.id);
+  session.set(USER_SESSION_NOME_COMPLETO, user.record.nome_completo);
+  session.set(USER_SESSION_TIPO_ACESSO, user.record.tipo_acesso);
+  session.set(USER_SESSION_VERIFIED, user.record.verified);
 
   return redirect(redirectTo, {
     headers: {
