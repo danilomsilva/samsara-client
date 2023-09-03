@@ -71,6 +71,10 @@ export default function UsuarioPage() {
     setModalOpen(false);
   };
 
+  const deletingUsuario = usuarios.find(
+    (usuario) => usuario?.id === rowSelected
+  );
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -118,7 +122,7 @@ export default function UsuarioPage() {
           title="Remover Usuário"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir o usuário XXXXX ?`}
+          content={`Deseja excluir o usuário ${deletingUsuario?.nome_completo} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="userId" value={rowSelected || ''} />
