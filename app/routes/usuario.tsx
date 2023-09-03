@@ -54,9 +54,7 @@ export async function action({ request }: ActionArgs) {
   if (formData?._action === 'delete') {
     try {
       await deleteUsuario(userToken, formData.userId as string);
-    } catch (error) {
-      return json({});
-    }
+    } catch (error) {}
   }
   return redirect('/usuario');
 }
@@ -73,10 +71,6 @@ export default function UsuarioPage() {
     setModalOpen(false);
   };
 
-  const deletingUsuario = usuarios.find(
-    (usuario) => usuario?.id === rowSelected
-  );
-
   return (
     <>
       <div className="flex justify-between items-end">
@@ -87,14 +81,14 @@ export default function UsuarioPage() {
               <LinkButton
                 to={`./${rowSelected}`}
                 variant="grey"
-                icon={<PencilIcon />}
+                icon={<PencilIcon className="h-4 w-4" />}
               >
                 Editar
               </LinkButton>
               <Button
                 text="Remover"
                 variant="red"
-                icon={<MinusCircleIcon />}
+                icon={<MinusCircleIcon className="h-4 w-4" />}
                 onClick={() => setModalOpen(true)}
               />
             </>
@@ -124,7 +118,7 @@ export default function UsuarioPage() {
           title="Remover Usuário"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir o usuário ${deletingUsuario?.nome_completo} ?`}
+          content={`Deseja excluir o usuário XXXXX ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="userId" value={rowSelected || ''} />
@@ -133,7 +127,7 @@ export default function UsuarioPage() {
                 value="delete"
                 variant="red"
                 text="Remover"
-                icon={<MinusCircleIcon />}
+                icon={<MinusCircleIcon className="h-5 w-5" />}
               />
             </Form>
           }
