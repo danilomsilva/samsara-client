@@ -112,6 +112,7 @@ export default function UsuarioPage() {
       />
       <Outlet />
 
+      {/* delete modal */}
       {isModalOpen && (
         <Modal
           title="Remover Usuário"
