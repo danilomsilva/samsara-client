@@ -54,7 +54,9 @@ export async function action({ request }: ActionArgs) {
   if (formData?._action === 'delete') {
     try {
       await deleteUsuario(userToken, formData.userId as string);
-    } catch (error) {}
+    } catch (error) {
+      return json({});
+    }
   }
   return redirect('/usuario');
 }
