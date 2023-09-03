@@ -4,7 +4,7 @@ export type Option = {
 };
 
 export const TIPOS_ACESSO: Option[] = [
-  { name: 'administrador', displayName: 'Administrador' },
-  { name: 'encarregado', displayName: 'Encarregado' },
-  { name: 'gerente_frota', displayName: 'Gerente de Frota' },
+  { name: 'Administrador', displayName: 'Administrador' },
+  { name: 'Encarregado', displayName: 'Encarregado' },
+  { name: 'Gerente_de_Frota', displayName: 'Gerente de Frota' },
 ];

@@ -104,7 +104,7 @@ export default function MyPage() {
                   <ArrowRightIcon className="h-4 w-4" />
                 )
               }
-              className="w-32"
+              variant="blue"
             />
             <div className="text-sm text-grey cursor-default">
               <Tooltip
