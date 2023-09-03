@@ -1,11 +1,30 @@
-import { json, type V2_MetaFunction, type LoaderArgs } from '@remix-run/node';
-import { Outlet, useLoaderData, useSearchParams } from '@remix-run/react';
+import {
+  json,
+  type V2_MetaFunction,
+  type LoaderArgs,
+  type ActionArgs,
+  redirect,
+} from '@remix-run/node';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
+import { useState } from 'react';
+import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
 import LinkButton from '~/components/LinkButton';
+import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import { type Usuario, getUsuarios } from '~/models/usuarios.server';
+import {
+  type Usuario,
+  getUsuarios,
+  deleteUsuario,
+} from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
 
 // page title
@@ -28,10 +47,29 @@ export async function loader({ request }: LoaderArgs) {
   return json({});
 }
 
+export async function action({ request }: ActionArgs) {
+  const { userToken } = await getUserSession(request);
+  const formData = Object.fromEntries(await request.formData());
+
+  if (formData?._action === 'delete') {
+    try {
+      await deleteUsuario(userToken, formData.userId as string);
+    } catch (error) {}
+  }
+  return redirect('/usuario');
+}
+
 export default function UsuarioPage() {
+  const [isModalOpen, setModalOpen] = useState(false);
   const [searchParams] = useSearchParams();
   const { usuarios }: { usuarios: Usuario[] } = useLoaderData();
   const rowSelected = searchParams.get('selected');
+  const navigate = useNavigate();
+
+  const handleCloseModal = () => {
+    navigate('/usuario');
+    setModalOpen(false);
+  };
 
   return (
     <>
@@ -47,13 +85,12 @@ export default function UsuarioPage() {
               >
                 Editar
               </LinkButton>
-              <LinkButton
-                to={`.`}
+              <Button
+                text="Remover"
                 variant="red"
                 icon={<MinusCircleIcon className="h-4 w-4" />}
-              >
-                Remover
-              </LinkButton>
+                onClick={() => setModalOpen(true)}
+              />
             </>
           ) : (
             <LinkButton to="./new" variant="blue" icon={<Add />}>
@@ -74,6 +111,27 @@ export default function UsuarioPage() {
         rows={usuarios}
       />
       <Outlet />
+
+      {isModalOpen && (
+        <Modal
+          title="Remover Usuário"
+          handleCloseModal={handleCloseModal}
+          variant="red"
+          content={`Deseja excluir o usuário XXXXX ?`}
+          footerActions={
+            <Form method="post">
+              <input type="hidden" name="userId" value={rowSelected || ''} />
+              <Button
+                name="_action"
+                value="delete"
+                variant="red"
+                text="Remover"
+                icon={<MinusCircleIcon className="h-5 w-5" />}
+              />
+            </Form>
+          }
+        />
+      )}
     </>
   );
 }

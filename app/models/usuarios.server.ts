@@ -116,3 +116,22 @@ export async function updateUsuario(
     throw new Error('An error occured when verifying credentials!');
   }
 }
+
+export async function deleteUsuario(userToken: User['token'], userId: string) {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_API_URL}/collections/usuario/records/${userId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error('An error occured when deleting the user!');
+  }
+}

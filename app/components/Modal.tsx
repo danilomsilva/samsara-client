@@ -2,13 +2,6 @@ import { type ReactNode } from 'react';
 import XIcon from './icons/XIcon';
 import { Form, Link } from '@remix-run/react';
 
-type PropTypes = {
-  title: string;
-  variant?: 'blue' | 'grey' | 'red';
-  content: ReactNode;
-  footerActions: ReactNode;
-};
-
 type VariantStyle = {
   [key: string]: {
     borderTop: string;
@@ -17,11 +10,20 @@ type VariantStyle = {
   };
 };
 
+type PropTypes = {
+  title: string;
+  variant?: 'blue' | 'grey' | 'red';
+  content: ReactNode;
+  footerActions: ReactNode;
+  handleCloseModal?: () => void;
+};
+
 export default function Modal({
   title,
   variant,
   content,
   footerActions,
+  handleCloseModal,
 }: PropTypes) {
   const variantStyle: VariantStyle = {
     blue: {
@@ -56,13 +58,29 @@ export default function Modal({
           >
             {title}
           </h1>
-          <Link to=".." className="hover:bg-white/50 rounded-lg cursor-pointer">
-            <XIcon
-              className={`${
-                variant && variantStyle[variant]?.iconColor
-              } h-6 w-6 stroke-2 z-50`}
-            />
-          </Link>
+          {handleCloseModal ? (
+            <div
+              className="hover:bg-white/50 rounded-lg cursor-pointer"
+              onClick={handleCloseModal}
+            >
+              <XIcon
+                className={`${
+                  variant && variantStyle[variant]?.iconColor
+                } h-6 w-6 stroke-2 z-50`}
+              />
+            </div>
+          ) : (
+            <Link
+              to=".."
+              className="hover:bg-white/50 rounded-lg cursor-pointer"
+            >
+              <XIcon
+                className={`${
+                  variant && variantStyle[variant]?.iconColor
+                } h-6 w-6 stroke-2 z-50`}
+              />
+            </Link>
+          )}
         </div>
         <Form method="post">
           <div className="p-8 gap-2 flex flex-col">{content}</div>

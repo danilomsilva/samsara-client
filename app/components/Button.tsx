@@ -6,6 +6,7 @@ type PropTypes = {
   name?: string;
   value?: string;
   variant: 'blue' | 'grey' | 'red';
+  onClick?: () => void;
 };
 
 export default function Button({
@@ -14,6 +15,7 @@ export default function Button({
   name,
   value,
   variant,
+  onClick,
 }: PropTypes) {
   const variantStyle = {
     blue: 'bg-blue hover:bg-blue/50',
@@ -29,6 +31,7 @@ export default function Button({
       className={`${
         variant && variantStyle[variant]
       }  flex gap-2 p-2 px-4 rounded-lg justify-center h-10 items-center`}
+      onClick={onClick}
     >
       <div className="flex items-center text-white font-semibold uppercase text-xs gap-4">
         {text}
