@@ -8,8 +8,10 @@ import {
 import {
   Form,
   Outlet,
+  isRouteErrorResponse,
   useLoaderData,
   useNavigate,
+  useRouteError,
   useSearchParams,
 } from '@remix-run/react';
 import { useState } from 'react';
@@ -17,6 +19,7 @@ import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
+import ExclamationTriangle from '~/components/icons/ExclamationTriangle';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -33,18 +36,19 @@ export const meta: V2_MetaFunction = () => {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const { userToken } = await getUserSession(request);
+  const { userToken, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
-  if (userToken) {
+  if (userToken && tipoAcesso !== 'Encarregado') {
     const usuarios = await getUsuarios(userToken, sortingBy);
     return json({ usuarios });
+  } else {
+    throw json('Acesso proibido', { status: 403 });
   }
-  return json({});
 }
 
 export async function action({ request }: ActionArgs) {
@@ -139,4 +143,21 @@ export default function UsuarioPage() {
       )}
     </>
   );
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError();
+
+  // when true, this is what used to go to `CatchBoundary`
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 403) {
+      return (
+        <div className="flex w-full h-full items-center justify-center flex-col gap-2">
+          <ExclamationTriangle className="h-10 w-10 text-grey/70" />
+          <p>Seu usuário não tem acesso à esta página.</p>
+          <p>Contate o administrador do sistema!</p>
+        </div>
+      );
+    }
+  }
 }

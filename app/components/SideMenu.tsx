@@ -3,16 +3,18 @@ import { useState, type ReactNode } from 'react';
 import DoubleLeftArrowIcon from './icons/DoubleLeftArrowIcon';
 import DoubleRightArrowIcon from './icons/DoubleRightArrowIcon';
 import clsx from 'clsx';
-import { type Usuario } from '~/models/usuarios.server';
+import { type TipoAcesso, type Usuario } from '~/models/usuarios.server';
 
 type PropTypes = {
+  tipoAcesso: TipoAcesso;
   children: ReactNode;
   user: Usuario['nome_completo'];
 };
 
-export default function SideMenu({ children, user }: PropTypes) {
+export default function SideMenu({ tipoAcesso, children, user }: PropTypes) {
   const [isOpen, setIsOpen] = useState(true);
   const userFirstName = user?.split(' ')[0];
+  const fullAccess = tipoAcesso !== 'Encarregado';
 
   return (
     <div className="bg-grey-light h-screen flex">
@@ -42,14 +44,20 @@ export default function SideMenu({ children, user }: PropTypes) {
                 Gerenciamento
               </h2>
               <div className="ml-3 flex flex-col gap-2 ">
-                <NavItem to="/obra" text="Obra" />
-                <NavItem to="/equipamento" text="Equipamento" />
-                <NavItem to="/manutencao" text="Manutenção" />
-                <NavItem to="/ordem-servico" text="Ordem de Serviço" />
-                <NavItem to="/operacao" text="Operação" />
-                <NavItem to="/boletim" text="Boletim" />
-                <NavItem to="/operador" text="Operador" />
-                <NavItem to="/usuario" text="Usuário" />
+                {fullAccess ? (
+                  <>
+                    <NavItem to="/obra" text="Obra" />
+                    <NavItem to="/equipamento" text="Equipamento" />
+                    <NavItem to="/manutencao" text="Manutenção" />
+                    <NavItem to="/ordem-servico" text="Ordem de Serviço" />
+                    <NavItem to="/operacao" text="Operação" />
+                    <NavItem to="/boletim" text="Boletim" />
+                    <NavItem to="/operador" text="Operador" />
+                    <NavItem to="/usuario" text="Usuário" />
+                  </>
+                ) : (
+                  <NavItem to="/boletim" text="Boletim" />
+                )}
               </div>
             </div>
             <div className="flex justify-between items-center border-grey-light border-t w-full ">

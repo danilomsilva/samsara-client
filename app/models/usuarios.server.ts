@@ -1,6 +1,8 @@
 import type { User } from '~/session.server';
 import { formatDate } from '~/utils/utils';
 
+export type TipoAcesso = 'Administrador' | 'Encarregado' | 'Gerente_de_Frota';
+
 export type Usuario = {
   id?: string;
   created?: string;
@@ -10,7 +12,7 @@ export type Usuario = {
   password?: FormDataEntryValue;
   passwordConfirm?: FormDataEntryValue;
   emailVisibility?: boolean;
-  tipo_acesso?: string;
+  tipo_acesso?: TipoAcesso;
   verified?: string;
   expand?: {
     obra: {
