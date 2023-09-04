@@ -6,6 +6,8 @@
     "build": "remix build",
     "dev": "remix dev",
     "start": "remix-serve build",
+    "test:e2e": "npm run test:e2e:dev --silent",
+    "test:e2e:dev": "playwright test --ui",
     "typecheck": "tsc",
     "build:digitalocean": "npm install --production=false && npm run build && npm ci"
   },
@@ -23,6 +25,7 @@
     "zod": "^3.22.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.37.1",
     "@remix-run/dev": "^1.19.3",
     "@remix-run/eslint-config": "^1.19.3",
     "@types/react": "^18.0.35",
