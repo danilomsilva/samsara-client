@@ -10,3 +10,10 @@ export const generateCodigo = (prefix: string, array: unknown) => {
     return `${prefix}-${totalOfElements + 1}`;
   }
 };
+
+export const capitalizeWords = (string: string): string => {
+  const capitalizedWords = string.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+    letter.toUpperCase()
+  );
+  return capitalizedWords;
+};

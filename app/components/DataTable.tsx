@@ -6,6 +6,7 @@ import ExclamationTriangle from './icons/ExclamationTriangle';
 type ColumnType = {
   name: string;
   displayName: string;
+  disabledSort?: boolean;
 };
 
 type PropTypes = {
@@ -27,13 +28,15 @@ export default function DataTable({ columns, rows }: PropTypes) {
       <table className="bg-white w-full text-sm rounded mt-4 overflow-hidden">
         <thead>
           <tr className="text-left h-10 border-b border-b-grey/50">
-            {columns.map(
-              (col: { name: string; displayName: string }, i: number) => (
-                <Column column={col.name} key={i}>
-                  {col.displayName}
-                </Column>
-              )
-            )}
+            {columns.map((col: ColumnType, i: number) => (
+              <Column
+                column={col.name}
+                key={i}
+                disabledSort={col.disabledSort ?? false}
+              >
+                {col.displayName}
+              </Column>
+            ))}
           </tr>
         </thead>
         <tbody>

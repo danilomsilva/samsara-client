@@ -25,7 +25,7 @@ import {
 } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
 import { type Option, TIPOS_ACESSO } from '~/utils/consts';
-import { generateCodigo } from '~/utils/utils';
+import { capitalizeWords, generateCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -77,6 +77,7 @@ export async function action({ params, request }: ActionArgs) {
 
   const body: Partial<Usuario> = {
     ...formData,
+    nome_completo: capitalizeWords(formData.nome_completo as string),
     password: formData.password,
     passwordConfirm: formData.password,
     emailVisibility: true,

@@ -114,7 +114,8 @@ export default function UsuarioPage() {
           { name: 'nome_completo', displayName: 'Nome completo' },
           { name: 'email', displayName: 'Email' },
           { name: 'tipo_acesso', displayName: 'Tipo de acesso' },
-          { name: 'obra', displayName: 'Alocado à obra' },
+          { name: 'obra', displayName: 'Alocado à obra', disabledSort: true },
+          // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
         ]}
         rows={usuarios}
       />
