@@ -75,7 +75,7 @@ export default function Select({
             </div>
           </div>
 
-          <Combobox.Options className="absolute mt-1 py-1 max-h-60 w-full overflow-auto rounded-md bg-white  shadow-lg">
+          <Combobox.Options className="absolute mt-1 py-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg z-50">
             {filteredOptions.length === 0 && query !== '' ? (
               <div className="relative cursor-default select-none py-1 px-2">
                 Nenhum resultado!
