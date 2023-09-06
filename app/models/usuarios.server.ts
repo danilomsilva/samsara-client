@@ -19,6 +19,8 @@ export type Usuario = {
       nome: string;
     };
   };
+  obra?: any;
+  obraX?: string;
 };
 
 // if valid will retrieve jwt token and user data
@@ -49,7 +51,7 @@ export async function getUsuarios(
       nome_completo: item.nome_completo,
       email: item.email,
       tipo_acesso: item.tipo_acesso,
-      obra: item?.expand?.obra.nome,
+      obra: item.obraX,
     }));
     return transformedData;
   } catch (error) {
@@ -74,6 +76,19 @@ export async function getUsuario(userToken: User['token'], userId: string) {
   } catch (error) {
     throw new Error('An error occured when verifying credentials!');
   }
+}
+
+export async function createUsuarioANDUpdate(
+  userToken: User['token'],
+  body: Usuario
+) {
+  const { id } = await createUsuario(userToken, body);
+  const usuario = await getUsuario(userToken, id);
+  const editBody = {
+    obraX: usuario?.expand?.obra?.nome,
+  };
+  const data = await updateUsuario(userToken, id, editBody);
+  return data;
 }
 
 export async function createUsuario(userToken: User['token'], body: Usuario) {

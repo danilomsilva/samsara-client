@@ -18,10 +18,10 @@ import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Obra, getObras } from '~/models/obras.server';
 import {
   type Usuario,
-  createUsuario,
   getUsuario,
   getUsuarios,
   updateUsuario,
+  createUsuarioANDUpdate,
 } from '~/models/usuarios.server';
 import { getUserSession } from '~/session.server';
 import { type Option, TIPOS_ACESSO } from '~/utils/consts';
@@ -52,7 +52,10 @@ export async function action({ params, request }: ActionArgs) {
       .string()
       .min(1, { message: 'Campo obrigatório' })
       .email('Digite um email válido'),
-    password: z.string().min(1, { message: 'Campo obrigatório' }),
+    password: z
+      .string()
+      .min(1, { message: 'Campo obrigatório' })
+      .min(5, { message: 'Senha muito curta' }),
     tipo_acesso: z
       .string()
       .refine((val) => val, { message: 'Campo obrigatório' }),
@@ -84,7 +87,7 @@ export async function action({ params, request }: ActionArgs) {
   };
 
   if (formData._action === 'create') {
-    const user = await createUsuario(userToken, body);
+    const user = await createUsuarioANDUpdate(userToken, body);
     if (user.data) {
       return json({ error: user.data });
     }
@@ -97,11 +100,7 @@ export async function action({ params, request }: ActionArgs) {
       tipo_acesso: formData?.tipo_acesso,
       obra: formData?.obra,
     };
-    await updateUsuario(
-      userToken,
-      params.id as string,
-      editBody as Partial<Usuario>
-    );
+    await updateUsuario(userToken, params.id as string, editBody as Usuario);
   }
   return redirect('..');
 }
