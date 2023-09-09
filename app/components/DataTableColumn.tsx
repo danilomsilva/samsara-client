@@ -5,9 +5,10 @@ import clsx from 'clsx';
 type PropTypes = {
   children: string;
   column: string;
+  disabledSort?: boolean;
 };
 
-export default function Column({ column, children }: PropTypes) {
+export default function Column({ column, children, disabledSort }: PropTypes) {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
@@ -22,7 +23,11 @@ export default function Column({ column, children }: PropTypes) {
   }
 
   return (
-    <th className="pl-4 font-semibold cursor-pointer truncate">
+    <th
+      className={`${
+        disabledSort && 'pointer-events-none'
+      } pl-4 font-semibold cursor-pointer truncate`}
+    >
       <Link
         to={{ pathname: location.pathname, search: searchParams.toString() }}
       >

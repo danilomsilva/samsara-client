@@ -1,5 +1,9 @@
-import { createCookieSessionStorage, redirect } from '@remix-run/node';
-import { type Usuario } from './models/usuarios.server';
+import {
+  type Session,
+  createCookieSessionStorage,
+  redirect,
+} from '@remix-run/node';
+import { type Usuario } from './models/usuario.server';
 
 // types
 export type User = {
@@ -43,7 +47,15 @@ export async function getUserSession(request: Request) {
   const verified = session.get(USER_SESSION_VERIFIED);
 
   if (session) {
-    return { userId, userToken, email, id, nomeCompleto, tipoAcesso, verified };
+    return {
+      userId,
+      userToken,
+      email,
+      id,
+      nomeCompleto,
+      tipoAcesso,
+      verified,
+    };
   } else {
     throw await logout(request);
   }
@@ -53,6 +65,10 @@ export async function getUserSession(request: Request) {
 export async function getSession(request: Request) {
   const cookie = request.headers.get('Cookie');
   return sessionStorage.getSession(cookie);
+}
+
+export async function commitSession(session: Session) {
+  return await sessionStorage.commitSession(session);
 }
 
 // will add users data to cookie session
@@ -86,4 +102,13 @@ export async function logout(request: Request) {
       'Set-Cookie': await sessionStorage.destroySession(session),
     },
   });
+}
+
+export async function setToastMessage(
+  session: Session,
+  title: string = '',
+  message: string,
+  variant: string
+) {
+  return session.flash('toastMessage', { title, message, variant });
 }

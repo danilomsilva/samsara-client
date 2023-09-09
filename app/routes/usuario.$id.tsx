@@ -15,17 +15,22 @@ import Select from '~/components/Select';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
-import { type Obra, getObras } from '~/models/obras.server';
+import { type Obra, getObras } from '~/models/obra.server';
 import {
   type Usuario,
-  createUsuario,
   getUsuario,
   getUsuarios,
-  updateUsuario,
-} from '~/models/usuarios.server';
-import { getUserSession } from '~/session.server';
+  _createUsuario,
+  _updateUsuario,
+} from '~/models/usuario.server';
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 import { type Option, TIPOS_ACESSO } from '~/utils/consts';
-import { generateCodigo } from '~/utils/utils';
+import { capitalizeWords, generateCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -43,6 +48,7 @@ export async function loader({ params, request }: LoaderArgs) {
 
 export async function action({ params, request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
+  const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
   const validationScheme = z.object({
@@ -52,7 +58,10 @@ export async function action({ params, request }: ActionArgs) {
       .string()
       .min(1, { message: 'Campo obrigatório' })
       .email('Digite um email válido'),
-    password: z.string().min(1, { message: 'Campo obrigatório' }),
+    password: z
+      .string()
+      .min(1, { message: 'Campo obrigatório' })
+      .min(5, { message: 'Senha muito curta' }),
     tipo_acesso: z
       .string()
       .refine((val) => val, { message: 'Campo obrigatório' }),
@@ -77,30 +86,39 @@ export async function action({ params, request }: ActionArgs) {
 
   const body: Partial<Usuario> = {
     ...formData,
+    nome_completo: capitalizeWords(formData.nome_completo as string),
     password: formData.password,
     passwordConfirm: formData.password,
     emailVisibility: true,
   };
 
   if (formData._action === 'create') {
-    const user = await createUsuario(userToken, body);
+    const user = await _createUsuario(userToken, body);
     if (user.data) {
       return json({ error: user.data });
     }
+    setToastMessage(session, 'Sucesso', 'Usuário adicionado!', 'success');
+    return redirect('/usuario', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
 
   if (formData._action === 'edit') {
     // to reset password, must include password, passwordConfirm and oldPassword
     const editBody = {
-      nome_completo: formData?.nome_completo,
+      nome_completo: capitalizeWords(formData.nome_completo as string),
       tipo_acesso: formData?.tipo_acesso,
       obra: formData?.obra,
     };
-    await updateUsuario(
-      userToken,
-      params.id as string,
-      editBody as Partial<Usuario>
-    );
+    await _updateUsuario(userToken, params.id as string, editBody as Usuario);
+    setToastMessage(session, 'Sucesso', 'Usuário editado!', 'success');
+    return redirect('/usuario', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
   return redirect('..');
 }

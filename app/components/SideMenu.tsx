@@ -3,7 +3,7 @@ import { useState, type ReactNode } from 'react';
 import DoubleLeftArrowIcon from './icons/DoubleLeftArrowIcon';
 import DoubleRightArrowIcon from './icons/DoubleRightArrowIcon';
 import clsx from 'clsx';
-import { type TipoAcesso, type Usuario } from '~/models/usuarios.server';
+import { type TipoAcesso, type Usuario } from '~/models/usuario.server';
 
 type PropTypes = {
   tipoAcesso: TipoAcesso;

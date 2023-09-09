@@ -27,8 +27,13 @@ import {
   type Usuario,
   getUsuarios,
   deleteUsuario,
-} from '~/models/usuarios.server';
-import { getUserSession } from '~/session.server';
+} from '~/models/usuario.server';
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -53,6 +58,7 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
+  const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
   if (formData?._action === 'delete') {
@@ -60,7 +66,12 @@ export async function action({ request }: ActionArgs) {
       await deleteUsuario(userToken, formData.userId as string);
     } catch (error) {}
   }
-  return redirect('/usuario');
+  setToastMessage(session, 'Sucesso', 'Usuário removido!', 'success');
+  return redirect('/usuario', {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
 export default function UsuarioPage() {
@@ -110,7 +121,8 @@ export default function UsuarioPage() {
           { name: 'nome_completo', displayName: 'Nome completo' },
           { name: 'email', displayName: 'Email' },
           { name: 'tipo_acesso', displayName: 'Tipo de acesso' },
-          { name: 'obra', displayName: 'Alocado à obra' },
+          { name: 'obraX', displayName: 'Alocado à obra' },
+          // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
         ]}
         rows={usuarios}
       />
