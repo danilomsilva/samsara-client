@@ -52,7 +52,11 @@ export default function DataTable({ columns, rows }: PropTypes) {
                   if (keys !== 'id') {
                     return (
                       <Cel key={i}>
-                        <Link to={`?selected=${row.id}`}>
+                        <Link
+                          to={
+                            selectedRow ? '/usuario' : `./?selected=${row.id}`
+                          }
+                        >
                           <div className="h-9 flex items-center">
                             {keys === 'tipo_acesso'
                               ? row[keys].replaceAll('_', ' ')

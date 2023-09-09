@@ -96,7 +96,7 @@ export async function action({ params, request }: ActionArgs) {
   if (formData._action === 'edit') {
     // to reset password, must include password, passwordConfirm and oldPassword
     const editBody = {
-      nome_completo: formData?.nome_completo,
+      nome_completo: capitalizeWords(formData.nome_completo as string),
       tipo_acesso: formData?.tipo_acesso,
       obra: formData?.obra,
     };
