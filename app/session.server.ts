@@ -3,7 +3,7 @@ import {
   createCookieSessionStorage,
   redirect,
 } from '@remix-run/node';
-import { type Usuario } from './models/usuarios.server';
+import { type Usuario } from './models/usuario.server';
 
 // types
 export type User = {

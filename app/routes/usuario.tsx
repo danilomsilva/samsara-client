@@ -27,7 +27,7 @@ import {
   type Usuario,
   getUsuarios,
   deleteUsuario,
-} from '~/models/usuarios.server';
+} from '~/models/usuario.server';
 import {
   commitSession,
   getSession,

@@ -33,7 +33,7 @@ export async function getOperadores(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -60,7 +60,7 @@ export async function getOperador(userToken: User['token'], userId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -79,13 +79,12 @@ export async function createOperador(userToken: User['token'], body: Operador) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
     );
     const data = await response.json();
-    console.log('>>>>>>>>>>>>>', data);
     return data;
   } catch (error) {
     throw new Error('An error occured while creating operador');
@@ -104,7 +103,7 @@ export async function updateOperador(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -124,7 +123,7 @@ export async function deleteOperador(userToken: User['token'], userId: string) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

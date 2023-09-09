@@ -17,6 +17,6 @@ export async function verifyCredentials(email: string, password: string) {
     const data = await response.json();
     return data;
   } catch (error) {
-    throw new Error('An error occured when verifying credentials!');
+    throw new Error('An error occured while verifying credentials!');
   }
 }

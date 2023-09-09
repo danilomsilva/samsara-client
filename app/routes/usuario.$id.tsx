@@ -15,14 +15,14 @@ import Select from '~/components/Select';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
-import { type Obra, getObras } from '~/models/obras.server';
+import { type Obra, getObras } from '~/models/obra.server';
 import {
   type Usuario,
   getUsuario,
   getUsuarios,
-  updateUsuario,
-  createUsuarioANDUpdate,
-} from '~/models/usuarios.server';
+  _createUsuario,
+  _updateUsuario,
+} from '~/models/usuario.server';
 import {
   commitSession,
   getSession,
@@ -93,17 +93,16 @@ export async function action({ params, request }: ActionArgs) {
   };
 
   if (formData._action === 'create') {
-    const user = await createUsuarioANDUpdate(userToken, body);
+    const user = await _createUsuario(userToken, body);
     if (user.data) {
       return json({ error: user.data });
-    } else {
-      setToastMessage(session, 'Sucesso', 'Usuário adicionado!', 'success');
-      return redirect('/usuario', {
-        headers: {
-          'Set-Cookie': await commitSession(session),
-        },
-      });
     }
+    setToastMessage(session, 'Sucesso', 'Usuário adicionado!', 'success');
+    return redirect('/usuario', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
 
   if (formData._action === 'edit') {
@@ -113,7 +112,7 @@ export async function action({ params, request }: ActionArgs) {
       tipo_acesso: formData?.tipo_acesso,
       obra: formData?.obra,
     };
-    await updateUsuario(userToken, params.id as string, editBody as Usuario);
+    await _updateUsuario(userToken, params.id as string, editBody as Usuario);
     setToastMessage(session, 'Sucesso', 'Usuário editado!', 'success');
     return redirect('/usuario', {
       headers: {

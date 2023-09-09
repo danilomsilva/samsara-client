@@ -1,5 +1,6 @@
 import type { User } from '~/session.server';
 import { formatDate } from '~/utils/utils';
+import { getObra } from './obra.server';
 
 export type TipoAcesso = 'Administrador' | 'Encarregado' | 'Gerente_de_Frota';
 
@@ -78,17 +79,14 @@ export async function getUsuario(userToken: User['token'], userId: string) {
   }
 }
 
-export async function createUsuarioANDUpdate(
-  userToken: User['token'],
-  body: Usuario
-) {
-  const { id } = await createUsuario(userToken, body);
-  const usuario = await getUsuario(userToken, id);
+export async function _createUsuario(userToken: User['token'], body: Usuario) {
+  const usuario = await createUsuario(userToken, body);
+  const { nome } = await getObra(userToken, usuario.obra);
   const editBody = {
-    obraX: usuario?.expand?.obra?.nome,
+    obraX: nome,
   };
-  const data = await updateUsuario(userToken, id, editBody);
-  return data;
+  await updateUsuario(userToken, usuario.id, editBody);
+  return usuario;
 }
 
 export async function createUsuario(userToken: User['token'], body: Usuario) {
@@ -109,6 +107,20 @@ export async function createUsuario(userToken: User['token'], body: Usuario) {
   } catch (error) {
     throw new Error('An error occured when verifying credentials!');
   }
+}
+
+export async function _updateUsuario(
+  userToken: User['token'],
+  userId: string,
+  body: Usuario
+) {
+  const usuario = await updateUsuario(userToken, userId, body);
+  const { nome } = await getObra(userToken, usuario.obra);
+  const editBody = {
+    obraX: nome,
+  };
+  await updateUsuario(userToken, usuario.id, editBody);
+  return usuario;
 }
 
 export async function updateUsuario(

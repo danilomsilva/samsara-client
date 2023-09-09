@@ -14,7 +14,7 @@ import Select from '~/components/Select';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
-import { type Obra, getObras } from '~/models/obras.server';
+import { type Obra, getObras } from '~/models/obra.server';
 import {
   type Operador,
   createOperador,
@@ -22,7 +22,7 @@ import {
   getOperadores,
   updateOperador,
 } from '~/models/operador.server';
-import { type Usuario, getUsuarios } from '~/models/usuarios.server';
+import { type Usuario, getUsuarios } from '~/models/usuario.server';
 import { getUserSession } from '~/session.server';
 import { type Option, OPERADOR_ATIVIDADES } from '~/utils/consts';
 import { generateCodigo } from '~/utils/utils';
