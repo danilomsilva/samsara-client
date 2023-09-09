@@ -23,7 +23,12 @@ import {
   updateUsuario,
   createUsuarioANDUpdate,
 } from '~/models/usuarios.server';
-import { getUserSession } from '~/session.server';
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 import { type Option, TIPOS_ACESSO } from '~/utils/consts';
 import { capitalizeWords, generateCodigo } from '~/utils/utils';
 
@@ -43,6 +48,7 @@ export async function loader({ params, request }: LoaderArgs) {
 
 export async function action({ params, request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
+  const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
   const validationScheme = z.object({
@@ -90,6 +96,13 @@ export async function action({ params, request }: ActionArgs) {
     const user = await createUsuarioANDUpdate(userToken, body);
     if (user.data) {
       return json({ error: user.data });
+    } else {
+      setToastMessage(session, 'Sucesso', 'Usuário adicionado!', 'success');
+      return redirect('/usuario', {
+        headers: {
+          'Set-Cookie': await commitSession(session),
+        },
+      });
     }
   }
 
@@ -101,6 +114,12 @@ export async function action({ params, request }: ActionArgs) {
       obra: formData?.obra,
     };
     await updateUsuario(userToken, params.id as string, editBody as Usuario);
+    setToastMessage(session, 'Sucesso', 'Usuário editado!', 'success');
+    return redirect('/usuario', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
   return redirect('..');
 }

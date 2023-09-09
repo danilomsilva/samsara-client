@@ -28,7 +28,12 @@ import {
   getUsuarios,
   deleteUsuario,
 } from '~/models/usuarios.server';
-import { getUserSession } from '~/session.server';
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -53,6 +58,7 @@ export async function loader({ request }: LoaderArgs) {
 
 export async function action({ request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
+  const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
   if (formData?._action === 'delete') {
@@ -60,7 +66,12 @@ export async function action({ request }: ActionArgs) {
       await deleteUsuario(userToken, formData.userId as string);
     } catch (error) {}
   }
-  return redirect('/usuario');
+  setToastMessage(session, 'Sucesso', 'Usuário removido!', 'success');
+  return redirect('/usuario', {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
 export default function UsuarioPage() {
