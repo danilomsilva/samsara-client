@@ -17,15 +17,20 @@ import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Obra, getObras } from '~/models/obra.server';
 import {
   type Operador,
-  createOperador,
   getOperador,
   getOperadores,
-  updateOperador,
+  _createOperador,
+  _updateOperador,
 } from '~/models/operador.server';
 import { type Usuario, getUsuarios } from '~/models/usuario.server';
-import { getUserSession } from '~/session.server';
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 import { type Option, OPERADOR_ATIVIDADES } from '~/utils/consts';
-import { generateCodigo } from '~/utils/utils';
+import { capitalizeWords, generateCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -51,6 +56,7 @@ export async function loader({ params, request }: LoaderArgs) {
 
 export async function action({ params, request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
+  const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
   const validationScheme = z.object({
@@ -81,24 +87,40 @@ export async function action({ params, request }: ActionArgs) {
   }
 
   if (formData._action === 'create') {
-    const operador = await createOperador(userToken, formData);
+    const body: Partial<Operador> = {
+      ...formData,
+      nome_completo: capitalizeWords(formData.nome_completo as string),
+    };
+    const operador = await _createOperador(userToken, body);
     if (operador.data) {
       return json({ error: operador.data });
     }
+    setToastMessage(session, 'Sucesso', 'Operador adicionado!', 'success');
+    return redirect('/operador', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
 
   if (formData._action === 'edit') {
     const editBody = {
-      nome_completo: formData?.nome_completo,
+      nome_completo: capitalizeWords(formData.nome_completo as string),
       atividade: formData?.atividade,
       obra: formData?.obra,
       encarregado: formData?.encarregado,
     };
-    await updateOperador(
+    await _updateOperador(
       userToken,
       params.id as string,
       editBody as Partial<Operador>
     );
+    setToastMessage(session, 'Sucesso', 'Operador editado!', 'success');
+    return redirect('/operador', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
   return redirect('..');
 }

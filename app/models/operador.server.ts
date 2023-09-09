@@ -1,5 +1,7 @@
 import type { User } from '~/session.server';
 import { formatDate } from '~/utils/utils';
+import { getObra } from './obra.server';
+import { getUsuario } from './usuario.server';
 
 export type Operador = {
   id?: string;
@@ -15,6 +17,8 @@ export type Operador = {
       nome_completo: string;
     };
   };
+  obraX?: string;
+  encarregadoX?: string;
 };
 
 export async function getOperadores(
@@ -43,8 +47,8 @@ export async function getOperadores(
       codigo: item.codigo,
       nome_completo: item.nome_completo,
       atividade: item.atividade,
-      obra: item?.expand?.obra.nome,
-      encarregado: item?.expand?.encarregado?.nome_completo,
+      obra: item?.obraX,
+      encarregado: item?.encarregadoX,
     }));
     return transformedData;
   } catch (error) {
@@ -71,6 +75,21 @@ export async function getOperador(userToken: User['token'], userId: string) {
   }
 }
 
+export async function _createOperador(
+  userToken: User['token'],
+  body: Operador
+) {
+  const operador = await createOperador(userToken, body);
+  const { nome } = await getObra(userToken, operador.obra);
+  const { nome_completo } = await getUsuario(userToken, operador.encarregado);
+  const editBody = {
+    obraX: nome,
+    encarregadoX: nome_completo,
+  };
+  await updateOperador(userToken, operador.id, editBody);
+  return operador;
+}
+
 export async function createOperador(userToken: User['token'], body: Operador) {
   try {
     const response = await fetch(
@@ -89,6 +108,22 @@ export async function createOperador(userToken: User['token'], body: Operador) {
   } catch (error) {
     throw new Error('An error occured while creating operador');
   }
+}
+
+export async function _updateOperador(
+  userToken: User['token'],
+  userId: string,
+  body: Operador
+) {
+  const operador = await updateOperador(userToken, userId, body);
+  const { nome } = await getObra(userToken, operador.obra);
+  const { nome_completo } = await getUsuario(userToken, operador.encarregado);
+  const editBody = {
+    obraX: nome,
+    encarregadoX: nome_completo,
+  };
+  await updateOperador(userToken, operador.id, editBody);
+  return operador;
 }
 
 export async function updateOperador(

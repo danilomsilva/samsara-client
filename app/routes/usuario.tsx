@@ -48,6 +48,7 @@ export async function loader({ request }: LoaderArgs) {
   const sortingBy =
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
+  //encarregado do not have access to table usuarios
   if (userToken && tipoAcesso !== 'Encarregado') {
     const usuarios = await getUsuarios(userToken, sortingBy);
     return json({ usuarios });
@@ -129,6 +130,8 @@ export default function UsuarioPage() {
           // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
         ]}
         rows={usuarios}
+        path="/usuario"
+        placeholder="Nenhum usuário cadastrado"
       />
       <Outlet />
 
