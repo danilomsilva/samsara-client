@@ -64,15 +64,29 @@ export async function action({ request }: ActionArgs) {
 
   if (formData?._action === 'delete') {
     try {
-      await deleteUsuario(userToken, formData.userId as string);
+      const usuario = await deleteUsuario(userToken, formData.userId as string);
+      if (usuario.message && usuario.message.includes('required relation')) {
+        setToastMessage(
+          session,
+          'Erro',
+          'Usuário está vinculado à algum outro campo e não pode ser removido.',
+          'error'
+        );
+        return redirect('/usuario', {
+          headers: {
+            'Set-Cookie': await commitSession(session),
+          },
+        });
+      }
     } catch (error) {}
+    setToastMessage(session, 'Sucesso', 'Usuário removido!', 'success');
+    return redirect('/usuario', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
-  setToastMessage(session, 'Sucesso', 'Usuário removido!', 'success');
-  return redirect('/usuario', {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  });
+  return json({});
 }
 
 export default function UsuarioPage() {

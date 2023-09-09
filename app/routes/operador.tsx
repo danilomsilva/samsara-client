@@ -64,15 +64,32 @@ export async function action({ request }: ActionArgs) {
 
   if (formData?._action === 'delete') {
     try {
-      await deleteOperador(userToken, formData.userId as string);
+      const operador = await deleteOperador(
+        userToken,
+        formData.userId as string
+      );
+      if (operador.message && operador.message.includes('required relation')) {
+        setToastMessage(
+          session,
+          'Erro',
+          'Operador está vinculado à algum outro campo e não pode ser removido.',
+          'error'
+        );
+        return redirect('/operador', {
+          headers: {
+            'Set-Cookie': await commitSession(session),
+          },
+        });
+      }
     } catch (error) {}
+    setToastMessage(session, 'Sucesso', 'Operador removido!', 'success');
+    return redirect('/operador', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
-  setToastMessage(session, 'Sucesso', 'Operador removido!', 'success');
-  return redirect('/operador', {
-    headers: {
-      'Set-Cookie': await commitSession(session),
-    },
-  });
+  return json({});
 }
 
 export default function OperadorPage() {
