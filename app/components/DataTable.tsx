@@ -16,9 +16,16 @@ type PropTypes = {
         [key: string]: string;
       }[]
     | any;
+  path: string;
+  placeholder: string;
 };
 
-export default function DataTable({ columns, rows }: PropTypes) {
+export default function DataTable({
+  columns,
+  rows,
+  path,
+  placeholder,
+}: PropTypes) {
   const [searchParams] = useSearchParams();
   const selectedRow = searchParams.get('selected');
 
@@ -53,9 +60,7 @@ export default function DataTable({ columns, rows }: PropTypes) {
                     return (
                       <Cel key={i}>
                         <Link
-                          to={
-                            selectedRow ? '/usuario' : `./?selected=${row.id}`
-                          }
+                          to={selectedRow ? `${path}` : `./?selected=${row.id}`}
                         >
                           <div className="h-9 flex items-center">
                             {keys === 'tipo_acesso'
@@ -77,7 +82,7 @@ export default function DataTable({ columns, rows }: PropTypes) {
     return (
       <div className="mt-20 flex flex-col items-center">
         <ExclamationTriangle className="h-10 w-10 text-grey/70" />
-        <p>Nenhum usuário cadastrado.</p>
+        <p>{placeholder}</p>
       </div>
     );
   }

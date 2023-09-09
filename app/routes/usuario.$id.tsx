@@ -84,15 +84,14 @@ export async function action({ params, request }: ActionArgs) {
     };
   }
 
-  const body: Partial<Usuario> = {
-    ...formData,
-    nome_completo: capitalizeWords(formData.nome_completo as string),
-    password: formData.password,
-    passwordConfirm: formData.password,
-    emailVisibility: true,
-  };
-
   if (formData._action === 'create') {
+    const body: Partial<Usuario> = {
+      ...formData,
+      nome_completo: capitalizeWords(formData.nome_completo as string),
+      password: formData.password,
+      passwordConfirm: formData.password,
+      emailVisibility: true,
+    };
     const user = await _createUsuario(userToken, body);
     if (user.data) {
       return json({ error: user.data });

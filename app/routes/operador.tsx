@@ -28,7 +28,12 @@ import {
   deleteOperador,
   getOperadores,
 } from '~/models/operador.server';
-import { getUserSession } from '~/session.server';
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -36,30 +41,55 @@ export const meta: V2_MetaFunction = () => {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const { userToken } = await getUserSession(request);
+  const { userToken, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
-  if (userToken) {
+  //encarregado do not have access to table operadores
+  if (userToken && tipoAcesso !== 'Encarregado') {
     const operadores = await getOperadores(userToken, sortingBy);
     return json({ operadores });
+  } else {
+    throw json('Acesso proibido', { status: 403 });
   }
-  return json({});
 }
 
 export async function action({ request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
+  const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
   if (formData?._action === 'delete') {
     try {
-      await deleteOperador(userToken, formData.userId as string);
+      const operador = await deleteOperador(
+        userToken,
+        formData.userId as string
+      );
+      if (operador.message && operador.message.includes('required relation')) {
+        setToastMessage(
+          session,
+          'Erro',
+          'Operador está vinculado à algum outro campo e não pode ser removido.',
+          'error'
+        );
+        return redirect('/operador', {
+          headers: {
+            'Set-Cookie': await commitSession(session),
+          },
+        });
+      }
     } catch (error) {}
+    setToastMessage(session, 'Sucesso', 'Operador removido!', 'success');
+    return redirect('/operador', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
-  return redirect('/operador');
+  return json({});
 }
 
 export default function OperadorPage() {
@@ -112,10 +142,12 @@ export default function OperadorPage() {
           { name: 'codigo', displayName: 'Código' },
           { name: 'nome_completo', displayName: 'Nome completo' },
           { name: 'atividade', displayName: 'Atividade' },
-          { name: 'obra', displayName: 'Alocado à obra' },
-          { name: 'encarregado', displayName: 'Encarregado' },
+          { name: 'obraX', displayName: 'Alocado à obra' },
+          { name: 'encarregadoX', displayName: 'Encarregado' },
         ]}
         rows={operadores}
+        path="/operador"
+        placeholder="Nenhum operador cadastrado."
       />
       <Outlet />
 
