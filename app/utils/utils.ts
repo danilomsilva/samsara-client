@@ -1,7 +1,11 @@
 import { format } from 'date-fns';
 
-export const formatDate = (date: string) => {
+export const formatDateTime = (date: string) => {
   return format(new Date(date), 'dd/MM/yyyy HH:mm');
+};
+
+export const formatDate = (date: string) => {
+  return format(new Date(date), 'dd/MM/yyyy');
 };
 
 export const generateCodigo = (prefix: string, array: unknown) => {
