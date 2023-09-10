@@ -8,6 +8,7 @@ import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import Input from '~/components/Input';
+import InputMask from '~/components/InputMask';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import PencilIcon from '~/components/icons/PencilIcon';
@@ -25,7 +26,11 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import { capitalizeWords } from '~/utils/utils';
+import {
+  capitalizeWords,
+  convertDateToISO,
+  convertISOToDate,
+} from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -68,6 +73,10 @@ export async function action({ params, request }: ActionArgs) {
       ...formData,
       nome: capitalizeWords(formData.nome as string),
       cidade: capitalizeWords(formData.cidade as string),
+      data_inicio: convertDateToISO(formData.data_inicio as string),
+      data_final_previsto: convertDateToISO(
+        formData.data_final_previsto as string
+      ),
     };
     const obra = await createObra(userToken, body);
     if (obra.data) {
@@ -86,6 +95,10 @@ export async function action({ params, request }: ActionArgs) {
       ...formData,
       nome: capitalizeWords(formData.nome as string),
       cidade: capitalizeWords(formData.cidade as string),
+      data_inicio: convertDateToISO(formData.data_inicio as string),
+      data_final_previsto: convertDateToISO(
+        formData.data_final_previsto as string
+      ),
     };
     await updateObra(userToken, params.id as string, editBody as Partial<Obra>);
     setToastMessage(session, 'Sucesso', 'Obra editada!', 'success');
@@ -131,21 +144,21 @@ export default function NewObra() {
             />
           </Row>
           <Row>
-            <Input
+            <InputMask
+              mask="99/99/9999"
               type="text"
               name="data_inicio"
               label="Data de início"
-              defaultValue={obra?.data_inicio}
+              defaultValue={convertISOToDate(obra?.data_inicio)}
               error={actionData?.errors?.data_inicio}
-              autoFocus
             />
-            <Input
+            <InputMask
+              mask="99/99/9999"
               type="text"
               name="data_final_previsto"
               label="Data final prevista"
-              defaultValue={obra?.data_final_previsto}
+              defaultValue={convertISOToDate(obra?.data_final_previsto)}
               error={actionData?.errors?.data_final_previsto}
-              autoFocus
             />
           </Row>
         </>
