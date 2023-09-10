@@ -35,7 +35,7 @@ import { capitalizeWords, generateCodigo } from '~/utils/utils';
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
-  const obras: Obra[] = await getObras(userToken);
+  const obras: Obra[] = await getObras(userToken, 'created');
   const usuarios: Usuario[] = await getUsuarios(userToken, 'created');
   const encarregados = usuarios
     .filter((usuario) => usuario.tipo_acesso === 'Encarregado')

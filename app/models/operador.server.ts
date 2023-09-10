@@ -128,12 +128,12 @@ export async function _updateOperador(
 
 export async function updateOperador(
   userToken: User['token'],
-  userId: string,
+  operadorId: string,
   body: Operador
 ) {
   try {
     const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/operador/records/${userId}`,
+      `${process.env.BASE_API_URL}/collections/operador/records/${operadorId}`,
       {
         method: 'PATCH',
         headers: {

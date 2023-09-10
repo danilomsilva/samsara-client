@@ -29,6 +29,7 @@ export async function getObras(
     });
     const data = await response.json();
     const transformedData = data.items.map((item: Obra) => ({
+      id: item?.id,
       created: item?.created && formatDateTime(item.created),
       nome: item?.nome,
       cidade: item?.cidade,
@@ -58,6 +59,50 @@ export async function getObra(userToken: User['token'], obraId: string) {
     return data;
   } catch (error) {
     throw new Error('An error occured while getting obra');
+  }
+}
+
+export async function createObra(userToken: User['token'], body: Obra) {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_API_URL}/collections/obra/records`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error('An error occured while creating obra');
+  }
+}
+
+export async function updateObra(
+  userToken: User['token'],
+  obraId: string,
+  body: Obra
+) {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_API_URL}/collections/obra/records/${obraId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error('An error occured while updating obra');
   }
 }
 
