@@ -132,7 +132,7 @@ export default function NewOperador() {
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
 
-  const sortedObras: Option[] = obras?.items
+  const sortedObras: Option[] = obras
     ?.map((item: Obra) => {
       const { id, nome } = item;
       return {
