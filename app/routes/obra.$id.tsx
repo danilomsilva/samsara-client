@@ -28,7 +28,7 @@ import {
 } from '~/session.server';
 import {
   capitalizeWords,
-  compareDatesTest,
+  isDateBefore,
   convertDateToISO,
   convertISOToDate,
 } from '~/utils/utils';
@@ -56,8 +56,7 @@ export async function action({ params, request }: ActionArgs) {
       data_final_previsto: z.string().min(1, { message: 'Campo obrigatório' }),
     })
     .refine(
-      (schema) =>
-        compareDatesTest(schema.data_inicio, schema.data_final_previsto),
+      (schema) => isDateBefore(schema.data_inicio, schema.data_final_previsto),
       { message: 'Data inválida!' }
     );
 
@@ -159,7 +158,10 @@ export default function NewObra() {
               name="data_inicio"
               label="Data de início"
               defaultValue={convertISOToDate(obra?.data_inicio)}
-              error={actionData?.errors?.data_inicio}
+              error={
+                actionData?.errors?.data_inicio ||
+                actionData?.errors?.invalidDate
+              }
             />
             <InputMask
               mask="99/99/9999"
