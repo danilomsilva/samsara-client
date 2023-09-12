@@ -28,6 +28,7 @@ import {
 } from '~/session.server';
 import {
   capitalizeWords,
+  compareDatesTest,
   convertDateToISO,
   convertISOToDate,
 } from '~/utils/utils';
@@ -47,23 +48,31 @@ export async function action({ params, request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  const validationScheme = z.object({
-    nome: z.string().min(1, { message: 'Campo obrigatório' }),
-    cidade: z.string().min(1, { message: 'Campo obrigatório' }),
-    data_inicio: z.string().min(1, { message: 'Campo obrigatório' }),
-    data_final_previsto: z.string().min(1, { message: 'Campo obrigatório' }),
-  });
+  const validationScheme = z
+    .object({
+      nome: z.string().min(1, { message: 'Campo obrigatório' }),
+      cidade: z.string().min(1, { message: 'Campo obrigatório' }),
+      data_inicio: z.string().min(1, { message: 'Campo obrigatório' }),
+      data_final_previsto: z.string().min(1, { message: 'Campo obrigatório' }),
+    })
+    .refine(
+      (schema) =>
+        compareDatesTest(schema.data_inicio, schema.data_final_previsto),
+      { message: 'Data inválida!' }
+    );
 
   const validatedScheme = validationScheme.safeParse(formData);
 
   if (!validatedScheme.success) {
     const errors = validatedScheme.error.format();
+
     return {
       errors: {
         nome: errors.nome?._errors[0],
         cidade: errors.cidade?._errors[0],
         data_inicio: errors.data_inicio?._errors[0],
         data_final_previsto: errors.data_final_previsto?._errors[0],
+        invalidDate: errors?._errors[0],
       },
     };
   }
@@ -158,7 +167,10 @@ export default function NewObra() {
               name="data_final_previsto"
               label="Data final prevista"
               defaultValue={convertISOToDate(obra?.data_final_previsto)}
-              error={actionData?.errors?.data_final_previsto}
+              error={
+                actionData?.errors?.data_final_previsto ||
+                actionData?.errors?.invalidDate
+              }
             />
           </Row>
         </>

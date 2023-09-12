@@ -1,4 +1,11 @@
-import { format, formatISO, isValid, parse, parseISO } from 'date-fns';
+import {
+  format,
+  formatISO,
+  isBefore,
+  isValid,
+  parse,
+  parseISO,
+} from 'date-fns';
 
 export const formatDateTime = (date: string) => {
   return format(new Date(date), 'dd/MM/yyyy HH:mm');
@@ -33,4 +40,10 @@ export const convertISOToDate = (iso: string) => {
   if (!isValid(parseISO(iso))) return;
   const date = iso.split(' ')[0].split('-');
   return `${date[2]}/${date[1]}/${date[0]}`;
+};
+
+export const compareDatesTest = (date1: string, date2: string): boolean => {
+  const parsedDate1 = parse(date1, 'dd/MM/yyyy', new Date());
+  const parsedDate2 = parse(date2, 'dd/MM/yyyy', new Date());
+  return isBefore(parsedDate1, parsedDate2);
 };
