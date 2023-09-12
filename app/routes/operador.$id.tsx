@@ -35,7 +35,7 @@ import { capitalizeWords, generateCodigo } from '~/utils/utils';
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
-  const obras: Obra[] = await getObras(userToken);
+  const obras: Obra[] = await getObras(userToken, 'created');
   const usuarios: Usuario[] = await getUsuarios(userToken, 'created');
   const encarregados = usuarios
     .filter((usuario) => usuario.tipo_acesso === 'Encarregado')
@@ -132,7 +132,7 @@ export default function NewOperador() {
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
 
-  const sortedObras: Option[] = obras?.items
+  const sortedObras: Option[] = obras
     ?.map((item: Obra) => {
       const { id, nome } = item;
       return {

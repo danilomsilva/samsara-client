@@ -1,5 +1,5 @@
 import type { User } from '~/session.server';
-import { formatDate } from '~/utils/utils';
+import { formatDateTime } from '~/utils/utils';
 import { getObra } from './obra.server';
 import { getUsuario } from './usuario.server';
 
@@ -43,7 +43,7 @@ export async function getOperadores(
     const data = await response.json();
     const transformedData = data.items.map((item: Operador) => ({
       id: item.id,
-      created: item?.created && formatDate(item.created),
+      created: item?.created && formatDateTime(item.created),
       codigo: item.codigo,
       nome_completo: item.nome_completo,
       atividade: item.atividade,
@@ -128,12 +128,12 @@ export async function _updateOperador(
 
 export async function updateOperador(
   userToken: User['token'],
-  userId: string,
+  operadorId: string,
   body: Operador
 ) {
   try {
     const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/operador/records/${userId}`,
+      `${process.env.BASE_API_URL}/collections/operador/records/${operadorId}`,
       {
         method: 'PATCH',
         headers: {

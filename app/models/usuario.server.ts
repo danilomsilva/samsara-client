@@ -1,5 +1,5 @@
 import type { User } from '~/session.server';
-import { formatDate } from '~/utils/utils';
+import { formatDateTime } from '~/utils/utils';
 import { getObra } from './obra.server';
 
 export type TipoAcesso = 'Administrador' | 'Encarregado' | 'Gerente_de_Frota';
@@ -47,7 +47,7 @@ export async function getUsuarios(
     const data = await response.json();
     const transformedData = data.items.map((item: Usuario) => ({
       id: item.id,
-      created: item?.created && formatDate(item.created),
+      created: item?.created && formatDateTime(item.created),
       codigo: item.codigo,
       nome_completo: item.nome_completo,
       email: item.email,

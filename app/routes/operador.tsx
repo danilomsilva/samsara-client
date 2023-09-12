@@ -8,18 +8,16 @@ import {
 import {
   Form,
   Outlet,
-  isRouteErrorResponse,
   useLoaderData,
   useNavigate,
-  useRouteError,
   useSearchParams,
 } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
+import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
-import ExclamationTriangle from '~/components/icons/ExclamationTriangle';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -177,18 +175,5 @@ export default function OperadorPage() {
 }
 
 export function ErrorBoundary() {
-  const error = useRouteError();
-
-  // when true, this is what used to go to `CatchBoundary`
-  if (isRouteErrorResponse(error)) {
-    if (error.status === 403) {
-      return (
-        <div className="flex w-full h-full items-center justify-center flex-col gap-2">
-          <ExclamationTriangle className="h-10 w-10 text-grey/70" />
-          <p>Seu usuário não tem acesso à esta página.</p>
-          <p>Contate o administrador do sistema!</p>
-        </div>
-      );
-    }
-  }
+  return <CustomErrorBoundary />;
 }

@@ -1,6 +1,8 @@
 import type { User } from '~/session.server';
+import { formatDate, formatDateTime } from '~/utils/utils';
 
 export type Obra = {
+  created?: string;
   cidade?: string;
   data_final_previsto?: string;
   data_inicio?: string;
@@ -8,20 +10,34 @@ export type Obra = {
   nome?: string;
 };
 
-export async function getObras(userToken: User['token']): Promise<Obra[]> {
+export async function getObras(
+  userToken: User['token'],
+  sortingBy: string | null
+) {
+  let url = `${process.env.BASE_API_URL}/collections/obra/records`;
+
+  const queryParams = new URLSearchParams();
+  if (sortingBy) queryParams.set('sort', sortingBy);
+  if (queryParams.toString()) url += `?${queryParams.toString()}`;
   try {
-    const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/obra/records`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
-        },
-      }
-    );
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userToken}`,
+      },
+    });
     const data = await response.json();
-    return data;
+    const transformedData = data.items.map((item: Obra) => ({
+      id: item?.id,
+      created: item?.created && formatDateTime(item.created),
+      nome: item?.nome,
+      cidade: item?.cidade,
+      data_inicio: item?.data_inicio && formatDate(item.data_inicio),
+      data_final_previsto:
+        item?.data_final_previsto && formatDate(item.data_final_previsto),
+    }));
+    return transformedData;
   } catch (error) {
     throw new Error('An error occured while getting obras');
   }
@@ -43,5 +59,68 @@ export async function getObra(userToken: User['token'], obraId: string) {
     return data;
   } catch (error) {
     throw new Error('An error occured while getting obra');
+  }
+}
+
+export async function createObra(userToken: User['token'], body: Obra) {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_API_URL}/collections/obra/records`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error('An error occured while creating obra');
+  }
+}
+
+export async function updateObra(
+  userToken: User['token'],
+  obraId: string,
+  body: Obra
+) {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_API_URL}/collections/obra/records/${obraId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
+        },
+        body: JSON.stringify(body),
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error('An error occured while updating obra');
+  }
+}
+
+export async function deleteObra(userToken: User['token'], obraId: string) {
+  try {
+    const response = await fetch(
+      `${process.env.BASE_API_URL}/collections/obra/records/${obraId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${userToken}`,
+        },
+      }
+    );
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    throw new Error('An error occured while deleting obra');
   }
 }
