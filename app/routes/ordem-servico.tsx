@@ -148,7 +148,7 @@ export default function OSPage() {
           title="Remover Ordem de Serviço"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir a OS ${deletingOS?.codigo} ${deletingOS?.descricao} ?`}
+          content={`Deseja excluir a ${deletingOS?.codigo} - ${deletingOS?.descricao} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="userId" value={rowSelected || ''} />

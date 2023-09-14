@@ -58,22 +58,28 @@ export async function getOS(userToken: User['token'], osId: string) {
 }
 
 export async function createOS(userToken: User['token'], body: OS) {
-  try {
-    const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/ordem_servico/records`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify(body),
-      }
-    );
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw new Error('An error occured while creating OS');
+  const OSs = await getOSs(userToken, 'created');
+  const existingCodigo = OSs.some((os: OS) => os.codigo === body.codigo);
+  if (existingCodigo) {
+    return { data: 'Codigo existente' };
+  } else {
+    try {
+      const response = await fetch(
+        `${process.env.BASE_API_URL}/collections/ordem_servico/records`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      throw new Error('An error occured while creating OS');
+    }
   }
 }
 

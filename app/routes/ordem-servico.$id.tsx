@@ -7,37 +7,29 @@ import {
 import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
 import { z } from 'zod';
 import Button from '~/components/Button';
+import ErrorMessage from '~/components/ErrorMessage';
 import Input from '~/components/Input';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
-import {
-  createOS,
-  getOS,
-  getOSs,
-  updateOS,
-} from '~/models/ordem-servico.server';
+import { createOS, getOS, updateOS } from '~/models/ordem-servico.server';
 import {
   commitSession,
   getSession,
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import { generateCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
-  if (params.id === 'new') {
-    const OSs = await getOSs(userToken, 'created');
-    const generatedCodigo = generateCodigo('OS', OSs);
-    return json({ generatedCodigo });
-  } else {
+  if (params.id !== 'new') {
     const OS = await getOS(userToken, params.id as string);
     return json({ OS });
   }
+  return json({});
 }
 
 export async function action({ params, request }: ActionArgs) {
@@ -46,7 +38,10 @@ export async function action({ params, request }: ActionArgs) {
   const formData = Object.fromEntries(await request.formData());
 
   const validationScheme = z.object({
-    codigo: z.string(),
+    codigo: z
+      .string()
+      .startsWith('OS-', { message: 'OS-' })
+      .min(4, { message: 'Obrigatório' }),
     descricao: z.string().min(1, { message: 'Campo obrigatório' }),
   });
 
@@ -93,7 +88,7 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewOS() {
-  const { OS, generatedCodigo } = useLoaderData();
+  const { OS } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -104,16 +99,16 @@ export default function NewOS() {
       title={`${OS ? 'Editar' : 'Adicionar'} Ordem de Serviço`}
       variant={OS ? 'grey' : 'blue'}
       content={
-        <div className="flex flex-col gap-6">
+        <>
           <Row>
             <Input
               type="text"
               name="codigo"
               label="Código"
-              className="w-20"
-              defaultValue={OS ? OS?.codigo : generatedCodigo}
+              className="!w-24"
+              defaultValue={OS ? OS?.codigo : 'OS-'}
               error={actionData?.errors?.codigo}
-              disabled
+              disabled={OS}
             />
             <Input
               type="text"
@@ -124,47 +119,8 @@ export default function NewOS() {
               autoFocus
             />
           </Row>
-          <div className="flex flex-col gap-2">
-            <Row>
-              <Input
-                type="text"
-                name="codigo"
-                label="Código"
-                className="w-20"
-                defaultValue={OS ? OS?.codigo : generatedCodigo}
-                error={actionData?.errors?.codigo}
-                disabled
-              />
-              <Input
-                type="text"
-                name="descricao"
-                label="Descrição"
-                defaultValue={OS?.descricao}
-                error={actionData?.errors?.descricao}
-                autoFocus
-              />
-            </Row>
-            <Row>
-              <Input
-                type="text"
-                name="codigo"
-                label="Código"
-                className="w-20"
-                defaultValue={OS ? OS?.codigo : generatedCodigo}
-                error={actionData?.errors?.codigo}
-                disabled
-              />
-              <Input
-                type="text"
-                name="descricao"
-                label="Descrição"
-                defaultValue={OS?.descricao}
-                error={actionData?.errors?.descricao}
-                autoFocus
-              />
-            </Row>
-          </div>
-        </div>
+          {actionData?.error && <ErrorMessage error={actionData?.error} />}
+        </>
       }
       footerActions={
         <Button

@@ -1,4 +1,4 @@
-export default function PlusCircleIcon() {
+export default function PlusCircleIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -6,7 +6,7 @@ export default function PlusCircleIcon() {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className="h-5 w-5"
+      className={`${className} h-5 w-5`}
     >
       <path
         strokeLinecap="round"
