@@ -47,7 +47,7 @@ export default function Select({
         );
 
   return (
-    <fieldset className="flex flex-col gap-1 w-full">
+    <fieldset className={`${className} flex flex-col gap-1 w-full`}>
       {/* hidden input only way to send id to backend */}
       <input type="hidden" name={name} value={selected?.name} />
       <Combobox onChange={handleChange} name={name}>

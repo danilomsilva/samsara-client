@@ -63,7 +63,7 @@ export default function DataTable({
                           to={selectedRow ? `${path}` : `./?selected=${row.id}`}
                         >
                           <div className="h-9 flex items-center">
-                            {keys === 'tipo_acesso'
+                            {keys === 'tipo_acesso' || keys === 'combustivel'
                               ? row[keys].replaceAll('_', ' ')
                               : row[keys]}
                           </div>

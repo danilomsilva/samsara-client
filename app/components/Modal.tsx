@@ -13,6 +13,7 @@ type VariantStyle = {
 type PropTypes = {
   title: string;
   variant?: 'blue' | 'grey' | 'red';
+  size?: 'sm' | 'md' | 'lg';
   content: ReactNode;
   footerActions: ReactNode;
   handleCloseModal?: () => void;
@@ -21,6 +22,7 @@ type PropTypes = {
 export default function Modal({
   title,
   variant,
+  size,
   content,
   footerActions,
   handleCloseModal,
@@ -48,7 +50,13 @@ export default function Modal({
       <div
         className={`${
           variant && variantStyle[variant]?.borderTop
-        } bg-grey-light rounded-lg border-t-8 w-[500px]`}
+        } bg-grey-light rounded-lg border-t-8  ${
+          size === 'lg'
+            ? 'w-[700px]'
+            : size === 'sm'
+            ? 'w-[400px]'
+            : 'w-[500px]'
+        }`}
       >
         <div className="flex border-b p-6 justify-between w-full border items-center border-b-grey/50 border-x-0 border-t-0">
           <h1
