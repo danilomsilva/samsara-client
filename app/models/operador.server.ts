@@ -47,8 +47,8 @@ export async function getOperadores(
       codigo: item.codigo,
       nome_completo: item.nome_completo,
       atividade: item.atividade,
-      obra: item?.obraX,
-      encarregado: item?.encarregadoX,
+      obraX: item?.obraX,
+      encarregadoX: item?.encarregadoX,
     }));
     return transformedData;
   } catch (error) {

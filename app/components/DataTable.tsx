@@ -30,7 +30,8 @@ export default function DataTable({
   const selectedRow = searchParams.get('selected');
 
   if (rows.length) {
-    const rowKeys = Object.keys(rows[0]);
+    const columnNames = columns.map((col) => col.name);
+
     return (
       <table className="bg-white w-full text-sm rounded mt-4 overflow-hidden">
         <thead>
@@ -55,17 +56,18 @@ export default function DataTable({
                   selectedRow === row.id && 'bg-blue/20 text-blue'
                 } h-10 border-t-grey-light border-t hover:bg-blue/20`}
               >
-                {rowKeys.map((keys, i) => {
-                  if (keys !== 'id') {
+                {columnNames.map((columnName, i) => {
+                  if (columnName !== 'id' && row.hasOwnProperty(columnName)) {
                     return (
                       <Cel key={i}>
                         <Link
                           to={selectedRow ? `${path}` : `./?selected=${row.id}`}
                         >
                           <div className="h-9 flex items-center">
-                            {keys === 'tipo_acesso' || keys === 'combustivel'
-                              ? row[keys].replaceAll('_', ' ')
-                              : row[keys]}
+                            {columnName === 'tipo_acesso' ||
+                            columnName === 'combustivel'
+                              ? row[columnName].replaceAll('_', ' ')
+                              : row[columnName]}
                           </div>
                         </Link>
                       </Cel>

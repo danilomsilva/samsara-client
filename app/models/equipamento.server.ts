@@ -3,19 +3,34 @@ import { formatDateTime } from '~/utils/utils';
 import { getObra } from './obra.server';
 import { getUsuario } from './usuario.server';
 
+export type GrupoEquipamento = {
+  id?: string;
+  created?: string;
+  grupo_nome?: string;
+};
+
+export type TipoEquipamento = {
+  id?: string;
+  created?: string;
+  tipo_nome?: string;
+};
+
 export type Equipamento = {
   id?: string;
   created?: string;
   codigo?: string;
+  numero_serie?: string;
   obraX?: string;
   valor_locacao?: string;
   tipo_locacao?: string;
+  tipo_equipamento?: string;
+  grupo_equipamento?: string;
   ano?: string;
   combustivel?: string;
   encarregadoX?: string;
   instrumento_medicao?: 'Km' | 'Hr';
-  instrumento_medicao_inicio?: number;
-  instrumento_medicao_atual?: number;
+  instrumento_medicao_inicio?: string;
+  instrumento_medicao_atual?: string;
   frequencia_revisao?: string;
   notificar_revisao_faltando?: string;
   expand?: {
@@ -27,6 +42,63 @@ export type Equipamento = {
     };
   };
 };
+export async function getGruposEquipamento(
+  userToken: User['token'],
+  sortingBy: string | null
+) {
+  let url = `${process.env.BASE_API_URL}/collections/equipamento_grupo/records`;
+
+  const queryParams = new URLSearchParams();
+  if (sortingBy) queryParams.set('sort', sortingBy);
+  if (queryParams.toString()) url += `?${queryParams.toString()}`;
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userToken}`,
+      },
+    });
+    const data = await response.json();
+    const transformedData = data.items.map((item: GrupoEquipamento) => ({
+      id: item.id,
+      created: item?.created && formatDateTime(item.created),
+      grupo_nome: item.grupo_nome,
+    }));
+    return transformedData;
+  } catch (error) {
+    throw new Error('An error occured while getting grupos de equipamentos');
+  }
+}
+
+export async function getTiposEquipamento(
+  userToken: User['token'],
+  sortingBy: string | null
+) {
+  let url = `${process.env.BASE_API_URL}/collections/equipamento_tipo/records`;
+
+  const queryParams = new URLSearchParams();
+  if (sortingBy) queryParams.set('sort', sortingBy);
+  if (queryParams.toString()) url += `?${queryParams.toString()}`;
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${userToken}`,
+      },
+    });
+    const data = await response.json();
+    const transformedData = data.items.map((item: TipoEquipamento) => ({
+      id: item.id,
+      created: item?.created && formatDateTime(item.created),
+      tipo_nome: item.tipo_nome,
+    }));
+    return transformedData;
+  } catch (error) {
+    throw new Error('An error occured while getting tipos de equipamentos');
+  }
+}
 
 export async function getEquipamentos(
   userToken: User['token'],
@@ -47,17 +119,19 @@ export async function getEquipamentos(
       },
     });
     const data = await response.json();
-    console.log('data >>>>>>>>>>>>>>', data);
     const transformedData = data.items.map((item: Equipamento) => ({
       id: item.id,
       created: item?.created && formatDateTime(item.created),
       codigo: item.codigo,
-      obra: item.obraX,
+      obraX: item.obraX,
       valor_locacao: item.valor_locacao,
       tipo_locacao: item.tipo_locacao,
+      tipo_equipamento: item.tipo_equipamento,
+      grupo_equipamento: item.grupo_equipamento,
+      numero_serie: item.numero_serie,
       ano: item.ano,
       combustivel: item.combustivel,
-      encarregado: item.encarregadoX,
+      encarregadoX: item.encarregadoX,
       instrumento_medicao: item.instrumento_medicao,
       instrumento_medicao_inicio: item.instrumento_medicao_inicio,
       instrumento_medicao_atual: item.instrumento_medicao_atual,
@@ -97,18 +171,17 @@ export async function _createEquipamento(
   body: Equipamento
 ) {
   const equipamento = await createEquipamento(userToken, body);
-  console.log('----------------===========', equipamento);
   const { nome } = await getObra(userToken, equipamento.obra);
   const { nome_completo } = await getUsuario(
     userToken,
     equipamento.encarregado
   );
-  console.log(nome_completo);
+
   const editBody = {
     obraX: nome,
     encarregadoX: nome_completo,
   };
-  console.log('------------', editBody);
+
   await updateEquipamento(userToken, equipamento.id, editBody);
   return equipamento;
 }

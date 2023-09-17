@@ -19,7 +19,10 @@ import {
   _createEquipamento,
   _updateEquipamento,
   getEquipamento,
-  getEquipamentos,
+  type TipoEquipamento,
+  getTiposEquipamento,
+  type GrupoEquipamento,
+  getGruposEquipamento,
 } from '~/models/equipamento.server';
 import { type Obra, getObras } from '~/models/obra.server';
 import { type Usuario, getUsuarios } from '~/models/usuario.server';
@@ -31,17 +34,22 @@ import {
 } from '~/session.server';
 import {
   type Option,
-  GRUPOS_EQUIPAMENTOS,
-  TIPOS_EQUIPAMENTOS,
   TIPOS_LOCACAO,
   COMBUSTIVEIS,
   INSTRUMENTOS_MEDICAO,
 } from '~/utils/consts';
-import { generateCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
+  const tiposEquipamento: TipoEquipamento[] = await getTiposEquipamento(
+    userToken,
+    'created'
+  );
+  const gruposEquipamento: GrupoEquipamento[] = await getGruposEquipamento(
+    userToken,
+    'created'
+  );
   const obras: Obra[] = await getObras(userToken, 'created');
   const usuarios: Usuario[] = await getUsuarios(userToken, 'created');
   const encarregados = usuarios
@@ -51,12 +59,16 @@ export async function loader({ params, request }: LoaderArgs) {
       displayName: usuario?.nome_completo,
     }));
   if (params.id === 'new') {
-    const equipamentos = await getEquipamentos(userToken, 'created');
-    const generatedCodigo = generateCodigo('M-', equipamentos);
-    return json({ obras, encarregados, generatedCodigo });
+    return json({ obras, encarregados, gruposEquipamento, tiposEquipamento });
   } else {
     const equipamento = await getEquipamento(userToken, params.id as string);
-    return json({ obras, encarregados, equipamento });
+    return json({
+      obras,
+      encarregados,
+      equipamento,
+      gruposEquipamento,
+      tiposEquipamento,
+    });
   }
 }
 
@@ -127,7 +139,11 @@ export async function action({ params, request }: ActionArgs) {
   }
 
   if (formData._action === 'create') {
-    const equipamento = await _createEquipamento(userToken, formData);
+    const body = {
+      ...formData,
+      instrumento_medicao_atual: formData.instrumento_medicao_inicio as string,
+    };
+    const equipamento = await _createEquipamento(userToken, body);
     if (equipamento.data) {
       return json({ error: equipamento.data });
     }
@@ -156,18 +172,48 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewEquipamento() {
-  const { equipamento, obras, encarregados } = useLoaderData();
+  const {
+    gruposEquipamento,
+    tiposEquipamento,
+    equipamento,
+    obras,
+    encarregados,
+  } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
 
-  const sortedObras: Option[] = obras
+  const sortedObras: Option[] = obras // TODO: create a function to sort and return Option type
     ?.map((item: Obra) => {
       const { id, nome } = item;
       return {
         name: id,
         displayName: nome,
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
+  const sortedTiposEquipamento: Option[] = tiposEquipamento // TODO: create a function to sort and return Option type
+    ?.map((item: TipoEquipamento) => {
+      const { id, tipo_nome } = item;
+      return {
+        name: id,
+        displayName: tipo_nome,
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
+  const sortedGruposEquipamento: Option[] = gruposEquipamento // TODO: create a function to sort and return Option type
+    ?.map((item: GrupoEquipamento) => {
+      const { id, grupo_nome } = item;
+      return {
+        name: id,
+        displayName: grupo_nome,
       };
     })
     ?.sort((a: Option, b: Option) =>
@@ -184,7 +230,7 @@ export default function NewEquipamento() {
           <Row>
             <Select
               name="grupo_equipamento"
-              options={GRUPOS_EQUIPAMENTOS}
+              options={sortedGruposEquipamento}
               label="Grupo"
               defaultValue={equipamento?.grupo_equipamento}
               placeholder="-"
@@ -192,7 +238,7 @@ export default function NewEquipamento() {
             />
             <Select
               name="tipo_equipamento" // TODO: Do not consider accents
-              options={TIPOS_EQUIPAMENTOS}
+              options={sortedTiposEquipamento}
               label="Tipo"
               defaultValue={equipamento?.tipo_equipamento}
               placeholder="-"
