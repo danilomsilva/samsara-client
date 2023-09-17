@@ -29,7 +29,11 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import { type Option, OPERADOR_ATIVIDADES } from '~/utils/consts';
+import {
+  type Option,
+  OPERADOR_ATIVIDADES,
+  CAMPO_OBRIGATORIO,
+} from '~/utils/consts';
 import { capitalizeWords, generateCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -61,14 +65,10 @@ export async function action({ params, request }: ActionArgs) {
 
   const validationScheme = z.object({
     codigo: z.string(),
-    nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
-    atividade: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
-    obra: z.string().refine((val) => val, { message: 'Campo obrigatório' }),
-    encarregado: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
+    nome_completo: z.string().min(1, CAMPO_OBRIGATORIO),
+    atividade: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+    obra: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+    encarregado: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
   });
 
   const validatedScheme = validationScheme.safeParse(formData);

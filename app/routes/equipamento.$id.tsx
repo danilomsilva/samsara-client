@@ -37,6 +37,7 @@ import {
   TIPOS_LOCACAO,
   COMBUSTIVEIS,
   INSTRUMENTOS_MEDICAO,
+  CAMPO_OBRIGATORIO,
 } from '~/utils/consts';
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -77,41 +78,36 @@ export async function action({ params, request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  const validationScheme = z.object({
-    grupo_equipamento: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
-    tipo_equipamento: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
+  const genericSchema = {
+    grupo_equipamento: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+    tipo_equipamento: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     numero: z.string().min(1, { message: 'Campo ...' }),
     codigo: z.string(),
-    numero_serie: z.string().min(1, { message: 'Campo obrigatório' }),
+    numero_serie: z.string().min(1, CAMPO_OBRIGATORIO),
     ano: z.string().min(1, { message: 'Campo ...' }),
-    combustivel: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
-    valor_locacao: z.string().min(1, { message: 'Campo obrigatório' }),
-    tipo_locacao: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
-    instrumento_medicao: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
-    instrumento_medicao_inicio: z
-      .string()
-      .min(1, { message: 'Campo obrigatório' }),
-    frequencia_revisao: z.string().min(1, { message: 'Campo obrigatório' }),
-    notificar_revisao_faltando: z
-      .string()
-      .min(1, { message: 'Campo obrigatório' }),
-    obra: z.string().refine((val) => val, { message: 'Campo obrigatório' }),
-    encarregado: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
-  });
+    combustivel: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+    valor_locacao: z.string().min(1, CAMPO_OBRIGATORIO),
+    tipo_locacao: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+    instrumento_medicao: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+    frequencia_revisao: z.string().min(1, CAMPO_OBRIGATORIO),
+    notificar_revisao_faltando: z.string().min(1, CAMPO_OBRIGATORIO),
+    obra: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+    encarregado: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+  };
 
-  const validatedScheme = validationScheme.safeParse(formData);
+  const validationSchema = z.object(
+    formData._action === 'create'
+      ? {
+          ...genericSchema,
+          instrumento_medicao_inicio: z.string().min(1, CAMPO_OBRIGATORIO),
+        }
+      : {
+          ...genericSchema,
+          instrumento_medicao_atual: z.string().min(1, CAMPO_OBRIGATORIO),
+        }
+  );
+
+  const validatedScheme = validationSchema.safeParse(formData);
 
   if (!validatedScheme.success) {
     const errors = validatedScheme.error.format();
@@ -129,6 +125,7 @@ export async function action({ params, request }: ActionArgs) {
         instrumento_medicao: errors.instrumento_medicao?._errors[0],
         instrumento_medicao_inicio:
           errors.instrumento_medicao_inicio?._errors[0],
+        instrumento_medicao_atual: errors.instrumento_medicao_atual?._errors[0],
         frequencia_revisao: errors.frequencia_revisao?._errors[0],
         notificar_revisao_faltando:
           errors.notificar_revisao_faltando?._errors[0],
@@ -319,11 +316,29 @@ export default function NewEquipamento() {
             />
             <Input
               type="number"
-              name="instrumento_medicao_inicio"
-              label="Hor/Odo Inicial"
+              name={
+                equipamento // TODO: check if atual value is equal or bigger than initial - do API call
+                  ? 'instrumento_medicao_atual'
+                  : 'instrumento_medicao_inicio'
+              }
+              label={`${
+                equipamento
+                  ? equipamento.instrumento_medicao === 'Horímetro'
+                    ? 'Horímetro '
+                    : 'Odômetro '
+                  : 'Hor./Odôm. '
+              }${equipamento ? 'atual' : 'inicial'}`}
               className="!w-[180px]"
-              defaultValue={equipamento?.instrumento_medicao_inicio}
-              error={actionData?.errors?.instrumento_medicao_inicio}
+              defaultValue={
+                equipamento
+                  ? equipamento?.instrumento_medicao_atual
+                  : equipamento?.instrumento_medicao_inicio
+              }
+              error={
+                equipamento
+                  ? actionData?.errors?.instrumento_medicao_atual
+                  : actionData?.errors?.instrumento_medicao_inicio
+              }
             />
             <Input
               type="number"

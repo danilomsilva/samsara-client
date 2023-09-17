@@ -77,7 +77,7 @@ export async function action({ request }: ActionArgs) {
           'Equipamento está vinculado à algum outro campo e não pode ser removido.',
           'error'
         );
-        return redirect('equipamento', {
+        return redirect('/equipamento', {
           headers: {
             'Set-Cookie': await commitSession(session),
           },
@@ -85,7 +85,7 @@ export async function action({ request }: ActionArgs) {
       }
     } catch (error) {}
     setToastMessage(session, 'Sucesso', 'Equipamento removido!', 'success');
-    return redirect('equipamento', {
+    return redirect('/equipamento', {
       headers: {
         'Set-Cookie': await commitSession(session),
       },

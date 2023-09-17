@@ -214,13 +214,18 @@ export async function _updateEquipamento(
   equipamentoId: string,
   body: Equipamento
 ) {
-  const usuario = await updateEquipamento(userToken, equipamentoId, body);
-  const { nome } = await getObra(userToken, usuario.obra);
+  const equipamento = await updateEquipamento(userToken, equipamentoId, body);
+  const { nome } = await getObra(userToken, equipamento.obra);
+  const { nome_completo } = await getUsuario(
+    userToken,
+    equipamento.encarregado
+  );
   const editBody = {
     obraX: nome,
+    encarregadoX: nome_completo,
   };
-  await updateEquipamento(userToken, usuario.id, editBody);
-  return usuario;
+  await updateEquipamento(userToken, equipamento.id, editBody);
+  return equipamento;
 }
 
 export async function updateEquipamento(

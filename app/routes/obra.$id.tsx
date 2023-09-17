@@ -26,6 +26,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { CAMPO_OBRIGATORIO } from '~/utils/consts';
 import {
   capitalizeWords,
   isDateBefore,
@@ -50,10 +51,10 @@ export async function action({ params, request }: ActionArgs) {
 
   const validationScheme = z
     .object({
-      nome: z.string().min(1, { message: 'Campo obrigatório' }),
-      cidade: z.string().min(1, { message: 'Campo obrigatório' }),
-      data_inicio: z.string().min(1, { message: 'Campo obrigatório' }),
-      data_final_previsto: z.string().min(1, { message: 'Campo obrigatório' }),
+      nome: z.string().min(1, CAMPO_OBRIGATORIO),
+      cidade: z.string().min(1, CAMPO_OBRIGATORIO),
+      data_inicio: z.string().min(1, CAMPO_OBRIGATORIO),
+      data_final_previsto: z.string().min(1, CAMPO_OBRIGATORIO),
     })
     .refine(
       (schema) => isDateBefore(schema.data_inicio, schema.data_final_previsto),
