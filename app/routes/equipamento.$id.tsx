@@ -39,6 +39,7 @@ import {
   INSTRUMENTOS_MEDICAO,
   CAMPO_OBRIGATORIO,
 } from '~/utils/consts';
+import { convertCurrencyStringToNumber } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -138,6 +139,9 @@ export async function action({ params, request }: ActionArgs) {
   if (formData._action === 'create') {
     const body = {
       ...formData,
+      valor_locacao: convertCurrencyStringToNumber(
+        formData.valor_locacao as string
+      ) as string,
       instrumento_medicao_atual: formData.instrumento_medicao_inicio as string,
     };
     const equipamento = await _createEquipamento(userToken, body);
@@ -287,7 +291,7 @@ export default function NewEquipamento() {
           </Row>
           <Row>
             <Input
-              type="text"
+              type="currency"
               name="valor_locacao"
               label="Valor de Locação"
               className="!w-[165px]"
