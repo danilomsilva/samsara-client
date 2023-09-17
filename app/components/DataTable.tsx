@@ -2,6 +2,8 @@ import { Link, useSearchParams } from '@remix-run/react';
 import Cel from './DataTableCel';
 import Column from './DataTableColumn';
 import ExclamationTriangle from './icons/ExclamationTriangle';
+import InfoIcon from './icons/InfoIcon';
+import Tooltip from './Tooltip';
 
 type ColumnType = {
   name: string;
@@ -33,7 +35,7 @@ export default function DataTable({
     const columnNames = columns.map((col) => col.name);
 
     return (
-      <table className="bg-white w-full text-sm rounded mt-4 overflow-hidden">
+      <table className="bg-white w-full text-sm rounded mt-4">
         <thead>
           <tr className="text-left h-10 border-b border-b-grey/50">
             {columns.map((col: ColumnType, i: number) => (
@@ -64,10 +66,24 @@ export default function DataTable({
                           to={selectedRow ? `${path}` : `./?selected=${row.id}`}
                         >
                           <div className="h-9 flex items-center">
-                            {columnName === 'tipo_acesso' ||
-                            columnName === 'combustivel'
-                              ? row[columnName].replaceAll('_', ' ')
-                              : row[columnName]}
+                            {row.numero_serie &&
+                            path === '/equipamento' &&
+                            columnName === 'codigo' ? (
+                              <div className="flex justify-between items-center w-full mr-1">
+                                <div>{row[columnName]}</div>
+                                <Tooltip
+                                  contentClassName="w-[200px] z-50"
+                                  content={`Número de série: ${row.numero_serie}`}
+                                >
+                                  <InfoIcon className="h-7 w-7 text-orange" />
+                                </Tooltip>
+                              </div>
+                            ) : columnName === 'tipo_acesso' ||
+                              columnName === 'combustivel' ? (
+                              row[columnName].replaceAll('_', ' ')
+                            ) : (
+                              row[columnName]
+                            )}
                           </div>
                         </Link>
                       </Cel>

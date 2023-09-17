@@ -18,6 +18,7 @@ import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
+import ListIcon from '~/components/icons/ListIcon';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -114,6 +115,9 @@ export default function EquipamentoPage() {
         <div className="flex gap-4">
           {rowSelected ? (
             <>
+              <LinkButton to={`./`} variant="blue" icon={<ListIcon />}>
+                Histórico de manutenção
+              </LinkButton>
               <LinkButton
                 to={`./${rowSelected}`}
                 variant="grey"
@@ -152,7 +156,7 @@ export default function EquipamentoPage() {
           { name: 'notificar_revisao_faltando', displayName: 'Revisar em' },
         ]}
         rows={equipamentos}
-        path="equipamento"
+        path="/equipamento"
         placeholder="Nenhum equipamento cadastrado"
       />
       <Outlet />
