@@ -54,15 +54,18 @@ export const isDateBefore = (date1: string, date2: string): boolean => {
 // DATE FUNCTIONS - end
 
 // TODO: improve on this function!!
-export const removeCurrencyPrefixANDDelimiters = (
+export const convertCurrencyStringToNumber = (
   currencyString: string
-): string | null => {
-  const cleanedString = currencyString.replace(/[R$.\,]/g, '');
-  const numericString = cleanedString.replace(',', '.');
-  const numericValue = parseFloat(numericString);
-  if (!isNaN(numericValue)) {
-    return String(numericValue);
-  } else {
-    return null; // Invalid input
-  }
+): number | null => {
+  // Remove the currency symbol ("R$ "), commas (",") and dots (".") used as thousand separators
+  const cleanString = currencyString
+    .replace('R$ ', '')
+    .replace(/,/g, '')
+    .replace(/\./g, '');
+  const result = parseFloat(cleanString);
+  return !isNaN(result) ? result : null;
+};
+
+export const convertNumberToCurrencyString = () => {
+  return null;
 };

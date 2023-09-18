@@ -130,7 +130,8 @@ export default function OSPage() {
           )}
         </div>
       </div>
-      <DataTable
+
+      <DataTable // TODO: add scrollbar to table
         columns={[
           { name: 'created', displayName: 'Data de criação' },
           { name: 'codigo', displayName: 'Código' },

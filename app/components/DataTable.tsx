@@ -82,6 +82,8 @@ export default function DataTable({
                               columnName === 'combustivel' ? (
                               row[columnName].replaceAll('_', ' ')
                             ) : (
+                              // ) : columnName === 'valor_locacao' ? (
+                              //   convertNumberToCurrencyString(row[columnName])
                               row[columnName]
                             )}
                           </div>

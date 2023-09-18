@@ -63,7 +63,10 @@ export async function loader({ params, request }: LoaderArgs) {
   if (params.id === 'new') {
     return json({ obras, encarregados, gruposEquipamento, tiposEquipamento });
   } else {
-    const equipamento = await getEquipamento(userToken, params.id as string);
+    const equipamento: Equipamento = await getEquipamento(
+      userToken,
+      params.id as string
+    );
     return json({
       obras,
       encarregados,
@@ -137,11 +140,11 @@ export async function action({ params, request }: ActionArgs) {
   }
 
   if (formData._action === 'create') {
-    const body = {
+    const body: Equipamento = {
       ...formData,
       valor_locacao: convertCurrencyStringToNumber(
         formData.valor_locacao as string
-      ) as string,
+      ) as number,
       instrumento_medicao_atual: formData.instrumento_medicao_inicio as string,
     };
     const equipamento = await _createEquipamento(userToken, body);
@@ -157,10 +160,20 @@ export async function action({ params, request }: ActionArgs) {
   }
 
   if (formData._action === 'edit') {
+    console.log(
+      formData.valor_locacao
+      // convertCurrencyStringToNumber(formData.valor_locacao)
+    );
+    const body: Equipamento = {
+      ...formData,
+      valor_locacao: convertCurrencyStringToNumber(
+        formData.valor_locacao as string
+      ) as number,
+    };
     await _updateEquipamento(
       userToken,
       params.id as string,
-      formData as Equipamento
+      body as Equipamento
     );
     setToastMessage(session, 'Sucesso', 'Equipamento editado!', 'success');
     return redirect('/equipamento', {

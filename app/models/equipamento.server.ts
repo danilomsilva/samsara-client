@@ -21,7 +21,7 @@ export type Equipamento = {
   codigo?: string;
   numero_serie?: string;
   obraX?: string;
-  valor_locacao?: string;
+  valor_locacao?: number;
   tipo_locacao?: string;
   tipo_equipamento?: string;
   grupo_equipamento?: string;

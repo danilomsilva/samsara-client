@@ -35,7 +35,9 @@ export default function Input({
           decimalSeparator=","
           prefix="R$ "
           allowNegative={false}
+          fixedDecimalScale
           decimalScale={2}
+          defaultValue={defaultValue}
         />
       ) : (
         <input
