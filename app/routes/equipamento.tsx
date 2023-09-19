@@ -33,6 +33,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { formatCurrency } from '~/utils/utils';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -108,6 +109,27 @@ export default function EquipamentoPage() {
 
   const deletingEquipamento = equipamentos.find((eq) => eq?.id === rowSelected);
 
+  const formattedEquipamentos: Equipamento[] = equipamentos.map((item) => {
+    const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
+    return {
+      ...item,
+      combustivel: item.combustivel?.replaceAll('_', ' '),
+      valor_locacao: formatCurrency(Number(item.valor_locacao)),
+      instrumento_medicao_inicio: isHorimetro
+        ? `${item.instrumento_medicao_inicio} Hr`
+        : `${item.instrumento_medicao_inicio} Km`,
+      instrumento_medicao_atual: isHorimetro
+        ? `${item.instrumento_medicao_atual} Hr`
+        : `${item.instrumento_medicao_atual} Km`,
+      notificar_revisao_faltando: isHorimetro
+        ? `${item.notificar_revisao_faltando} Hr`
+        : `${item.notificar_revisao_faltando} Km`,
+      frequencia_revisao: isHorimetro
+        ? `${item.frequencia_revisao} Hr`
+        : `${item.frequencia_revisao} Km`,
+    };
+  });
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -155,7 +177,7 @@ export default function EquipamentoPage() {
           { name: 'frequencia_revisao', displayName: 'Revisão' },
           { name: 'notificar_revisao_faltando', displayName: 'Revisar em' },
         ]}
-        rows={equipamentos}
+        rows={formattedEquipamentos}
         path="/equipamento"
         placeholder="Nenhum equipamento cadastrado"
       />

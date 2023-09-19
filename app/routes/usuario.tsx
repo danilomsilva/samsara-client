@@ -103,6 +103,11 @@ export default function UsuarioPage() {
     (usuario) => usuario?.id === rowSelected
   );
 
+  const formattedUsuario = usuarios.map((item) => ({
+    ...item,
+    tipo_acesso: item.tipo_acesso?.replaceAll('_', ' '),
+  }));
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -141,7 +146,7 @@ export default function UsuarioPage() {
           { name: 'obraX', displayName: 'Alocado à obra' },
           // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
         ]}
-        rows={usuarios}
+        rows={formattedUsuario}
         path="/usuario"
         placeholder="Nenhum usuário cadastrado"
       />

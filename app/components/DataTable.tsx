@@ -79,11 +79,6 @@ export default function DataTable({
                                   <InfoIcon className="h-7 w-7 text-orange" />
                                 </Tooltip>
                               </div>
-                            ) : columnName === 'tipo_acesso' ||
-                              columnName === 'combustivel' ? (
-                              row[columnName].replaceAll('_', ' ')
-                            ) : columnName === 'valor_locacao' ? (
-                              formatCurrency(row[columnName])
                             ) : (
                               row[columnName]
                             )}

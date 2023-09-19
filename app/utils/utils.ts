@@ -57,7 +57,7 @@ export const isDateBefore = (date1: string, date2: string): boolean => {
 export const convertCurrencyStringToNumber = (
   currencyString: string
 ): string | null | undefined => {
-  if (currencyString.startsWith('R$')) {
+  if (currencyString.startsWith('R$ ')) {
     const str = currencyString
       .replace('R$', '')
       .replaceAll('.', '')
