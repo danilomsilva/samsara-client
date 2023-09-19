@@ -4,6 +4,7 @@ import Column from './DataTableColumn';
 import ExclamationTriangle from './icons/ExclamationTriangle';
 import InfoIcon from './icons/InfoIcon';
 import Tooltip from './Tooltip';
+import { formatCurrency } from '~/utils/utils';
 
 type ColumnType = {
   name: string;
@@ -81,9 +82,9 @@ export default function DataTable({
                             ) : columnName === 'tipo_acesso' ||
                               columnName === 'combustivel' ? (
                               row[columnName].replaceAll('_', ' ')
+                            ) : columnName === 'valor_locacao' ? (
+                              formatCurrency(row[columnName])
                             ) : (
-                              // ) : columnName === 'valor_locacao' ? (
-                              //   convertNumberToCurrencyString(row[columnName])
                               row[columnName]
                             )}
                           </div>

@@ -56,16 +56,25 @@ export const isDateBefore = (date1: string, date2: string): boolean => {
 // TODO: improve on this function!!
 export const convertCurrencyStringToNumber = (
   currencyString: string
-): number | null => {
-  // Remove the currency symbol ("R$ "), commas (",") and dots (".") used as thousand separators
-  const cleanString = currencyString
-    .replace('R$ ', '')
-    .replace(/,/g, '')
-    .replace(/\./g, '');
-  const result = parseFloat(cleanString);
-  return !isNaN(result) ? result : null;
+): string | null | undefined => {
+  if (currencyString.startsWith('R$')) {
+    const str = currencyString
+      .replace('R$', '')
+      .replaceAll('.', '')
+      .replaceAll(',', '');
+
+    const result = `${str.slice(0, -2)}.${str.slice(-2)}`;
+    return result;
+  } else {
+    return null;
+  }
 };
 
-export const convertNumberToCurrencyString = () => {
-  return null;
+export const formatCurrency = (value: number): string => {
+  const formatter = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+  });
+  return formatter.format(value);
 };

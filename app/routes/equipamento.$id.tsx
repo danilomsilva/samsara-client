@@ -52,6 +52,7 @@ export async function loader({ params, request }: LoaderArgs) {
     userToken,
     'created'
   );
+
   const obras: Obra[] = await getObras(userToken, 'created');
   const usuarios: Usuario[] = await getUsuarios(userToken, 'created');
   const encarregados = usuarios
@@ -144,7 +145,7 @@ export async function action({ params, request }: ActionArgs) {
       ...formData,
       valor_locacao: convertCurrencyStringToNumber(
         formData.valor_locacao as string
-      ) as number,
+      ) as string,
       instrumento_medicao_atual: formData.instrumento_medicao_inicio as string,
     };
     const equipamento = await _createEquipamento(userToken, body);
@@ -160,15 +161,11 @@ export async function action({ params, request }: ActionArgs) {
   }
 
   if (formData._action === 'edit') {
-    console.log(
-      formData.valor_locacao
-      // convertCurrencyStringToNumber(formData.valor_locacao)
-    );
     const body: Equipamento = {
       ...formData,
       valor_locacao: convertCurrencyStringToNumber(
         formData.valor_locacao as string
-      ) as number,
+      ) as string,
     };
     await _updateEquipamento(
       userToken,
