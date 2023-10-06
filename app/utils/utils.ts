@@ -44,7 +44,6 @@ export const isDateBefore = (date1: string, date2: string): boolean => {
 };
 
 // CURRENCY
-// TODO: improve on this function!!
 export const convertCurrencyStringToNumber = (
   currencyString: string
 ): string | null | undefined => {
