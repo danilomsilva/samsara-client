@@ -45,7 +45,6 @@ export default function Modal({
     },
   };
   return (
-    // TODO: find a way to close modal by clicking on overlay making sure it will navigate back to previous route and not to initial route
     <div className="bg-black/30 absolute top-0 left-0 w-full h-screen flex justify-center items-center">
       <div
         className={`${

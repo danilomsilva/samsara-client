@@ -3,9 +3,15 @@ import {
   type LoaderArgs,
   redirect,
   json,
+  type V2_MetaFunction,
 } from '@remix-run/node';
 import { Form } from '@remix-run/react';
 import { getUserSession, logout } from '~/session.server';
+
+// page title
+export const meta: V2_MetaFunction = () => {
+  return [{ title: 'Dashboard | Samsara' }];
+};
 
 // if user token do not exists in cookies, will redirect to login
 export async function loader({ request }: LoaderArgs) {

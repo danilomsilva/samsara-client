@@ -35,7 +35,7 @@ import {
 
 // page title
 export const meta: V2_MetaFunction = () => {
-  return [{ title: 'Usuario | Samsara' }];
+  return [{ title: 'Usuário | Samsara' }];
 };
 
 export async function loader({ request }: LoaderArgs) {
