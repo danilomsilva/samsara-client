@@ -15,15 +15,7 @@ export const generateCodigo = (prefix: string, array: unknown) => {
   }
 };
 
-// nome_completo
-export const capitalizeWords = (string: string): string => {
-  const capitalizedWords = string.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
-    letter.toUpperCase()
-  );
-  return capitalizedWords;
-};
-
-// DATE FUNCTIONS - start
+// DATE FUNCTIONS
 export const formatDateTime = (date: string) => {
   return format(new Date(date), 'dd/MM/yyyy HH:mm');
 };
@@ -51,8 +43,7 @@ export const isDateBefore = (date1: string, date2: string): boolean => {
   return isBefore(parsedDate1, parsedDate2);
 };
 
-// DATE FUNCTIONS - end
-
+// CURRENCY
 // TODO: improve on this function!!
 export const convertCurrencyStringToNumber = (
   currencyString: string
@@ -78,3 +69,17 @@ export const formatCurrency = (value: number): string => {
   });
   return formatter.format(value);
 };
+
+// STRING
+export const capitalizeWords = (string: string): string => {
+  const capitalizedWords = string.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+    letter.toUpperCase()
+  );
+  return capitalizedWords;
+};
+
+export const normalizeString = (string: string) =>
+  string
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();

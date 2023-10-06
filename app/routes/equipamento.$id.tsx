@@ -195,7 +195,7 @@ export default function NewEquipamento() {
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
 
-  const sortedObras: Option[] = obras // TODO: create a function to sort and return Option type
+  const sortedObras: Option[] = obras
     ?.map((item: Obra) => {
       const { id, nome } = item;
       return {
@@ -207,7 +207,7 @@ export default function NewEquipamento() {
       a.displayName.localeCompare(b.displayName)
     );
 
-  const sortedTiposEquipamento: Option[] = tiposEquipamento // TODO: create a function to sort and return Option type
+  const sortedTiposEquipamento: Option[] = tiposEquipamento
     ?.map((item: TipoEquipamento) => {
       const { id, tipo_nome } = item;
       return {
@@ -219,7 +219,7 @@ export default function NewEquipamento() {
       a.displayName.localeCompare(b.displayName)
     );
 
-  const sortedGruposEquipamento: Option[] = gruposEquipamento // TODO: create a function to sort and return Option type
+  const sortedGruposEquipamento: Option[] = gruposEquipamento
     ?.map((item: GrupoEquipamento) => {
       const { id, grupo_nome } = item;
       return {
@@ -248,7 +248,7 @@ export default function NewEquipamento() {
               error={actionData?.errors?.grupo_equipamento}
             />
             <Select
-              name="tipo_equipamento" // TODO: Do not consider accents
+              name="tipo_equipamento"
               options={sortedTiposEquipamento}
               label="Tipo"
               defaultValue={equipamento?.tipo_equipamento}
@@ -256,7 +256,7 @@ export default function NewEquipamento() {
               error={actionData?.errors?.tipo_equipamento}
             />
             <Input
-              type="number" //TODO: support only integers
+              type="number"
               name="numero"
               label="Número"
               className="!w-[80px]"

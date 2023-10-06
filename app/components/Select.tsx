@@ -3,6 +3,7 @@ import ChevronDownIcon from './icons/ChrevronDownIcon';
 import type { Option } from '~/utils/consts';
 import ErrorMessage from './ErrorMessage';
 import { useEffect, useState } from 'react';
+import { normalizeString } from '~/utils/utils';
 
 type PropTypes = {
   name: string;
@@ -39,11 +40,7 @@ export default function Select({
     query === ''
       ? options
       : options.filter((option) =>
-          option.displayName
-            .toLowerCase()
-            .split(' ')
-            .join('')
-            .includes(query.toLocaleLowerCase().split(' ').join(''))
+          normalizeString(option.displayName).includes(normalizeString(query))
         );
 
   return (
