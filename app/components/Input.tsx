@@ -10,6 +10,7 @@ type PropTypes = {
   defaultValue?: string;
   autoFocus?: boolean;
   error?: string;
+  onChange?: (value: string) => void;
 };
 
 export default function Input({
@@ -21,6 +22,7 @@ export default function Input({
   defaultValue,
   autoFocus,
   error,
+  onChange,
 }: PropTypes) {
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
@@ -50,6 +52,7 @@ export default function Input({
           defaultValue={defaultValue}
           autoFocus={autoFocus}
           autoComplete="off"
+          onChange={(e) => onChange && onChange(e.target.value)}
         />
       )}
 

@@ -171,41 +171,53 @@ export async function _createEquipamento(
   body: Equipamento
 ) {
   const equipamento = await createEquipamento(userToken, body);
-  const { nome } = await getObra(userToken, equipamento.obra);
-  const { nome_completo } = await getUsuario(
-    userToken,
-    equipamento.encarregado
-  );
+  if (equipamento.data) {
+    return equipamento;
+  } else {
+    const { nome } = await getObra(userToken, equipamento.obra);
+    const { nome_completo } = await getUsuario(
+      userToken,
+      equipamento.encarregado
+    );
 
-  const editBody = {
-    obraX: nome,
-    encarregadoX: nome_completo,
-  };
+    const editBody = {
+      obraX: nome,
+      encarregadoX: nome_completo,
+    };
 
-  await updateEquipamento(userToken, equipamento.id, editBody);
-  return equipamento;
+    await updateEquipamento(userToken, equipamento.id, editBody);
+    return equipamento;
+  }
 }
 
 export async function createEquipamento(
   userToken: User['token'],
   body: Equipamento
 ) {
-  try {
-    const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/equipamento/records`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
-        },
-        body: JSON.stringify(body),
-      }
-    );
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw new Error('An error occured while creating equipamento ');
+  const equipamentos = await getEquipamentos(userToken, 'created');
+  const existingCodigo = equipamentos.some(
+    (equip: Equipamento) => equip.codigo === body.codigo
+  );
+  if (existingCodigo) {
+    return { data: 'Código existente' };
+  } else {
+    try {
+      const response = await fetch(
+        `${process.env.BASE_API_URL}/collections/equipamento/records`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${userToken}`,
+          },
+          body: JSON.stringify(body),
+        }
+      );
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      throw new Error('An error occured while creating equipamento ');
+    }
   }
 }
 

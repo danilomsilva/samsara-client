@@ -5,9 +5,11 @@ import {
   json,
 } from '@remix-run/node';
 import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import Input from '~/components/Input';
+import InputMask from '~/components/InputMask';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import Select from '~/components/Select';
@@ -89,7 +91,10 @@ export async function action({ params, request }: ActionArgs) {
     numero: z.string().min(1, { message: 'Campo ...' }),
     codigo: z.string(),
     numero_serie: z.string().min(1, CAMPO_OBRIGATORIO),
-    ano: z.string().min(1, { message: 'Campo ...' }),
+    ano: z
+      .string()
+      .min(1, { message: 'Campo ...' })
+      .refine((val) => +val > 1950, { message: 'Mín. 1950' }),
     combustivel: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     valor_locacao: z.string().min(1, CAMPO_OBRIGATORIO),
     tipo_locacao: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
@@ -150,7 +155,12 @@ export async function action({ params, request }: ActionArgs) {
     };
     const equipamento = await _createEquipamento(userToken, body);
     if (equipamento.data) {
-      return json({ error: equipamento.data });
+      setToastMessage(session, 'Erro', 'Código já está em uso!', 'error');
+      return redirect('/equipamento/new', {
+        headers: {
+          'Set-Cookie': await commitSession(session),
+        },
+      });
     }
     setToastMessage(session, 'Sucesso', 'Equipamento adicionado!', 'success');
     return redirect('/equipamento', {
@@ -194,6 +204,24 @@ export default function NewEquipamento() {
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
+  const [selectedGrupo, setSelectedGrupo] = useState<Option | null>(null);
+  const [codigoPrefix, setCodigoPrefix] = useState<string | null>(null);
+  const [equipNumero, setEquipNumero] = useState<string | null>(null);
+  const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (selectedGrupo) {
+      setCodigoPrefix(selectedGrupo.displayName.charAt(0));
+    }
+  }, [selectedGrupo]);
+
+  useEffect(() => {
+    if (codigoPrefix && equipNumero) {
+      setGeneratedCode(`${codigoPrefix}-${equipNumero}`);
+    } else {
+      setGeneratedCode('-');
+    }
+  }, [codigoPrefix, equipNumero]);
 
   const sortedObras: Option[] = obras
     ?.map((item: Obra) => {
@@ -246,6 +274,8 @@ export default function NewEquipamento() {
               defaultValue={equipamento?.grupo_equipamento}
               placeholder="-"
               error={actionData?.errors?.grupo_equipamento}
+              setSelectedGrupo={setSelectedGrupo}
+              disabled={equipamento?.grupo_equipamento}
             />
             <Select
               name="tipo_equipamento"
@@ -262,13 +292,15 @@ export default function NewEquipamento() {
               className="!w-[80px]"
               defaultValue={equipamento?.numero}
               error={actionData?.errors?.numero}
+              onChange={setEquipNumero}
+              disabled={equipamento?.numero}
             />
             <Input
               type="text"
               name="codigo"
               label="Código"
               className="!w-[80px]"
-              defaultValue={equipamento ? equipamento?.codigo : '-'} // TODO: auto create codigo prefix
+              defaultValue={equipamento ? equipamento?.codigo : generatedCode}
               error={actionData?.errors?.codigo}
               disabled
             />
@@ -281,13 +313,14 @@ export default function NewEquipamento() {
               defaultValue={equipamento?.numero_serie}
               error={actionData?.errors?.numero_serie}
             />
-            <Input
+            <InputMask
+              mask="9999"
               type="text"
               name="ano"
               label="Ano"
-              className="!w-[80px]"
               defaultValue={equipamento?.ano}
               error={actionData?.errors?.ano}
+              className="w-20"
             />
             <Select
               name="combustivel"

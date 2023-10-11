@@ -10,6 +10,7 @@ export type PropTypes = {
   variant: 'success' | 'info' | 'warning' | 'error';
   title?: string;
   message: string;
+  timestamp?: string;
 };
 
 const variants = {
@@ -31,7 +32,12 @@ const variants = {
   },
 };
 
-export default function ToastMessage({ title, message, variant }: PropTypes) {
+export default function ToastMessage({
+  title,
+  message,
+  variant,
+  timestamp,
+}: PropTypes) {
   const [show, setShow] = useState(true);
 
   useEffect(() => {
@@ -41,7 +47,7 @@ export default function ToastMessage({ title, message, variant }: PropTypes) {
     }, 7000);
 
     return () => clearTimeout(timeout);
-  }, [title, message, variant]);
+  }, [title, message, variant, timestamp]);
 
   return (
     <Transition

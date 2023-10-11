@@ -81,8 +81,10 @@ export default function DataTable({
                                 {row.numero_serie &&
                                 path === '/equipamento' &&
                                 columnName === 'codigo' ? (
-                                  <div className="flex justify-between items-center w-full mr-1">
-                                    <div>{row[columnName]}</div>
+                                  <div className="flex justify-between items-center w-full mr-1 gap-2">
+                                    <div className="whitespace-nowrap">
+                                      {row[columnName]}
+                                    </div>
                                     <Tooltip
                                       contentClassName="w-[200px] z-50"
                                       content={`Número de série: ${row.numero_serie}`}
@@ -91,7 +93,9 @@ export default function DataTable({
                                     </Tooltip>
                                   </div>
                                 ) : (
-                                  row[columnName]
+                                  <div className="mr-2 whitespace-nowrap">
+                                    {row[columnName]}
+                                  </div>
                                 )}
                               </div>
                             </Link>
