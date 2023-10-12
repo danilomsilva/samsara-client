@@ -33,7 +33,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import { formatCurrency } from '~/utils/utils';
+import { formatCurrency, formatNumberWithDotDelimiter } from '~/utils/utils';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -111,22 +111,27 @@ export default function EquipamentoPage() {
 
   const formattedEquipamentos: Equipamento[] = equipamentos.map((item) => {
     const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
+    const suffix = isHorimetro ? ' h' : ' Km';
     return {
       ...item,
       combustivel: item.combustivel?.replaceAll('_', ' '),
       valor_locacao: formatCurrency(Number(item.valor_locacao)),
-      instrumento_medicao_inicio: isHorimetro
-        ? `${item.instrumento_medicao_inicio} Hr`
-        : `${item.instrumento_medicao_inicio} Km`,
-      instrumento_medicao_atual: isHorimetro
-        ? `${item.instrumento_medicao_atual} Hr`
-        : `${item.instrumento_medicao_atual} Km`,
-      notificar_revisao_faltando: isHorimetro
-        ? `${item.notificar_revisao_faltando} Hr`
-        : `${item.notificar_revisao_faltando} Km`,
-      frequencia_revisao: isHorimetro
-        ? `${item.frequencia_revisao} Hr`
-        : `${item.frequencia_revisao} Km`,
+      instrumento_medicao_inicio: `${
+        item.instrumento_medicao_inicio &&
+        formatNumberWithDotDelimiter(Number(item.instrumento_medicao_inicio))
+      } ${suffix}`,
+      instrumento_medicao_atual: `${
+        item.instrumento_medicao_atual &&
+        formatNumberWithDotDelimiter(Number(item.instrumento_medicao_atual))
+      } ${suffix}`,
+      frequencia_revisao: `${
+        item.frequencia_revisao &&
+        formatNumberWithDotDelimiter(Number(item.frequencia_revisao))
+      } ${suffix}`,
+      notificar_revisao_faltando: `${
+        item.notificar_revisao_faltando &&
+        formatNumberWithDotDelimiter(Number(item.notificar_revisao_faltando))
+      } ${suffix}`,
     };
   });
 

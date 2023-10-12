@@ -17,7 +17,7 @@ export const OPERADOR_ATIVIDADES: Option[] = [
 export const TIPOS_LOCACAO: Option[] = [
   { name: 'Anual', displayName: 'Anual' },
   { name: 'Mensal', displayName: 'Mensal' },
-  { name: 'Diário', displayName: 'Diário' },
+  { name: 'Diária', displayName: 'Diária' },
   { name: 'Hora', displayName: 'Hora' },
 ];
 

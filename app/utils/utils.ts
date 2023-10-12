@@ -69,6 +69,10 @@ export const formatCurrency = (value: number): string => {
   return formatter.format(value);
 };
 
+export const formatNumberWithDotDelimiter = (value: number): string => {
+  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
 // STRING
 export const capitalizeWords = (string: string): string => {
   const capitalizedWords = string.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
