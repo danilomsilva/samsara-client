@@ -5,12 +5,13 @@ type PropTypes = {
   name: string;
   label: string;
   className?: string;
-  type: 'text' | 'number' | 'password' | 'currency';
+  type: 'text' | 'number' | 'password' | 'currency' | 'IM';
   disabled?: boolean;
   defaultValue?: string;
   autoFocus?: boolean;
   error?: string;
   onChange?: (value: string) => void;
+  suffix?: string;
 };
 
 export default function Input({
@@ -23,6 +24,7 @@ export default function Input({
   autoFocus,
   error,
   onChange,
+  suffix,
 }: PropTypes) {
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
@@ -40,6 +42,18 @@ export default function Input({
           fixedDecimalScale
           decimalScale={2}
           defaultValue={defaultValue}
+        />
+      ) : type === 'IM' ? (
+        <NumericFormat
+          name={name}
+          className="rounded-lg p-2 px-4 focus:outline-blue h-9"
+          thousandSeparator="."
+          decimalSeparator=","
+          allowNegative={false}
+          fixedDecimalScale
+          decimalScale={0}
+          defaultValue={defaultValue}
+          suffix={suffix}
         />
       ) : (
         <input

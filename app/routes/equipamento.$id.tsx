@@ -41,7 +41,7 @@ import {
   INSTRUMENTOS_MEDICAO,
   CAMPO_OBRIGATORIO,
 } from '~/utils/consts';
-import { convertCurrencyStringToNumber } from '~/utils/utils';
+import { convertCurrencyStringToNumber, removeIMSuffix } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -94,7 +94,7 @@ export async function action({ params, request }: ActionArgs) {
     ano: z
       .string()
       .min(1, { message: 'Campo ...' })
-      .refine((val) => +val > 1950, { message: 'Mín. 1950' }),
+      .refine((val) => +val > 1949, { message: 'Mín. 1950' }),
     combustivel: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     valor_locacao: z.string().min(1, CAMPO_OBRIGATORIO),
     tipo_locacao: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
@@ -151,7 +151,16 @@ export async function action({ params, request }: ActionArgs) {
       valor_locacao: convertCurrencyStringToNumber(
         formData.valor_locacao as string
       ) as string,
-      instrumento_medicao_atual: formData.instrumento_medicao_inicio as string,
+      instrumento_medicao_atual: removeIMSuffix(
+        formData.instrumento_medicao_inicio as string
+      ),
+      instrumento_medicao_inicio: removeIMSuffix(
+        formData.instrumento_medicao_inicio as string
+      ),
+      frequencia_revisao: removeIMSuffix(formData.frequencia_revisao as string),
+      notificar_revisao_faltando: removeIMSuffix(
+        formData.notificar_revisao_faltando as string
+      ),
     };
     const equipamento = await _createEquipamento(userToken, body);
     if (equipamento.data) {
@@ -176,6 +185,13 @@ export async function action({ params, request }: ActionArgs) {
       valor_locacao: convertCurrencyStringToNumber(
         formData.valor_locacao as string
       ) as string,
+      instrumento_medicao_atual: removeIMSuffix(
+        formData.instrumento_medicao_atual as string
+      ),
+      frequencia_revisao: removeIMSuffix(formData.frequencia_revisao as string),
+      notificar_revisao_faltando: removeIMSuffix(
+        formData.notificar_revisao_faltando as string
+      ),
     };
     await _updateEquipamento(
       userToken,
@@ -208,6 +224,8 @@ export default function NewEquipamento() {
   const [codigoPrefix, setCodigoPrefix] = useState<string | null>(null);
   const [equipNumero, setEquipNumero] = useState<string | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
+  const [selectedIM, setSelectedIM] = useState<Option | null>(null);
+  const suffixIM = selectedIM && selectedIM.name === 'Horímetro' ? ' h' : ' Km';
 
   useEffect(() => {
     if (selectedGrupo) {
@@ -274,7 +292,7 @@ export default function NewEquipamento() {
               defaultValue={equipamento?.grupo_equipamento}
               placeholder="-"
               error={actionData?.errors?.grupo_equipamento}
-              setSelectedGrupo={setSelectedGrupo}
+              onChange={setSelectedGrupo}
               disabled={equipamento?.grupo_equipamento}
             />
             <Select
@@ -320,7 +338,7 @@ export default function NewEquipamento() {
               label="Ano"
               defaultValue={equipamento?.ano}
               error={actionData?.errors?.ano}
-              className="w-20"
+              className="!w-20"
             />
             <Select
               name="combustivel"
@@ -360,21 +378,22 @@ export default function NewEquipamento() {
               placeholder="-"
               defaultValue={equipamento?.instrumento_medicao}
               error={actionData?.errors?.instrumento_medicao}
+              onChange={setSelectedIM}
             />
             <Input
-              type="number"
+              type="IM"
               name={
                 equipamento // TODO: check if atual value is equal or bigger than initial - do API call
                   ? 'instrumento_medicao_atual'
                   : 'instrumento_medicao_inicio'
               }
               label={`${
-                equipamento
-                  ? equipamento.instrumento_medicao === 'Horímetro'
-                    ? 'Horímetro '
-                    : 'Odômetro '
-                  : 'Hor./Odôm. '
-              }${equipamento ? 'atual' : 'inicial'}`}
+                selectedIM
+                  ? selectedIM.name === 'Horímetro'
+                    ? 'Horímetro'
+                    : 'Odômetro'
+                  : 'Valor'
+              } ${equipamento ? 'atual' : 'inicial'}`}
               className="!w-[180px]"
               defaultValue={
                 equipamento
@@ -386,22 +405,25 @@ export default function NewEquipamento() {
                   ? actionData?.errors?.instrumento_medicao_atual
                   : actionData?.errors?.instrumento_medicao_inicio
               }
+              suffix={suffixIM}
             />
             <Input
-              type="number"
+              type="IM"
               name="frequencia_revisao"
               label="Revisar a cada"
               className="!w-[130px]"
               defaultValue={equipamento?.frequencia_revisao}
               error={actionData?.errors?.frequencia_revisao}
+              suffix={suffixIM}
             />
             <Input
-              type="number"
+              type="IM"
               name="notificar_revisao_faltando"
               label="Notificar faltando"
               className="!w-[130px]"
               defaultValue={equipamento?.notificar_revisao_faltando}
               error={actionData?.errors?.notificar_revisao_faltando}
+              suffix={suffixIM}
             />
           </Row>
           <Row>

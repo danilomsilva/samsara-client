@@ -13,7 +13,7 @@ type PropTypes = {
   placeholder?: string;
   error?: string;
   defaultValue?: string;
-  setSelectedGrupo?: (option: Option) => void;
+  onChange?: (option: Option) => void;
   disabled?: boolean;
 };
 
@@ -25,7 +25,7 @@ export default function Select({
   placeholder,
   error,
   defaultValue,
-  setSelectedGrupo,
+  onChange,
   disabled,
 }: PropTypes) {
   const [selected, setSelected] = useState<Option | null>(null);
@@ -38,7 +38,7 @@ export default function Select({
 
   const handleChange = (option: Option) => {
     setSelected(option);
-    setSelectedGrupo && setSelectedGrupo(option);
+    onChange && onChange(option);
   };
 
   const filteredOptions =

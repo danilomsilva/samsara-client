@@ -82,3 +82,7 @@ export const normalizeString = (string: string) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
+
+export const removeIMSuffix = (string: string) => {
+  return string?.replace(' h', '')?.replace(' Km', '')?.replaceAll('.', '');
+};
