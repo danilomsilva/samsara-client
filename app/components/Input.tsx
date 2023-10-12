@@ -12,6 +12,7 @@ type PropTypes = {
   error?: string;
   onChange?: (value: string) => void;
   suffix?: string;
+  readOnly?: boolean;
 };
 
 export default function Input({
@@ -25,6 +26,7 @@ export default function Input({
   error,
   onChange,
   suffix,
+  readOnly,
 }: PropTypes) {
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
@@ -67,6 +69,7 @@ export default function Input({
           autoFocus={autoFocus}
           autoComplete="off"
           onChange={(e) => onChange && onChange(e.target.value)}
+          readOnly={readOnly}
         />
       )}
 

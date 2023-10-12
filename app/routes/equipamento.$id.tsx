@@ -41,7 +41,11 @@ import {
   INSTRUMENTOS_MEDICAO,
   CAMPO_OBRIGATORIO,
 } from '~/utils/consts';
-import { convertCurrencyStringToNumber, removeIMSuffix } from '~/utils/utils';
+import {
+  convertCurrencyStringToNumber,
+  formatNumberWithDotDelimiter,
+  removeIMSuffix,
+} from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -165,7 +169,7 @@ export async function action({ params, request }: ActionArgs) {
     const equipamento = await _createEquipamento(userToken, body);
     if (equipamento.data) {
       setToastMessage(session, 'Erro', 'Código já está em uso!', 'error');
-      return redirect('/equipamento/new', {
+      return redirect('./', {
         headers: {
           'Set-Cookie': await commitSession(session),
         },
@@ -180,30 +184,61 @@ export async function action({ params, request }: ActionArgs) {
   }
 
   if (formData._action === 'edit') {
-    const body: Equipamento = {
-      ...formData,
-      valor_locacao: convertCurrencyStringToNumber(
-        formData.valor_locacao as string
-      ) as string,
-      instrumento_medicao_atual: removeIMSuffix(
-        formData.instrumento_medicao_atual as string
-      ),
-      frequencia_revisao: removeIMSuffix(formData.frequencia_revisao as string),
-      notificar_revisao_faltando: removeIMSuffix(
-        formData.notificar_revisao_faltando as string
-      ),
-    };
-    await _updateEquipamento(
+    const equipamento: Equipamento = await getEquipamento(
       userToken,
-      params.id as string,
-      body as Equipamento
+      params.id as string
     );
-    setToastMessage(session, 'Sucesso', 'Equipamento editado!', 'success');
-    return redirect('/equipamento', {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
+
+    // will throw toast message if new value is NOT greater than previous one.
+    if (
+      Number(removeIMSuffix(formData.instrumento_medicao_atual as string)) <
+      Number(equipamento.instrumento_medicao_atual)
+    ) {
+      setToastMessage(
+        session,
+        'Erro',
+        `${
+          formData.instrumento_medicao === 'Horímetro'
+            ? 'Horímetro'
+            : 'Odômetro'
+        } informado não pode ser menor que último valor (${formatNumberWithDotDelimiter(
+          Number(equipamento.instrumento_medicao_atual)
+        )})`,
+        'error'
+      );
+      return redirect('./', {
+        headers: {
+          'Set-Cookie': await commitSession(session),
+        },
+      });
+    } else {
+      const body: Equipamento = {
+        ...formData,
+        valor_locacao: convertCurrencyStringToNumber(
+          formData.valor_locacao as string
+        ) as string,
+        instrumento_medicao_atual: removeIMSuffix(
+          formData.instrumento_medicao_atual as string
+        ),
+        frequencia_revisao: removeIMSuffix(
+          formData.frequencia_revisao as string
+        ),
+        notificar_revisao_faltando: removeIMSuffix(
+          formData.notificar_revisao_faltando as string
+        ),
+      };
+      await _updateEquipamento(
+        userToken,
+        params.id as string,
+        body as Equipamento
+      );
+      setToastMessage(session, 'Sucesso', 'Equipamento editado!', 'success');
+      return redirect('/equipamento', {
+        headers: {
+          'Set-Cookie': await commitSession(session),
+        },
+      });
+    }
   }
   return redirect('..');
 }
@@ -225,7 +260,29 @@ export default function NewEquipamento() {
   const [equipNumero, setEquipNumero] = useState<string | null>(null);
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [selectedIM, setSelectedIM] = useState<Option | null>(null);
-  const suffixIM = selectedIM && selectedIM.name === 'Horímetro' ? ' h' : ' Km';
+  const [selectedIMSuffix, setSelectedIMSuffix] = useState<string>();
+
+  useEffect(() => {
+    if (equipamento) {
+      if (equipamento.instrumento_medicao === 'Horímetro') {
+        setSelectedIMSuffix(' h');
+      }
+      if (equipamento.instrumento_medicao === 'Odômetro') {
+        setSelectedIMSuffix(' km');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (selectedIM) {
+      if (selectedIM.name === 'Horímetro') {
+        setSelectedIMSuffix(' h');
+      }
+      if (selectedIM.name === 'Odômetro') {
+        setSelectedIMSuffix(' km');
+      }
+    }
+  }, [selectedIM]);
 
   useEffect(() => {
     if (selectedGrupo) {
@@ -312,6 +369,7 @@ export default function NewEquipamento() {
               error={actionData?.errors?.numero}
               onChange={setEquipNumero}
               disabled={equipamento?.numero}
+              readOnly={equipamento?.numero}
             />
             <Input
               type="text"
@@ -321,6 +379,7 @@ export default function NewEquipamento() {
               defaultValue={equipamento ? equipamento?.codigo : generatedCode}
               error={actionData?.errors?.codigo}
               disabled
+              readOnly
             />
           </Row>
           <Row>
@@ -383,17 +442,13 @@ export default function NewEquipamento() {
             <Input
               type="IM"
               name={
-                equipamento // TODO: check if atual value is equal or bigger than initial - do API call
+                equipamento
                   ? 'instrumento_medicao_atual'
                   : 'instrumento_medicao_inicio'
               }
-              label={`${
-                selectedIM
-                  ? selectedIM.name === 'Horímetro'
-                    ? 'Horímetro'
-                    : 'Odômetro'
-                  : 'Valor'
-              } ${equipamento ? 'atual' : 'inicial'}`}
+              label={`${selectedIM ? selectedIM.displayName : 'Valor'} ${
+                equipamento ? 'atual' : 'inicial'
+              }`}
               className="!w-[180px]"
               defaultValue={
                 equipamento
@@ -405,7 +460,7 @@ export default function NewEquipamento() {
                   ? actionData?.errors?.instrumento_medicao_atual
                   : actionData?.errors?.instrumento_medicao_inicio
               }
-              suffix={suffixIM}
+              suffix={selectedIMSuffix}
             />
             <Input
               type="IM"
@@ -414,7 +469,7 @@ export default function NewEquipamento() {
               className="!w-[130px]"
               defaultValue={equipamento?.frequencia_revisao}
               error={actionData?.errors?.frequencia_revisao}
-              suffix={suffixIM}
+              suffix={selectedIMSuffix}
             />
             <Input
               type="IM"
@@ -423,7 +478,7 @@ export default function NewEquipamento() {
               className="!w-[130px]"
               defaultValue={equipamento?.notificar_revisao_faltando}
               error={actionData?.errors?.notificar_revisao_faltando}
-              suffix={suffixIM}
+              suffix={selectedIMSuffix}
             />
           </Row>
           <Row>

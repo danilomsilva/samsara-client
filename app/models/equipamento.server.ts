@@ -28,7 +28,7 @@ export type Equipamento = {
   ano?: string;
   combustivel?: string;
   encarregadoX?: string;
-  instrumento_medicao?: 'Km' | 'Hr';
+  instrumento_medicao?: 'Odômetro' | 'Horímetro';
   instrumento_medicao_inicio?: string;
   instrumento_medicao_atual?: string;
   frequencia_revisao?: string;
