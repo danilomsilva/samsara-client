@@ -32,7 +32,8 @@ export type Equipamento = {
   instrumento_medicao_inicio?: string;
   instrumento_medicao_atual?: string;
   frequencia_revisao?: string;
-  notificar_revisao_faltando?: string;
+  proxima_revisao?: string;
+  revisao_IM_inicio?: string;
   expand?: {
     obra: {
       nome: string;
@@ -136,7 +137,7 @@ export async function getEquipamentos(
       instrumento_medicao_inicio: item.instrumento_medicao_inicio,
       instrumento_medicao_atual: item.instrumento_medicao_atual,
       frequencia_revisao: item.frequencia_revisao,
-      notificar_revisao_faltando: item.notificar_revisao_faltando,
+      proxima_revisao: item.proxima_revisao,
     }));
     return transformedData;
   } catch (error) {

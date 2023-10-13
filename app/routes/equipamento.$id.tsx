@@ -104,7 +104,6 @@ export async function action({ params, request }: ActionArgs) {
     tipo_locacao: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     instrumento_medicao: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     frequencia_revisao: z.string().min(1, CAMPO_OBRIGATORIO),
-    notificar_revisao_faltando: z.string().min(1, CAMPO_OBRIGATORIO),
     obra: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     encarregado: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
   };
@@ -141,8 +140,7 @@ export async function action({ params, request }: ActionArgs) {
           errors.instrumento_medicao_inicio?._errors[0],
         instrumento_medicao_atual: errors.instrumento_medicao_atual?._errors[0],
         frequencia_revisao: errors.frequencia_revisao?._errors[0],
-        notificar_revisao_faltando:
-          errors.notificar_revisao_faltando?._errors[0],
+        proxima_revisao: errors.proxima_revisao?._errors[0],
         obra: errors.obra?._errors[0],
         encarregado: errors.encarregado?._errors[0],
       },
@@ -162,8 +160,9 @@ export async function action({ params, request }: ActionArgs) {
         formData.instrumento_medicao_inicio as string
       ),
       frequencia_revisao: removeIMSuffix(formData.frequencia_revisao as string),
-      notificar_revisao_faltando: removeIMSuffix(
-        formData.notificar_revisao_faltando as string
+      proxima_revisao: String(
+        +removeIMSuffix(formData.instrumento_medicao_inicio as string) +
+          +removeIMSuffix(formData.frequencia_revisao as string)
       ),
     };
     const equipamento = await _createEquipamento(userToken, body);
@@ -223,9 +222,7 @@ export async function action({ params, request }: ActionArgs) {
         frequencia_revisao: removeIMSuffix(
           formData.frequencia_revisao as string
         ),
-        notificar_revisao_faltando: removeIMSuffix(
-          formData.notificar_revisao_faltando as string
-        ),
+        proxima_revisao: equipamento.proxima_revisao,
       };
       await _updateEquipamento(
         userToken,
@@ -471,15 +468,17 @@ export default function NewEquipamento() {
               error={actionData?.errors?.frequencia_revisao}
               suffix={selectedIMSuffix}
             />
-            <Input
-              type="IM"
-              name="notificar_revisao_faltando"
-              label="Notificar faltando"
-              className="!w-[130px]"
-              defaultValue={equipamento?.notificar_revisao_faltando}
-              error={actionData?.errors?.notificar_revisao_faltando}
-              suffix={selectedIMSuffix}
-            />
+            {equipamento && (
+              <Input
+                type="IM"
+                name="proxima_revisao"
+                label="Próxima revisão"
+                className="!w-[130px]"
+                defaultValue={equipamento?.proxima_revisao}
+                error={actionData?.errors?.proxima_revisao}
+                suffix={selectedIMSuffix}
+              />
+            )}
           </Row>
           <Row>
             <Select

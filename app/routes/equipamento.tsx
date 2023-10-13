@@ -128,9 +128,9 @@ export default function EquipamentoPage() {
         item.frequencia_revisao &&
         formatNumberWithDotDelimiter(Number(item.frequencia_revisao))
       } ${suffix}`,
-      notificar_revisao_faltando: `${
-        item.notificar_revisao_faltando &&
-        formatNumberWithDotDelimiter(Number(item.notificar_revisao_faltando))
+      proxima_revisao: `${
+        item.proxima_revisao &&
+        formatNumberWithDotDelimiter(Number(item.proxima_revisao))
       } ${suffix}`,
     };
   });
@@ -180,7 +180,7 @@ export default function EquipamentoPage() {
           { name: 'instrumento_medicao_inicio', displayName: 'IM Início' },
           { name: 'instrumento_medicao_atual', displayName: 'IM Atual' },
           { name: 'frequencia_revisao', displayName: 'Revisão' },
-          { name: 'notificar_revisao_faltando', displayName: 'Revisar em' },
+          { name: 'proxima_revisao', displayName: 'Próx. Revisão' },
         ]}
         rows={formattedEquipamentos}
         path="/equipamento"

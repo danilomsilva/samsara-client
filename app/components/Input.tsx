@@ -48,7 +48,9 @@ export default function Input({
       ) : type === 'IM' ? (
         <NumericFormat
           name={name}
-          className="rounded-lg p-2 px-4 focus:outline-blue h-9"
+          className={`${
+            disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
+          } rounded-lg p-2 px-4 focus:outline-blue h-9`}
           thousandSeparator="."
           decimalSeparator=","
           allowNegative={false}
@@ -56,6 +58,8 @@ export default function Input({
           decimalScale={0}
           defaultValue={defaultValue}
           suffix={suffix}
+          readOnly={readOnly}
+          onChange={(e) => onChange && onChange(e.target.value)}
         />
       ) : (
         <input

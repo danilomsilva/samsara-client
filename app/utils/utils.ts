@@ -88,5 +88,5 @@ export const normalizeString = (string: string) =>
     .toLowerCase();
 
 export const removeIMSuffix = (string: string) => {
-  return string?.replace(' h', '')?.replace(' Km', '')?.replaceAll('.', '');
+  return string?.replace(' h', '')?.replace(' km', '')?.replaceAll('.', '');
 };
