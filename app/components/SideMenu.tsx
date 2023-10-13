@@ -78,7 +78,7 @@ export default function SideMenu({ tipoAcesso, children, user }: PropTypes) {
       </div>
       <div className="w-full">
         <div className="border-t-blue border-t-8 w-full h-screen p-4 pl-6">
-          {children}
+          <div className="h-full overflow-hidden">{children}</div>
         </div>
       </div>
     </div>

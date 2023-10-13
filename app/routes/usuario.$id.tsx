@@ -29,7 +29,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import { type Option, TIPOS_ACESSO } from '~/utils/consts';
+import { type Option, TIPOS_ACESSO, CAMPO_OBRIGATORIO } from '~/utils/consts';
 import { capitalizeWords, generateCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -53,19 +53,14 @@ export async function action({ params, request }: ActionArgs) {
 
   const validationScheme = z.object({
     codigo: z.string(),
-    nome_completo: z.string().min(1, { message: 'Campo obrigatório' }),
-    email: z
-      .string()
-      .min(1, { message: 'Campo obrigatório' })
-      .email('Digite um email válido'),
+    nome_completo: z.string().min(1, CAMPO_OBRIGATORIO),
+    email: z.string().min(1, CAMPO_OBRIGATORIO).email('Digite um email válido'),
     password: z
       .string()
-      .min(1, { message: 'Campo obrigatório' })
+      .min(1, CAMPO_OBRIGATORIO)
       .min(5, { message: 'Senha muito curta' }),
-    tipo_acesso: z
-      .string()
-      .refine((val) => val, { message: 'Campo obrigatório' }),
-    obra: z.string().refine((val) => val, { message: 'Campo obrigatório' }),
+    tipo_acesso: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
+    obra: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
   });
 
   const validatedScheme = validationScheme.safeParse(formData);
@@ -152,7 +147,7 @@ export default function NewUsuario() {
       content={
         <>
           <Row>
-            <Input
+            <Input // TODO: improve! instead of checking for the next available, check for the last available to avoid duplication!
               type="text"
               name="codigo"
               label="Código"

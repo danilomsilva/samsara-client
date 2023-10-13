@@ -3,6 +3,7 @@ import ChevronDownIcon from './icons/ChrevronDownIcon';
 import type { Option } from '~/utils/consts';
 import ErrorMessage from './ErrorMessage';
 import { useEffect, useState } from 'react';
+import { normalizeString } from '~/utils/utils';
 
 type PropTypes = {
   name: string;
@@ -12,6 +13,8 @@ type PropTypes = {
   placeholder?: string;
   error?: string;
   defaultValue?: string;
+  onChange?: (option: Option) => void;
+  disabled?: boolean;
 };
 
 export default function Select({
@@ -22,6 +25,8 @@ export default function Select({
   placeholder,
   error,
   defaultValue,
+  onChange,
+  disabled,
 }: PropTypes) {
   const [selected, setSelected] = useState<Option | null>(null);
   const [query, setQuery] = useState('');
@@ -33,24 +38,21 @@ export default function Select({
 
   const handleChange = (option: Option) => {
     setSelected(option);
+    onChange && onChange(option);
   };
 
   const filteredOptions =
     query === ''
       ? options
       : options.filter((option) =>
-          option.displayName
-            .toLowerCase()
-            .split(' ')
-            .join('')
-            .includes(query.toLocaleLowerCase().split(' ').join(''))
+          normalizeString(option.displayName).includes(normalizeString(query))
         );
 
   return (
-    <fieldset className="flex flex-col gap-1 w-full">
+    <fieldset className={`${className} flex flex-col gap-1 w-full`}>
       {/* hidden input only way to send id to backend */}
       <input type="hidden" name={name} value={selected?.name} />
-      <Combobox onChange={handleChange} name={name}>
+      <Combobox onChange={handleChange} name={name} disabled={disabled}>
         <div className="relative text-sm">
           <div className="flex flex-col gap-1">
             <Combobox.Label className="ml-1 text-grey-dark">
@@ -58,7 +60,10 @@ export default function Select({
             </Combobox.Label>
             <div className="relative">
               <Combobox.Input
-                className={`${className} w-full rounded-lg p-2 pr-10 focus:outline-blue`}
+                className={`${className} w-full rounded-lg p-2 pr-10 focus:outline-blue ${
+                  disabled &&
+                  'border border-grey/50 bg-grey/10 pointer-events-none'
+                }`}
                 displayValue={(option: Option) =>
                   defaultValue ? defaultValue : option.displayName
                 }

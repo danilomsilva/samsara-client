@@ -130,6 +130,7 @@ export default function OSPage() {
           )}
         </div>
       </div>
+
       <DataTable
         columns={[
           { name: 'created', displayName: 'Data de criação' },

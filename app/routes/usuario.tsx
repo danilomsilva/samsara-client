@@ -35,7 +35,7 @@ import {
 
 // page title
 export const meta: V2_MetaFunction = () => {
-  return [{ title: 'Usuario | Samsara' }];
+  return [{ title: 'Usuário | Samsara' }];
 };
 
 export async function loader({ request }: LoaderArgs) {
@@ -99,6 +99,15 @@ export default function UsuarioPage() {
     setModalOpen(false);
   };
 
+  const deletingUsuario = usuarios.find(
+    (usuario) => usuario?.id === rowSelected
+  );
+
+  const formattedUsuario = usuarios.map((item) => ({
+    ...item,
+    tipo_acesso: item.tipo_acesso?.replaceAll('_', ' '),
+  }));
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -109,14 +118,14 @@ export default function UsuarioPage() {
               <LinkButton
                 to={`./${rowSelected}`}
                 variant="grey"
-                icon={<PencilIcon className="h-4 w-4" />}
+                icon={<PencilIcon />}
               >
                 Editar
               </LinkButton>
               <Button
                 text="Remover"
                 variant="red"
-                icon={<MinusCircleIcon className="h-4 w-4" />}
+                icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
               />
             </>
@@ -137,7 +146,7 @@ export default function UsuarioPage() {
           { name: 'obraX', displayName: 'Alocado à obra' },
           // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
         ]}
-        rows={usuarios}
+        rows={formattedUsuario}
         path="/usuario"
         placeholder="Nenhum usuário cadastrado"
       />
@@ -149,7 +158,7 @@ export default function UsuarioPage() {
           title="Remover Usuário"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir o usuário XXXXX ?`}
+          content={`Deseja excluir o usuário ${deletingUsuario?.nome_completo} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="userId" value={rowSelected || ''} />
@@ -158,7 +167,7 @@ export default function UsuarioPage() {
                 value="delete"
                 variant="red"
                 text="Remover"
-                icon={<MinusCircleIcon className="h-5 w-5" />}
+                icon={<MinusCircleIcon />}
               />
             </Form>
           }

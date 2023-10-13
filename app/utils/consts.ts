@@ -13,3 +13,24 @@ export const OPERADOR_ATIVIDADES: Option[] = [
   { name: 'Operador', displayName: 'Operador' },
   { name: 'Mecânico', displayName: 'Mecânico' },
 ];
+
+export const TIPOS_LOCACAO: Option[] = [
+  { name: 'Anual', displayName: 'Anual' },
+  { name: 'Mensal', displayName: 'Mensal' },
+  { name: 'Diária', displayName: 'Diária' },
+  { name: 'Hora', displayName: 'Hora' },
+];
+
+export const COMBUSTIVEIS: Option[] = [
+  { name: 'Diesel_S10', displayName: 'Diesel S10' },
+  { name: 'Diesel_S500', displayName: 'Diesel S500' },
+  { name: 'Gasolina', displayName: 'Gasolina' },
+  { name: 'Etanol', displayName: 'Etanol' },
+];
+
+export const INSTRUMENTOS_MEDICAO: Option[] = [
+  { name: 'Horímetro', displayName: 'Horímetro' },
+  { name: 'Odômetro', displayName: 'Odômetro' },
+];
+
+export const CAMPO_OBRIGATORIO = { message: 'Campo obrigatório' };

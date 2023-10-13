@@ -15,15 +15,7 @@ export const generateCodigo = (prefix: string, array: unknown) => {
   }
 };
 
-// nome_completo
-export const capitalizeWords = (string: string): string => {
-  const capitalizedWords = string.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
-    letter.toUpperCase()
-  );
-  return capitalizedWords;
-};
-
-// DATE FUNCTIONS - start
+// DATE FUNCTIONS
 export const formatDateTime = (date: string) => {
   return format(new Date(date), 'dd/MM/yyyy HH:mm');
 };
@@ -51,4 +43,50 @@ export const isDateBefore = (date1: string, date2: string): boolean => {
   return isBefore(parsedDate1, parsedDate2);
 };
 
-// DATE FUNCTIONS - end
+// CURRENCY
+export const convertCurrencyStringToNumber = (
+  currencyString: string
+): string | null | undefined => {
+  if (currencyString.startsWith('R$ ')) {
+    const str = currencyString
+      .replace('R$', '')
+      .replaceAll('.', '')
+      .replaceAll(',', '');
+
+    const result = `${str.slice(0, -2)}.${str.slice(-2)}`;
+    return result;
+  } else {
+    return null;
+  }
+};
+
+export const formatCurrency = (value: number): string => {
+  const formatter = new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
+    minimumFractionDigits: 2,
+  });
+  return formatter.format(value);
+};
+
+export const formatNumberWithDotDelimiter = (value: number): string => {
+  return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
+// STRING
+export const capitalizeWords = (string: string): string => {
+  const capitalizedWords = string.replace(/(^\w{1})|(\s+\w{1})/g, (letter) =>
+    letter.toUpperCase()
+  );
+  return capitalizedWords;
+};
+
+export const normalizeString = (string: string) =>
+  string
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+
+export const removeIMSuffix = (string: string) => {
+  return string?.replace(' h', '')?.replace(' km', '')?.replaceAll('.', '');
+};

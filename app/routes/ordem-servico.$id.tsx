@@ -21,6 +21,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { CAMPO_OBRIGATORIO } from '~/utils/consts';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -42,7 +43,7 @@ export async function action({ params, request }: ActionArgs) {
       .string()
       .startsWith('OS-', { message: 'OS-' })
       .min(4, { message: 'Obrigatório' }),
-    descricao: z.string().min(1, { message: 'Campo obrigatório' }),
+    descricao: z.string().min(1, CAMPO_OBRIGATORIO),
   });
 
   const validatedScheme = validationScheme.safeParse(formData);

@@ -110,5 +110,6 @@ export async function setToastMessage(
   message: string,
   variant: string
 ) {
-  return session.flash('toastMessage', { title, message, variant });
+  const timestamp = String(new Date().getSeconds());
+  return session.flash('toastMessage', { title, message, variant, timestamp });
 }

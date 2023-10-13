@@ -68,6 +68,7 @@ export default function App() {
                 title={toastMessage?.title}
                 message={toastMessage?.message}
                 variant={toastMessage?.variant}
+                timestamp={toastMessage?.timestamp}
               />
             )}
           </SideMenu>

@@ -73,7 +73,7 @@ export async function action({ request }: ActionArgs) {
         });
       }
     } catch (error) {}
-    setToastMessage(session, 'Sucesso', 'Obra removido!', 'success');
+    setToastMessage(session, 'Sucesso', 'Obra removida!', 'success');
     return redirect('/obra', {
       headers: {
         'Set-Cookie': await commitSession(session),

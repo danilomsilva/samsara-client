@@ -52,7 +52,7 @@ export async function getUsuarios(
       nome_completo: item.nome_completo,
       email: item.email,
       tipo_acesso: item.tipo_acesso,
-      obra: item.obraX,
+      obraX: item.obraX,
     }));
     return transformedData;
   } catch (error) {
