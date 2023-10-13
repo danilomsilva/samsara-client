@@ -172,7 +172,7 @@ export default function NewObra() {
               defaultValue={convertISOToDate(obra?.data_final_previsto)}
               error={
                 actionData?.errors?.data_final_previsto ||
-                actionData?.errors?.invalidDate
+                actionData?.errors?.invalidDate // TODO: convert this into toast message!
               }
             />
           </Row>

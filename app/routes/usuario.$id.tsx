@@ -147,7 +147,7 @@ export default function NewUsuario() {
       content={
         <>
           <Row>
-            <Input
+            <Input // TODO: improve! instead of checking for the next available, check for the last available to avoid duplication!
               type="text"
               name="codigo"
               label="Código"
