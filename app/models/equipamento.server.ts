@@ -24,7 +24,9 @@ export type Equipamento = {
   valor_locacao?: string;
   tipo_locacao?: string;
   tipo_equipamento?: string;
+  tipo_equipamentoX?: string;
   grupo_equipamento?: string;
+  grupo_equipamentoX?: string;
   ano?: string;
   combustivel?: string;
   encarregadoX?: string;
@@ -40,6 +42,12 @@ export type Equipamento = {
     };
     encarregado?: {
       nome_completo: string;
+    };
+    tipo_equipamento?: {
+      tipo_nome: string;
+    };
+    grupo_equipamento?: {
+      grupo_nome: string;
     };
   };
 };
@@ -109,7 +117,10 @@ export async function getEquipamentos(
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
-  queryParams.set('expand', 'obra,encarregado');
+  queryParams.set(
+    'expand',
+    'obra,encarregado,tipo_equipamento,grupo_equipamento'
+  );
   if (queryParams.toString()) url += `?${queryParams.toString()}`;
   try {
     const response = await fetch(url, {
@@ -128,7 +139,9 @@ export async function getEquipamentos(
       valor_locacao: item.valor_locacao,
       tipo_locacao: item.tipo_locacao,
       tipo_equipamento: item.tipo_equipamento,
+      tipo_equipamentoX: item?.expand?.tipo_equipamento?.tipo_nome,
       grupo_equipamento: item.grupo_equipamento,
+      grupo_equipamentoX: item?.expand?.grupo_equipamento?.grupo_nome,
       numero_serie: item.numero_serie,
       ano: item.ano,
       combustivel: item.combustivel,

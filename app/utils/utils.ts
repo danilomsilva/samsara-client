@@ -1,4 +1,5 @@
 import {
+  add,
   format,
   formatISO,
   isBefore,
@@ -41,6 +42,17 @@ export const isDateBefore = (date1: string, date2: string): boolean => {
   const parsedDate1 = parse(date1, 'dd/MM/yyyy', new Date());
   const parsedDate2 = parse(date2, 'dd/MM/yyyy', new Date());
   return isBefore(parsedDate1, parsedDate2);
+};
+
+export const getCurrentDate = () => {
+  const today = new Date();
+  return format(today, 'dd/MM/yyyy');
+};
+
+export const getTomorrowDate = () => {
+  const today = new Date();
+  const tomorrow = add(today, { days: 1 });
+  return format(tomorrow, 'dd/MM/yyyy');
 };
 
 // CURRENCY
