@@ -120,12 +120,11 @@ export async function action({ params, request }: ActionArgs) {
       data_manutencao: convertDateToISO(formData.data_manutencao as string),
       IM_atual: removeIMSuffix(formData.IM_atual as string),
     };
-    const test = await _updateManutencao(
+    await _updateManutencao(
       userToken,
       params.id as string,
       editBody as Partial<Manutencao>
     );
-    console.log(test);
     setToastMessage(session, 'Sucesso', 'Manutenção editada!', 'success');
     return redirect('/manutencao', {
       headers: {
