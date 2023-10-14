@@ -247,11 +247,7 @@ export default function NewOperador() {
                 equipamento ? equipamento?.instrumento_medicao : 'Horím./Odôm.'
               }`}
               className="!w-[130px]"
-              defaultValue={
-                manutencao
-                  ? manutencao?.expand?.equipamento?.instrumento_medicao_atual
-                  : ''
-              }
+              defaultValue={manutencao?.IM_atual}
               error={actionData?.errors?.IM_atual}
               suffix={selectedIMSuffix}
             />

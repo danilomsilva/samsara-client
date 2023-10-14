@@ -142,7 +142,7 @@ export async function _updateManutencao(
     feito_porX: operador.nome_completo,
     encarregadoX: operador.encarregadoX,
   };
-  await updateManutencao(userToken, operador.id, editBody);
+  await updateManutencao(userToken, manutencao.id, editBody);
   return manutencao;
 }
 
