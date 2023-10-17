@@ -25,7 +25,7 @@ export async function getOperadores(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/operador/records`;
+  let url = `${process.env.BASE_API_URL}/collections/operador/records?perPage=100`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);

@@ -30,7 +30,7 @@ export async function getManutencoes(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/manutencao/records`;
+  let url = `${process.env.BASE_API_URL}/collections/manutencao/records?perPage=100`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);

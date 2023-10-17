@@ -12,7 +12,7 @@ export async function getOSs(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/ordem_servico/records`;
+  let url = `${process.env.BASE_API_URL}/collections/ordem_servico/records?perPage=100`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);

@@ -21,7 +21,11 @@ import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import { type Operacao, deleteOperacao, getOperacoes } from '~/models/operacao';
+import {
+  type Operacao,
+  deleteOperacao,
+  getOperacoes,
+} from '~/models/operacao.server';
 import {
   commitSession,
   getSession,

@@ -29,7 +29,7 @@ export async function getUsuarios(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/usuario/records`;
+  let url = `${process.env.BASE_API_URL}/collections/usuario/records?perPage=100`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);

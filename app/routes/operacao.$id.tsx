@@ -14,7 +14,11 @@ import Row from '~/components/Row';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
-import { createOperacao, getOperacao, updateOperacao } from '~/models/operacao';
+import {
+  createOperacao,
+  getOperacao,
+  updateOperacao,
+} from '~/models/operacao.server';
 import {
   commitSession,
   getSession,
