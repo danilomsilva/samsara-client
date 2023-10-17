@@ -36,7 +36,7 @@ export async function getManutencoes(
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'encarregado,equipamento');
-  if (queryParams.toString()) url += `?${queryParams.toString()}`;
+  if (queryParams.toString()) url += `?${queryParams.toString()}?perPage=100`;
   try {
     const response = await fetch(url, {
       method: 'GET',

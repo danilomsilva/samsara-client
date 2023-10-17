@@ -12,7 +12,7 @@ export async function getOperacoes(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/operacao/records`;
+  let url = `${process.env.BASE_API_URL}/collections/operacao/records?perPage=100`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);

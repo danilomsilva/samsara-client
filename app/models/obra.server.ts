@@ -14,7 +14,7 @@ export async function getObras(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/obra/records`;
+  let url = `${process.env.BASE_API_URL}/collections/obra/records?perPage=100`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
