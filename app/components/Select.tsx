@@ -60,7 +60,7 @@ export default function Select({
             </Combobox.Label>
             <div className="relative">
               <Combobox.Input
-                className={`${className} w-full rounded-lg p-2 pr-10 focus:outline-blue ${
+                className={`${className} w-full rounded-lg p-2 px-4 pr-10 focus:outline-blue ${
                   disabled &&
                   'border border-grey/50 bg-grey/10 pointer-events-none'
                 }`}
@@ -93,7 +93,7 @@ export default function Select({
                     className={({ active }) =>
                       `${
                         active && 'bg-grey-light'
-                      } relative py-1 px-2 flex items-center cursor-pointer`
+                      } relative py-1 px-4 flex items-center cursor-pointer`
                     }
                     value={option}
                   >
