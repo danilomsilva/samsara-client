@@ -30,13 +30,13 @@ export async function getManutencoes(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/manutencao/records?perPage=100`;
+  let url = `${process.env.BASE_API_URL}/collections/manutencao/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'encarregado,equipamento');
-  if (queryParams.toString()) url += `?${queryParams.toString()}`;
+  if (queryParams.toString()) url += `?${queryParams.toString()}?perPage=100`;
   try {
     const response = await fetch(url, {
       method: 'GET',
