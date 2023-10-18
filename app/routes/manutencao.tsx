@@ -5,13 +5,7 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -34,6 +28,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { formatNumberWithDotDelimiter } from '~/utils/utils';
+import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -98,14 +93,13 @@ export async function action({ request }: ActionArgs) {
 
 export default function ManutencaoPage() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [searchParams] = useSearchParams();
   const {
     manutencoes,
     equipamentos,
   }: { manutencoes: Manutencao[]; equipamentos: Equipamento[] } =
     useLoaderData();
-  const rowSelected = searchParams.get('selected');
   const navigate = useNavigate();
+  const { selectedRow } = useSelectRow() as UseSelectedRow;
 
   const handleCloseModal = () => {
     navigate('/manutencao');
@@ -130,10 +124,10 @@ export default function ManutencaoPage() {
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Manutenções</h1>
         <div className="flex gap-4">
-          {rowSelected ? (
+          {selectedRow ? (
             <>
               <LinkButton
-                to={`./${rowSelected}`}
+                to={`./${selectedRow}`}
                 variant="grey"
                 icon={<PencilIcon />}
               >
@@ -181,7 +175,7 @@ export default function ManutencaoPage() {
               <input
                 type="hidden"
                 name="manutencaoId"
-                value={rowSelected || ''}
+                value={selectedRow || ''}
               />
               <Button
                 name="_action"

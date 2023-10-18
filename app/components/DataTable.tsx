@@ -1,9 +1,10 @@
-import { Link, useSearchParams } from '@remix-run/react';
 import Cel from './DataTableCel';
 import Column from './DataTableColumn';
 import ExclamationTriangle from './icons/ExclamationTriangle';
 import InfoIcon from './icons/InfoIcon';
 import Tooltip from './Tooltip';
+import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
+import { useEffect } from 'react';
 
 type ColumnType = {
   name: string;
@@ -28,8 +29,12 @@ export default function DataTable({
   path,
   placeholder,
 }: PropTypes) {
-  const [searchParams] = useSearchParams();
-  const selectedRow = searchParams.get('selected');
+  const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
+
+  useEffect(() => {
+    setSelectedRow('');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (rows.length) {
     const columnNames = columns.map((col) => col.name);
@@ -62,6 +67,7 @@ export default function DataTable({
                     className={`${
                       selectedRow === row.id && 'bg-blue/20 text-blue'
                     } h-10 border-t-grey-light border-t hover:bg-blue/20`}
+                    onClick={() => setSelectedRow(row.id)}
                   >
                     {columnNames.map((columnName, i) => {
                       if (
@@ -70,35 +76,27 @@ export default function DataTable({
                       ) {
                         return (
                           <Cel key={i}>
-                            <Link
-                              to={
-                                selectedRow
-                                  ? `${path}`
-                                  : `./?selected=${row.id}`
-                              }
-                            >
-                              <div className="h-9 flex items-center">
-                                {row.numero_serie &&
-                                path === '/equipamento' &&
-                                columnName === 'codigo' ? (
-                                  <div className="flex justify-between items-center w-full mr-1 gap-2">
-                                    <div className="whitespace-nowrap">
-                                      {row[columnName]}
-                                    </div>
-                                    <Tooltip
-                                      contentClassName="w-[200px] z-50"
-                                      content={`Número de série: ${row.numero_serie}`}
-                                    >
-                                      <InfoIcon className="h-7 w-7 text-orange" />
-                                    </Tooltip>
-                                  </div>
-                                ) : (
-                                  <div className="mr-2 whitespace-nowrap">
+                            <div className="h-9 flex items-center">
+                              {row.numero_serie &&
+                              path === '/equipamento' &&
+                              columnName === 'codigo' ? (
+                                <div className="flex justify-between items-center w-full mr-1 gap-2">
+                                  <div className="whitespace-nowrap">
                                     {row[columnName]}
                                   </div>
-                                )}
-                              </div>
-                            </Link>
+                                  <Tooltip
+                                    contentClassName="w-[200px] z-50"
+                                    content={`Número de série: ${row.numero_serie}`}
+                                  >
+                                    <InfoIcon className="h-7 w-7 text-orange" />
+                                  </Tooltip>
+                                </div>
+                              ) : (
+                                <div className="mr-2 whitespace-nowrap">
+                                  {row[columnName]}
+                                </div>
+                              )}
+                            </div>
                           </Cel>
                         );
                       }
