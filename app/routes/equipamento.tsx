@@ -5,13 +5,7 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -33,6 +27,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { formatCurrency, formatNumberWithDotDelimiter } from '~/utils/utils';
 
 // page title
@@ -97,17 +92,16 @@ export async function action({ request }: ActionArgs) {
 
 export default function EquipamentoPage() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [searchParams] = useSearchParams();
   const { equipamentos }: { equipamentos: Equipamento[] } = useLoaderData();
-  const rowSelected = searchParams.get('selected');
   const navigate = useNavigate();
+  const { selectedRow } = useSelectRow() as UseSelectedRow;
 
   const handleCloseModal = () => {
     navigate('/equipamento');
     setModalOpen(false);
   };
 
-  const deletingEquipamento = equipamentos.find((eq) => eq?.id === rowSelected);
+  const deletingEquipamento = equipamentos.find((eq) => eq?.id === selectedRow);
 
   const formattedEquipamentos: Equipamento[] = equipamentos.map((item) => {
     const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
@@ -140,13 +134,13 @@ export default function EquipamentoPage() {
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Equipamentos</h1>
         <div className="flex gap-4">
-          {rowSelected ? (
+          {selectedRow ? (
             <>
               <LinkButton to={`./`} variant="blue" icon={<ListIcon />}>
                 Histórico de manutenção
               </LinkButton>
               <LinkButton
-                to={`./${rowSelected}`}
+                to={`./${selectedRow}`}
                 variant="grey"
                 icon={<PencilIcon />}
               >
@@ -197,7 +191,7 @@ export default function EquipamentoPage() {
           content={`Deseja excluir o equipamento ${deletingEquipamento?.codigo} ?`}
           footerActions={
             <Form method="post">
-              <input type="hidden" name="userId" value={rowSelected || ''} />
+              <input type="hidden" name="userId" value={selectedRow || ''} />
               <Button
                 name="_action"
                 value="delete"

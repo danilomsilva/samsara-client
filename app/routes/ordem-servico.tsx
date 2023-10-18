@@ -5,13 +5,7 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -28,6 +22,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -90,27 +85,26 @@ export async function action({ request }: ActionArgs) {
 
 export default function OSPage() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [searchParams] = useSearchParams();
   const { OSs }: { OSs: OS[] } = useLoaderData();
-  const rowSelected = searchParams.get('selected');
   const navigate = useNavigate();
+  const { selectedRow } = useSelectRow() as UseSelectedRow;
 
   const handleCloseModal = () => {
     navigate('/ordem-servico');
     setModalOpen(false);
   };
 
-  const deletingOS = OSs.find((os) => os?.id === rowSelected);
+  const deletingOS = OSs.find((os) => os?.id === selectedRow);
 
   return (
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Ordem de Serviço</h1>
         <div className="flex gap-4">
-          {rowSelected ? (
+          {selectedRow ? (
             <>
               <LinkButton
-                to={`./${rowSelected}`}
+                to={`./${selectedRow}`}
                 variant="grey"
                 icon={<PencilIcon />}
               >
@@ -152,7 +146,7 @@ export default function OSPage() {
           content={`Deseja excluir a ${deletingOS?.codigo} - ${deletingOS?.descricao} ?`}
           footerActions={
             <Form method="post">
-              <input type="hidden" name="userId" value={rowSelected || ''} />
+              <input type="hidden" name="userId" value={selectedRow || ''} />
               <Button
                 name="_action"
                 value="delete"

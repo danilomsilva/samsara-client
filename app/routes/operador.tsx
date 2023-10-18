@@ -5,13 +5,7 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -32,6 +26,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -92,10 +87,9 @@ export async function action({ request }: ActionArgs) {
 
 export default function OperadorPage() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [searchParams] = useSearchParams();
   const { operadores }: { operadores: Operador[] } = useLoaderData();
-  const rowSelected = searchParams.get('selected');
   const navigate = useNavigate();
+  const { selectedRow } = useSelectRow() as UseSelectedRow;
 
   const handleCloseModal = () => {
     navigate('/operador');
@@ -103,7 +97,7 @@ export default function OperadorPage() {
   };
 
   const deletingOperador = operadores.find(
-    (operador) => operador?.id === rowSelected
+    (operador) => operador?.id === selectedRow
   );
 
   return (
@@ -111,10 +105,10 @@ export default function OperadorPage() {
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Operadores</h1>
         <div className="flex gap-4">
-          {rowSelected ? (
+          {selectedRow ? (
             <>
               <LinkButton
-                to={`./${rowSelected}`}
+                to={`./${selectedRow}`}
                 variant="grey"
                 icon={<PencilIcon />}
               >
@@ -158,7 +152,7 @@ export default function OperadorPage() {
           content={`Deseja excluir o operador ${deletingOperador?.nome_completo} ?`}
           footerActions={
             <Form method="post">
-              <input type="hidden" name="userId" value={rowSelected || ''} />
+              <input type="hidden" name="userId" value={selectedRow || ''} />
               <Button
                 name="_action"
                 value="delete"

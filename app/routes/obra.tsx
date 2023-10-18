@@ -5,13 +5,7 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -28,6 +22,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -85,9 +80,9 @@ export async function action({ request }: ActionArgs) {
 
 export default function ObrasPage() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [searchParams] = useSearchParams();
   const { obras }: { obras: Obra[] } = useLoaderData();
-  const rowSelected = searchParams.get('selected');
+  const { selectedRow } = useSelectRow() as UseSelectedRow;
+
   const navigate = useNavigate();
 
   const handleCloseModal = () => {
@@ -95,17 +90,17 @@ export default function ObrasPage() {
     setModalOpen(false);
   };
 
-  const deletingObra = obras.find((obra) => obra?.id === rowSelected);
+  const deletingObra = obras.find((obra) => obra?.id === selectedRow);
 
   return (
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Obras</h1>
         <div className="flex gap-4">
-          {rowSelected ? (
+          {selectedRow ? (
             <>
               <LinkButton
-                to={`./${rowSelected}`}
+                to={`./${selectedRow}`}
                 variant="grey"
                 icon={<PencilIcon />}
               >
@@ -148,7 +143,7 @@ export default function ObrasPage() {
           content={`Deseja excluir a obra ${deletingObra?.nome} ?`}
           footerActions={
             <Form method="post">
-              <input type="hidden" name="obraId" value={rowSelected || ''} />
+              <input type="hidden" name="obraId" value={selectedRow || ''} />
               <Button
                 name="_action"
                 value="delete"

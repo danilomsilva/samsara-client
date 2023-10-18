@@ -32,6 +32,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -89,10 +90,9 @@ export async function action({ request }: ActionArgs) {
 
 export default function UsuarioPage() {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [searchParams] = useSearchParams();
   const { usuarios }: { usuarios: Usuario[] } = useLoaderData();
-  const rowSelected = searchParams.get('selected');
   const navigate = useNavigate();
+  const { selectedRow } = useSelectRow() as UseSelectedRow;
 
   const handleCloseModal = () => {
     navigate('/usuario');
@@ -100,7 +100,7 @@ export default function UsuarioPage() {
   };
 
   const deletingUsuario = usuarios.find(
-    (usuario) => usuario?.id === rowSelected
+    (usuario) => usuario?.id === selectedRow
   );
 
   const formattedUsuario = usuarios.map((item) => ({
@@ -113,10 +113,10 @@ export default function UsuarioPage() {
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Usuários</h1>
         <div className="flex gap-4">
-          {rowSelected ? (
+          {selectedRow ? (
             <>
               <LinkButton
-                to={`./${rowSelected}`}
+                to={`./${selectedRow}`}
                 variant="grey"
                 icon={<PencilIcon />}
               >
@@ -161,7 +161,7 @@ export default function UsuarioPage() {
           content={`Deseja excluir o usuário ${deletingUsuario?.nome_completo} ?`}
           footerActions={
             <Form method="post">
-              <input type="hidden" name="userId" value={rowSelected || ''} />
+              <input type="hidden" name="userId" value={selectedRow || ''} />
               <Button
                 name="_action"
                 value="delete"
