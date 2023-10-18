@@ -55,11 +55,16 @@ export async function getGruposEquipamento(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/equipamento_grupo/records?perPage=100`;
+  let url = `${process.env.BASE_API_URL}/collections/equipamento_grupo/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
-  if (queryParams.toString()) url += `?${queryParams.toString()}`;
+  if (queryParams.toString()) {
+    url += `?${queryParams.toString()}&perPage=100`;
+  } else {
+    url += `?perPage=100`;
+  }
+
   try {
     const response = await fetch(url, {
       method: 'GET',
@@ -88,7 +93,11 @@ export async function getTiposEquipamento(
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
-  if (queryParams.toString()) url += `?${queryParams.toString()}`;
+  if (queryParams.toString()) {
+    url += `?${queryParams.toString()}&perPage=100`;
+  } else {
+    url += `?perPage=100`;
+  }
   try {
     const response = await fetch(url, {
       method: 'GET',
@@ -121,7 +130,11 @@ export async function getEquipamentos(
     'expand',
     'obra,encarregado,tipo_equipamento,grupo_equipamento'
   );
-  if (queryParams.toString()) url += `?${queryParams.toString()}`;
+  if (queryParams.toString()) {
+    url += `?${queryParams.toString()}&perPage=100`;
+  } else {
+    url += `?perPage=100`;
+  }
   try {
     const response = await fetch(url, {
       method: 'GET',

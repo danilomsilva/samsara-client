@@ -35,7 +35,11 @@ export async function getUsuarios(
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra');
-  if (queryParams.toString()) url += `?${queryParams.toString()}?perPage=100`;
+  if (queryParams.toString()) {
+    url += `?${queryParams.toString()}&perPage=100`;
+  } else {
+    url += `?perPage=100`;
+  }
   try {
     const response = await fetch(url, {
       method: 'GET',
