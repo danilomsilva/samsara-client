@@ -14,11 +14,15 @@ export async function getObras(
   userToken: User['token'],
   sortingBy: string | null
 ) {
-  let url = `${process.env.BASE_API_URL}/collections/obra/records?perPage=100`;
+  let url = `${process.env.BASE_API_URL}/collections/obra/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
-  if (queryParams.toString()) url += `?${queryParams.toString()}`;
+  if (queryParams.toString()) {
+    url += `?${queryParams.toString()}&perPage=100`;
+  } else {
+    url += `?perPage=100`;
+  }
   try {
     const response = await fetch(url, {
       method: 'GET',
