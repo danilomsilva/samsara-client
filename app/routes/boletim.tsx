@@ -135,7 +135,7 @@ export default function BoletinsPage() {
           { name: 'IM_inicio', displayName: 'IM Início' },
           { name: 'IM_final', displayName: 'IM Final' },
           { name: 'total_abastecimento', displayName: 'Abastecimento' },
-          { name: 'manutencao', displayName: 'manutencao' },
+          { name: 'manutencao', displayName: 'Manutenção' },
           { name: 'operadorX', displayName: 'Operador' },
           { name: 'encarregadoX', displayName: 'Criado por' },
         ]}

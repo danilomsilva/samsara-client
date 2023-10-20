@@ -5,9 +5,9 @@ export type Boletim = {
   created?: string;
   id?: string;
   codigo?: string; // TODO: make sure it appears on boletim form
-  abastecimento_1?: string;
-  abastecimento_2?: string;
-  abastecimento_3?: string;
+  abastecimento_1?: number;
+  abastecimento_2?: number;
+  abastecimento_3?: number;
   data_boletim?: string;
   descricao_equipamento?: string;
   encarregado?: string;
@@ -15,6 +15,7 @@ export type Boletim = {
   equipamento?: string;
   equipamentoX?: string;
   equipamento_logs?: {
+    index: string;
     OS: string;
     OP: string;
     hora_inicio: string;
@@ -54,23 +55,33 @@ export async function getBoletins(
     });
     const data = await response.json();
 
-    const transformedData = data.items.map((item: Boletim) => ({
-      id: item?.id,
-      created: item?.created && formatDateTime(item.created),
-      data_boletim: item?.data_boletim && formatDateTime(item.data_boletim),
-      equipamentoX: item?.equipamentoX,
-      descricao_equipamento: item?.descricao_equipamento,
-      operadorX: item?.operadorX,
-      equipamento_logs: item?.equipamento_logs,
-      obraX: item?.obraX,
-      encarregadoX: item?.encarregadoX,
-      abastecimento_1: item?.abastecimento_1,
-      abastecimento_2: item?.abastecimento_2,
-      abastecimento_3: item?.abastecimento_3, //TODO: add a unique abastecimento that sums all entries - total_abastecimento
-      manutencao: item?.manutencao,
-      lubrificacao: item?.lubrificacao,
-      limpeza: item?.limpeza, //TODO: review this whole object
-    }));
+    const transformedData = data.items.map((item: Boletim) => {
+      return {
+        id: item?.id,
+        created: item?.created && formatDateTime(item.created),
+        data_boletim: item?.data_boletim && formatDateTime(item.data_boletim),
+        codigo: item?.codigo,
+        equipamentoX: item?.equipamentoX,
+        descricao_equipamento: item?.descricao_equipamento,
+        operadorX: item?.operadorX,
+        equipamento_logs: item?.equipamento_logs,
+        IM_inicio: item?.equipamento_logs?.find(
+          (log) => log.index === String(0)
+        )?.IM_inicio,
+        IM_final:
+          item?.equipamento_logs?.[item.equipamento_logs.length - 1]?.IM_final,
+        obraX: item?.obraX,
+        encarregadoX: item?.encarregadoX,
+        total_abastecimento:
+          Number(item?.abastecimento_1) +
+          Number(item?.abastecimento_2) +
+          Number(item?.abastecimento_3),
+        manutencao: item?.manutencao,
+        lubrificacao: item?.lubrificacao,
+        limpeza: item?.limpeza,
+      };
+    });
+
     return transformedData;
   } catch (error) {
     throw new Error('An error occured while getting boletins');

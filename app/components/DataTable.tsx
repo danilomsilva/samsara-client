@@ -5,6 +5,7 @@ import InfoIcon from './icons/InfoIcon';
 import Tooltip from './Tooltip';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { useEffect } from 'react';
+import CogIcon from './icons/CogIcon';
 
 type ColumnType = {
   name: string;
@@ -93,7 +94,15 @@ export default function DataTable({
                                 </div>
                               ) : (
                                 <div className="mr-2 whitespace-nowrap">
-                                  {row[columnName]}
+                                  {/* TODO: pass icon dinamically instead of hardcode COG */}
+                                  {typeof row[columnName] === 'boolean' ? (
+                                    <div className="flex gap-1 items-center">
+                                      <CogIcon />
+                                      <p>{row[columnName] ? 'Sim' : 'Não'}</p>
+                                    </div>
+                                  ) : (
+                                    row[columnName]
+                                  )}
                                 </div>
                               )}
                             </div>
