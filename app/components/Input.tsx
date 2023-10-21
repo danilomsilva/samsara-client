@@ -4,8 +4,9 @@ import ErrorMessage from './ErrorMessage';
 type PropTypes = {
   name: string;
   label: string;
+  noLabel?: boolean;
   className?: string;
-  type: 'text' | 'number' | 'password' | 'currency' | 'IM';
+  type: 'text' | 'number' | 'password' | 'currency' | 'IM' | 'time';
   disabled?: boolean;
   defaultValue?: string;
   autoFocus?: boolean;
@@ -18,6 +19,7 @@ type PropTypes = {
 export default function Input({
   name,
   label,
+  noLabel,
   className,
   type,
   disabled,
@@ -30,8 +32,8 @@ export default function Input({
 }: PropTypes) {
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
-      <label htmlFor={name} className=" text-grey-dark ml-1">
-        {label}
+      <label htmlFor={name} className="text-grey-dark ml-1">
+        {noLabel ? null : label}
       </label>
       {type === 'currency' ? (
         <NumericFormat
@@ -68,7 +70,7 @@ export default function Input({
           min={1}
           className={`${
             disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
-          } rounded-lg p-2 px-4 focus:outline-blue`}
+          } rounded-lg p-2 px-4 focus:outline-blue h-9`}
           defaultValue={defaultValue}
           autoFocus={autoFocus}
           autoComplete="off"

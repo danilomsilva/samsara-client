@@ -43,7 +43,7 @@ export default function DataTable({
     return (
       <div className="w-full h-full overflow-hidden rounded mt-4 pb-14">
         <div
-          className="overflow-y-auto h-full  scrollbar-thin scrollbar-thumb-grey/30 rounded"
+          className="overflow-y-auto h-full  scrollbar-thin scrollbar-thumb-grey/30 rounded scrollbar-thumb-rounded"
           style={{ scrollbarGutter: 'stable' }}
         >
           <table className="bg-white w-full text-sm">

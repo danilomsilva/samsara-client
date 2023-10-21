@@ -17,5 +17,5 @@ export default {
     },
     extend: {},
   },
-  plugins: [require('tailwind-scrollbar')],
+  plugins: [require('tailwind-scrollbar')({ nocompatible: true })],
 } satisfies Config;

@@ -13,8 +13,9 @@ type VariantStyle = {
 type PropTypes = {
   title: string;
   variant?: 'blue' | 'grey' | 'red';
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xxl';
   content: ReactNode;
+  footerSummary?: ReactNode;
   footerActions: ReactNode;
   handleCloseModal?: () => void;
 };
@@ -24,6 +25,7 @@ export default function Modal({
   variant,
   size,
   content,
+  footerSummary,
   footerActions,
   handleCloseModal,
 }: PropTypes) {
@@ -50,7 +52,9 @@ export default function Modal({
         className={`${
           variant && variantStyle[variant]?.borderTop
         } bg-grey-light rounded-lg border-t-8  ${
-          size === 'lg'
+          size === 'xxl'
+            ? 'w-[1200px]'
+            : size === 'lg'
             ? 'w-[700px]'
             : size === 'sm'
             ? 'w-[400px]'
@@ -92,6 +96,7 @@ export default function Modal({
         <Form method="post">
           <div className="p-8 px-6 gap-2 flex flex-col">{content}</div>
           <div className="border-t-grey/50 border-x-0 border-b-0 border-t h-16 flex items-center px-6 justify-end">
+            {footerSummary && <div className="w-full">{footerSummary}</div>}
             {footerActions}
           </div>
         </Form>
