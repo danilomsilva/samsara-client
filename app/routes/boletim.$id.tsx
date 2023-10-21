@@ -36,7 +36,7 @@ export async function loader({ params, request }: LoaderArgs) {
 }
 
 export async function action({ params, request }: ActionArgs) {
-  const { userToken } = await getUserSession(request);
+  // const { userToken } = await getUserSession(request);
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
   console.log(formData);
