@@ -1,5 +1,9 @@
 import type { User } from '~/session.server';
-import { formatDateTime } from '~/utils/utils';
+import { formatDate, formatDateTime } from '~/utils/utils';
+import { getEquipamento } from './equipamento.server';
+import { getUsuario } from './usuario.server';
+import { getOperador } from './operador.server';
+import { getObra } from './obra.server';
 
 export type Boletim = {
   created?: string;
@@ -59,14 +63,14 @@ export async function getBoletins(
       return {
         id: item?.id,
         created: item?.created && formatDateTime(item.created),
-        data_boletim: item?.data_boletim && formatDateTime(item.data_boletim),
+        data_boletim: item?.data_boletim && formatDate(item.data_boletim),
         codigo: item?.codigo,
         equipamentoX: item?.equipamentoX,
         descricao_equipamento: item?.descricao_equipamento,
         operadorX: item?.operadorX,
         equipamento_logs: item?.equipamento_logs,
         IM_inicio: item?.equipamento_logs?.find(
-          (log) => log.index === String(0)
+          (log) => Number(log?.index) === 0
         )?.IM_inicio,
         IM_final:
           item?.equipamento_logs?.[item.equipamento_logs.length - 1]?.IM_final,
@@ -74,8 +78,8 @@ export async function getBoletins(
         encarregadoX: item?.encarregadoX,
         total_abastecimento:
           Number(item?.abastecimento_1) +
-          Number(item?.abastecimento_2) +
-          Number(item?.abastecimento_3),
+            Number(item?.abastecimento_2) +
+            Number(item?.abastecimento_3) || 'Não',
         manutencao: item?.manutencao,
         lubrificacao: item?.lubrificacao,
         limpeza: item?.limpeza,
@@ -107,6 +111,34 @@ export async function getBoletim(userToken: User['token'], boletimId: string) {
   }
 }
 
+export async function _createBoletim(userToken: User['token'], body: Boletim) {
+  const boletim = await createBoletim(userToken, body);
+  if (boletim.data) {
+    return boletim;
+  } else {
+    const equipamento = await getEquipamento(userToken, boletim.equipamento);
+    const { nome_completo: encarregado } = await getUsuario(
+      userToken,
+      boletim.encarregado
+    );
+    const { nome_completo: operador } = await getOperador(
+      userToken,
+      boletim.operador
+    );
+    const { nome } = await getObra(userToken, boletim.obra);
+
+    const editBody = {
+      obraX: nome,
+      encarregadoX: encarregado,
+      operadorX: operador,
+      equipamentoX: equipamento.codigo,
+    };
+
+    await updateBoletim(userToken, boletim.id, editBody);
+    return boletim;
+  }
+}
+
 export async function createBoletim(userToken: User['token'], body: Boletim) {
   try {
     const response = await fetch(
@@ -120,8 +152,8 @@ export async function createBoletim(userToken: User['token'], body: Boletim) {
         body: JSON.stringify(body),
       }
     );
-    const data = await response.json();
-    return data;
+
+    return await response.json();
   } catch (error) {
     throw new Error('An error occured while creating boletim');
   }

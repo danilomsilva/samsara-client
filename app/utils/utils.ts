@@ -102,3 +102,13 @@ export const normalizeString = (string: string) =>
 export const removeIMSuffix = (string: string) => {
   return string?.replace(' h', '')?.replace(' km', '')?.replaceAll('.', '');
 };
+
+// TODO: make all the other routes use this function!!! IMPORTANT
+export const genCodigo = (array: any, prefixToOmit: string) => {
+  if (!array.length) return 1;
+  const cleanArray = array.map((item: any) =>
+    Number(item.codigo.replace(prefixToOmit, ''))
+  );
+  const findMaxValue = Math.max(...cleanArray);
+  return findMaxValue + 1;
+};

@@ -43,7 +43,6 @@ export async function loader({ request }: LoaderArgs) {
 
   if (userToken) {
     const boletins = await getBoletins(userToken, sortingBy);
-    //TODO: find a way to have multiple logs in same field equipamento_logs
     return json({ boletins });
   } else {
     throw json('Acesso proibido', { status: 403 });
@@ -128,6 +127,7 @@ export default function BoletinsPage() {
       </div>
       <DataTable
         columns={[
+          { name: 'created', displayName: 'Data criação' },
           { name: 'data_boletim', displayName: 'Data' },
           { name: 'codigo', displayName: 'Boletim' },
           { name: 'equipamentoX', displayName: 'Equipamento' },
