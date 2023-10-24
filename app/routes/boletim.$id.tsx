@@ -23,7 +23,12 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import { convertDateToISO, genCodigo, getCurrentDate } from '~/utils/utils';
+import {
+  convertDateToISO,
+  convertISOToDate,
+  genCodigo,
+  getCurrentDate,
+} from '~/utils/utils';
 import { useEffect, useState } from 'react';
 import Input from '~/components/Input';
 import { type Operador, getOperadores } from '~/models/operador.server';
@@ -35,6 +40,9 @@ import {
   type Boletim,
   getBoletins,
   _createBoletim,
+  getBoletim,
+  type EquipamentoLog,
+  _updateBoletim,
 } from '~/models/boletim.server';
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -57,7 +65,15 @@ export async function loader({ params, request }: LoaderArgs) {
       newCode,
     });
   } else {
-    return json({});
+    const boletim = await getBoletim(userToken, params.id as string);
+    return json({
+      boletim,
+      equipamentos,
+      loggedInUser,
+      operadores,
+      OSs,
+      operacoes,
+    });
   }
 }
 
@@ -104,24 +120,25 @@ export async function action({ params, request }: ActionArgs) {
 
   if (!validatedSchema.success) {
     const errors = validatedSchema.error.format();
+    const dynamicErrors: any = {};
+
+    for (let i = 0; i < 2; i++) {
+      dynamicErrors[`OS_${i}`] = errors[`OS_${i}`]?._errors[0];
+      dynamicErrors[`operacao_${i}`] = errors[`operacao_${i}`]?._errors[0];
+      dynamicErrors[`hora_inicio_${i}`] =
+        errors[`hora_inicio_${i}`]?._errors[0];
+      dynamicErrors[`hora_final_${i}`] = errors[`hora_final_${i}`]?._errors[0];
+      dynamicErrors[`IM_inicio_${i}`] = errors[`IM_inicio_${i}`]?._errors[0];
+      dynamicErrors[`IM_final_${i}`] = errors[`IM_final_${i}`]?._errors[0];
+    }
+
     return {
       errors: {
+        ...dynamicErrors, //TODO: check if this is the right
         data_boletim: errors.data_boletim?._errors[0], // create function to simplify this lines
         equipamento: errors.equipamento?._errors[0],
         descricao_equipamento: errors.descricao_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
-        OS_0: errors.OS_0?._errors[0],
-        operacao_0: errors.operacao_0?._errors[0],
-        hora_inicio_0: errors.hora_inicio_0?._errors[0],
-        hora_final_0: errors.hora_final_0?._errors[0],
-        IM_inicio_0: errors.IM_inicio_0?._errors[0],
-        IM_final_0: errors.IM_final_0?._errors[0],
-        OS_1: errors.OS_1?._errors[0],
-        operacao_1: errors.operacao_1?._errors[0],
-        hora_inicio_1: errors.hora_inicio_1?._errors[0],
-        hora_final_1: errors.hora_final_1?._errors[0],
-        IM_inicio_1: errors.IM_inicio_1?._errors[0],
-        IM_final_1: errors.IM_final_1?._errors[0],
       },
     };
   }
@@ -137,6 +154,31 @@ export async function action({ params, request }: ActionArgs) {
     };
 
     const boletim = await _createBoletim(userToken, body as Boletim); // TODO: fix this ts error
+
+    if (boletim.data) {
+      return json({ error: boletim.data });
+    }
+    setToastMessage(session, 'Sucesso', 'Boletim adicionado!', 'success');
+    return redirect('/boletim', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+  if (formData._action === 'edit') {
+    const body = {
+      ...formData,
+      data_boletim: convertDateToISO(formData?.data_boletim as string),
+      equipamento_logs,
+      obra: formData.obra,
+      encarregado: formData.encarregado,
+    };
+
+    const boletim = await _updateBoletim(
+      userToken,
+      params.id as string,
+      body as Boletim // TODO: fix this ts error
+    );
 
     if (boletim.data) {
       return json({ error: boletim.data });
@@ -175,7 +217,9 @@ export default function NewOperador() {
   const [equipamento, setEquipamento] = useState<Equipamento>(
     boletim?.tipo_equipamentoX
   );
-  const [rows, setRows] = useState(1);
+  const [rows, setRows] = useState(
+    boletim ? boletim?.equipamento_logs?.length : 1
+  );
 
   useEffect(() => {
     if (selectedEquipamento) {
@@ -267,7 +311,11 @@ export default function NewOperador() {
                 type="text"
                 name="data_boletim"
                 label="Data de início"
-                defaultValue={getCurrentDate()}
+                defaultValue={
+                  boletim
+                    ? convertISOToDate(boletim?.data_boletim)
+                    : getCurrentDate()
+                }
                 className="!w-[132px]"
                 error={actionData?.errors?.data_boletim}
               />
@@ -286,14 +334,18 @@ export default function NewOperador() {
                 name="descricao_equipamento"
                 label="Descrição do equipamento"
                 className="!w-[280px]"
-                defaultValue={equipamento?.tipo_equipamentoX}
+                defaultValue={
+                  boletim?.descricao_equipamento
+                    ? boletim?.descricao_equipamento
+                    : equipamento?.tipo_equipamentoX
+                }
                 disabled
               />
               <Select
                 name="operador"
                 options={sortedOperadores}
                 label="Operador"
-                // defaultValue={}
+                defaultValue={boletim?.operador}
                 placeholder="-"
                 error={actionData?.errors?.operador}
                 className="!w-[280px]"
@@ -305,6 +357,9 @@ export default function NewOperador() {
             <input type="hidden" name="newCode" value={newCode} />
             <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
               {Array.from(new Array(rows), (_, index) => {
+                const log: EquipamentoLog = boletim?.equipamento_logs?.find(
+                  (log: EquipamentoLog) => Number(log.index) === index
+                );
                 return (
                   <Row key={index}>
                     <Select
@@ -312,7 +367,7 @@ export default function NewOperador() {
                       options={sortedOSs}
                       labelBold
                       label="O.S."
-                      // defaultValue={}
+                      defaultValue={log?.OS}
                       placeholder="-"
                       error={actionData?.errors?.[`OS_${index}`]}
                       className="!w-[132px]"
@@ -324,7 +379,7 @@ export default function NewOperador() {
                       options={sortedOperacoes}
                       labelBold
                       label="Operação"
-                      // defaultValue={}
+                      defaultValue={log?.OP}
                       placeholder="-"
                       error={actionData?.errors?.[`operacao_${index}`]}
                       className="!w-[132px]"
@@ -336,7 +391,7 @@ export default function NewOperador() {
                       name={`hora_inicio_${index}`}
                       label="Hora Início"
                       className="!w-[132px]"
-                      defaultValue={equipamento?.tipo_equipamentoX}
+                      defaultValue={log?.hora_inicio}
                       error={actionData?.errors?.[`hora_inicio_${index}`]}
                       noLabel={index !== 0}
                     />
@@ -345,7 +400,7 @@ export default function NewOperador() {
                       name={`hora_final_${index}`}
                       label="Hora Final"
                       className="!w-[132px]"
-                      defaultValue={equipamento?.tipo_equipamentoX}
+                      defaultValue={log?.hora_final}
                       error={actionData?.errors?.[`hora_final_${index}`]}
                       noLabel={index !== 0}
                     />
@@ -359,7 +414,9 @@ export default function NewOperador() {
                       } Início`}
                       className="!w-[130px]"
                       defaultValue={
-                        index === 0
+                        log?.IM_inicio
+                          ? log?.IM_inicio
+                          : index === 0
                           ? equipamento?.instrumento_medicao_atual
                           : ''
                       }
@@ -375,7 +432,7 @@ export default function NewOperador() {
                           : 'IM'
                       } Final`}
                       className="!w-[130px]"
-                      // defaultValue={}
+                      defaultValue={log?.IM_final}
                       error={actionData?.errors?.[`IM_final_${index}`]}
                       noLabel={index !== 0}
                     />
@@ -383,7 +440,6 @@ export default function NewOperador() {
                 );
               })}
 
-              {/* TODO: extract this logic into a separated component */}
               <div className="p-2 flex gap-2 mt-3 text-sm">
                 {(OS || OP) && (
                   <InfoCircleIcon className="h-6 w-6 text-orange" />

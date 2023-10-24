@@ -5,6 +5,16 @@ import { getUsuario } from './usuario.server';
 import { getOperador } from './operador.server';
 import { getObra } from './obra.server';
 
+export type EquipamentoLog = {
+  index: string;
+  OS: string;
+  OP: string;
+  hora_inicio: string;
+  hora_final: string;
+  IM_inicio: string;
+  IM_final: string;
+};
+
 export type Boletim = {
   created?: string;
   id?: string;
@@ -18,15 +28,7 @@ export type Boletim = {
   encarregadoX?: string;
   equipamento?: string;
   equipamentoX?: string;
-  equipamento_logs?: {
-    index: string;
-    OS: string;
-    OP: string;
-    hora_inicio: string;
-    hora_final: string;
-    IM_inicio: string;
-    IM_final: string;
-  }[];
+  equipamento_logs?: EquipamentoLog[];
   limpeza?: boolean;
   lubrificacao?: boolean;
   manutencao?: boolean;
@@ -34,6 +36,9 @@ export type Boletim = {
   operadorX?: string;
   obra?: string;
   obraX?: string;
+  IM_inicioX?: string;
+  IM_finalX?: string;
+  total_abastecimento?: string;
 };
 
 export async function getBoletins(
@@ -54,7 +59,7 @@ export async function getBoletins(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -72,14 +77,13 @@ export async function getBoletins(
         IM_inicio: item?.equipamento_logs?.find(
           (log) => Number(log?.index) === 0
         )?.IM_inicio,
+        IM_inicioX: item?.IM_inicioX,
         IM_final:
           item?.equipamento_logs?.[item.equipamento_logs.length - 1]?.IM_final,
+        IM_finalX: item?.IM_finalX,
         obraX: item?.obraX,
         encarregadoX: item?.encarregadoX,
-        total_abastecimento:
-          Number(item?.abastecimento_1) +
-            Number(item?.abastecimento_2) +
-            Number(item?.abastecimento_3) || 'Não',
+        total_abastecimento: item?.total_abastecimento,
         manutencao: item?.manutencao,
         lubrificacao: item?.lubrificacao,
         limpeza: item?.limpeza,
@@ -100,7 +104,7 @@ export async function getBoletim(userToken: User['token'], boletimId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -132,6 +136,13 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
       encarregadoX: encarregado,
       operadorX: operador,
       equipamentoX: equipamento.codigo,
+      IM_inicioX: body.IM_inicio_0,
+      IM_finalX:
+        body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
+      total_abastecimento:
+        Number(body?.abastecimento_1) +
+          Number(body?.abastecimento_2) +
+          Number(body?.abastecimento_3) || '0',
     };
 
     await updateBoletim(userToken, boletim.id, editBody);
@@ -147,7 +158,7 @@ export async function createBoletim(userToken: User['token'], body: Boletim) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -156,6 +167,45 @@ export async function createBoletim(userToken: User['token'], body: Boletim) {
     return await response.json();
   } catch (error) {
     throw new Error('An error occured while creating boletim');
+  }
+}
+
+export async function _updateBoletim(
+  userToken: User['token'],
+  boletimId: string,
+  body: Boletim
+) {
+  const boletim = await updateBoletim(userToken, boletimId, body);
+  if (boletim.data) {
+    return boletim;
+  } else {
+    const equipamento = await getEquipamento(userToken, boletim.equipamento);
+    const { nome_completo: encarregado } = await getUsuario(
+      userToken,
+      boletim.encarregado
+    );
+    const { nome_completo: operador } = await getOperador(
+      userToken,
+      boletim.operador
+    );
+    const { nome } = await getObra(userToken, boletim.obra);
+
+    const editBody = {
+      obraX: nome,
+      encarregadoX: encarregado,
+      operadorX: operador,
+      equipamentoX: equipamento.codigo,
+      IM_inicioX: body.IM_inicio_0, // TODO: fix this error
+      IM_finalX:
+        body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
+      total_abastecimento:
+        Number(body?.abastecimento_1) +
+          Number(body?.abastecimento_2) +
+          Number(body?.abastecimento_3) || '0',
+    };
+
+    await updateBoletim(userToken, boletim.id, editBody); //TODO: fix this error
+    return boletim;
   }
 }
 
@@ -171,7 +221,7 @@ export async function updateBoletim(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -194,7 +244,7 @@ export async function deleteBoletim(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
