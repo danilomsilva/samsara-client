@@ -4,6 +4,7 @@ import ErrorMessage from './ErrorMessage';
 type PropTypes = {
   name: string;
   label: string;
+  labelBold?: boolean;
   noLabel?: boolean;
   className?: string;
   type: 'text' | 'number' | 'password' | 'currency' | 'IM' | 'time';
@@ -18,6 +19,7 @@ type PropTypes = {
 
 export default function Input({
   name,
+  labelBold,
   label,
   noLabel,
   className,
@@ -32,7 +34,12 @@ export default function Input({
 }: PropTypes) {
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
-      <label htmlFor={name} className="text-grey-dark ml-1">
+      <label
+        htmlFor={name}
+        className={`${
+          labelBold && 'font-bold text-grey/90'
+        } text-grey-dark ml-1`}
+      >
         {noLabel ? null : label}
       </label>
       {type === 'currency' ? (

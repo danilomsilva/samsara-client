@@ -108,13 +108,26 @@ export async function action({ params, request }: ActionArgs) {
     return schema;
   };
 
-  const validationSchema = z.object({
-    data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
-    equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    operador: z.string().min(1, CAMPO_OBRIGATORIO),
-    ...generateValidationSchema(),
-  });
+  const validationSchema = z
+    .object({
+      data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
+      equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+      descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+      operador: z.string().min(1, CAMPO_OBRIGATORIO),
+      ...generateValidationSchema(),
+    })
+    .refine(
+      //TODO: improve on this, to show error only for each line not all of them
+      (schema) => {
+        for (let i = 0; i < Number(formData.rows); i++) {
+          console.log(schema[`IM_inicio_${i}`], schema[`IM_final_${i}`]);
+          if (schema[`IM_inicio_${i}`] <= schema[`IM_final_${i}`]) {
+            return false;
+          }
+        }
+      },
+      { message: 'Não pode ser menor que IM início' }
+    );
 
   const validatedSchema = validationSchema.safeParse(formData);
 
@@ -122,7 +135,7 @@ export async function action({ params, request }: ActionArgs) {
     const errors = validatedSchema.error.format();
     const dynamicErrors: any = {};
 
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < Number(formData.rows); i++) {
       dynamicErrors[`OS_${i}`] = errors[`OS_${i}`]?._errors[0];
       dynamicErrors[`operacao_${i}`] = errors[`operacao_${i}`]?._errors[0];
       dynamicErrors[`hora_inicio_${i}`] =
@@ -139,6 +152,7 @@ export async function action({ params, request }: ActionArgs) {
         equipamento: errors.equipamento?._errors[0],
         descricao_equipamento: errors.descricao_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
+        invalidInput: errors?._errors[0], //TODO: improve on this, to show error only for each line not all of them
       },
     };
   }
@@ -214,12 +228,19 @@ export default function NewOperador() {
   const [OS, setOS] = useState<OS | null>(null);
   const [selectedOP, setSelectedOP] = useState<Option | null>(null);
   const [OP, setOP] = useState<OS | null>(null);
-  const [equipamento, setEquipamento] = useState<Equipamento>(
-    boletim?.tipo_equipamentoX
-  );
+  const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
+
   const [rows, setRows] = useState(
     boletim ? boletim?.equipamento_logs?.length : 1
   );
+
+  useEffect(() => {
+    setEquipamento(
+      equipamentos.find(
+        (equip: Equipamento) => equip.id === boletim?.equipamento
+      )
+    );
+  }, []);
 
   useEffect(() => {
     if (selectedEquipamento) {
@@ -334,11 +355,7 @@ export default function NewOperador() {
                 name="descricao_equipamento"
                 label="Descrição do equipamento"
                 className="!w-[280px]"
-                defaultValue={
-                  boletim?.descricao_equipamento
-                    ? boletim?.descricao_equipamento
-                    : equipamento?.tipo_equipamentoX
-                }
+                defaultValue={equipamento?.tipo_equipamentoX}
                 disabled
               />
               <Select
@@ -361,7 +378,7 @@ export default function NewOperador() {
                   (log: EquipamentoLog) => Number(log.index) === index
                 );
                 return (
-                  <Row key={index}>
+                  <Row key={index} className="mt-1">
                     <Select
                       name={`OS_${index}`}
                       options={sortedOSs}
@@ -377,8 +394,8 @@ export default function NewOperador() {
                     <Select
                       name={`operacao_${index}`}
                       options={sortedOperacoes}
-                      labelBold
                       label="Operação"
+                      labelBold
                       defaultValue={log?.OP}
                       placeholder="-"
                       error={actionData?.errors?.[`operacao_${index}`]}
@@ -390,6 +407,7 @@ export default function NewOperador() {
                       type="time"
                       name={`hora_inicio_${index}`}
                       label="Hora Início"
+                      labelBold
                       className="!w-[132px]"
                       defaultValue={log?.hora_inicio}
                       error={actionData?.errors?.[`hora_inicio_${index}`]}
@@ -399,6 +417,7 @@ export default function NewOperador() {
                       type="time"
                       name={`hora_final_${index}`}
                       label="Hora Final"
+                      labelBold
                       className="!w-[132px]"
                       defaultValue={log?.hora_final}
                       error={actionData?.errors?.[`hora_final_${index}`]}
@@ -412,6 +431,7 @@ export default function NewOperador() {
                           ? equipamento?.instrumento_medicao
                           : 'IM'
                       } Início`}
+                      labelBold
                       className="!w-[130px]"
                       defaultValue={
                         log?.IM_inicio
@@ -431,9 +451,13 @@ export default function NewOperador() {
                           ? equipamento?.instrumento_medicao
                           : 'IM'
                       } Final`}
+                      labelBold
                       className="!w-[130px]"
                       defaultValue={log?.IM_final}
-                      error={actionData?.errors?.[`IM_final_${index}`]}
+                      error={
+                        actionData?.errors?.[`IM_final_${index}`] ||
+                        actionData?.errors?.invalidInput
+                      }
                       noLabel={index !== 0}
                     />
                   </Row>
