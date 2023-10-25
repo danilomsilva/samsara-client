@@ -28,6 +28,7 @@ import {
   convertISOToDate,
   genCodigo,
   getCurrentDate,
+  isTimeGreater,
 } from '~/utils/utils';
 import { useEffect, useState } from 'react';
 import Input from '~/components/Input';
@@ -108,26 +109,13 @@ export async function action({ params, request }: ActionArgs) {
     return schema;
   };
 
-  const validationSchema = z
-    .object({
-      data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
-      equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-      descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-      operador: z.string().min(1, CAMPO_OBRIGATORIO),
-      ...generateValidationSchema(),
-    })
-    .refine(
-      //TODO: improve on this, to show error only for each line not all of them
-      (schema) => {
-        for (let i = 0; i < Number(formData.rows); i++) {
-          console.log(schema[`IM_inicio_${i}`], schema[`IM_final_${i}`]);
-          if (schema[`IM_inicio_${i}`] <= schema[`IM_final_${i}`]) {
-            return false;
-          }
-        }
-      },
-      { message: 'Não pode ser menor que IM início' }
-    );
+  const validationSchema = z.object({
+    data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
+    equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+    descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+    operador: z.string().min(1, CAMPO_OBRIGATORIO),
+    ...generateValidationSchema(),
+  });
 
   const validatedSchema = validationSchema.safeParse(formData);
 
@@ -229,6 +217,10 @@ export default function NewOperador() {
   const [selectedOP, setSelectedOP] = useState<Option | null>(null);
   const [OP, setOP] = useState<OS | null>(null);
   const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
+  const [horaInicio, setHoraInicio] = useState<string | null>(null);
+  const [horaFinal, setHoraFinal] = useState<string | null>(null);
+  const [IMInicio, setIMInicio] = useState<string | null>(null);
+  const [IMFinal, setIMFinal] = useState<string | null>(null);
 
   const [rows, setRows] = useState(
     boletim ? boletim?.equipamento_logs?.length : 1
@@ -412,6 +404,7 @@ export default function NewOperador() {
                       defaultValue={log?.hora_inicio}
                       error={actionData?.errors?.[`hora_inicio_${index}`]}
                       noLabel={index !== 0}
+                      onChange={setHoraInicio}
                     />
                     <Input
                       type="time"
@@ -420,8 +413,15 @@ export default function NewOperador() {
                       labelBold
                       className="!w-[132px]"
                       defaultValue={log?.hora_final}
-                      error={actionData?.errors?.[`hora_final_${index}`]}
+                      error={
+                        actionData?.errors?.[`hora_final_${index}`] ||
+                        isTimeGreater(
+                          String(horaInicio),
+                          String(horaFinal) ? 'Hora inválida' : 'test' //TODO: fix this validation!!
+                        )
+                      }
                       noLabel={index !== 0}
+                      onChange={setHoraFinal}
                     />
                     <Input
                       type="text"
@@ -442,6 +442,7 @@ export default function NewOperador() {
                       }
                       error={actionData?.errors?.[`IM_inicio_${index}`]}
                       noLabel={index !== 0}
+                      onChange={setIMInicio}
                     />
                     <Input
                       type="text"
@@ -456,9 +457,13 @@ export default function NewOperador() {
                       defaultValue={log?.IM_final}
                       error={
                         actionData?.errors?.[`IM_final_${index}`] ||
-                        actionData?.errors?.invalidInput
+                        (IMInicio &&
+                          IMFinal &&
+                          Number(IMInicio) > Number(IMFinal) &&
+                          'Valor inválido!')
                       }
                       noLabel={index !== 0}
+                      onChange={setIMFinal}
                     />
                   </Row>
                 );

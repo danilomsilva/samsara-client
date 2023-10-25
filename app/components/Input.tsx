@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { NumericFormat } from 'react-number-format';
 import ErrorMessage from './ErrorMessage';
 
@@ -32,6 +33,25 @@ export default function Input({
   suffix,
   readOnly,
 }: PropTypes) {
+  const [inputValue, setInputValue] = useState(defaultValue || '');
+  const [inputError, setInputError] = useState('');
+
+  const handleBlur = () => {
+    if (inputValue.trim() === '') {
+      setInputError('Campo obrigatório');
+    } else {
+      setInputError('');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
       <label
@@ -68,7 +88,8 @@ export default function Input({
           defaultValue={defaultValue}
           suffix={suffix}
           readOnly={readOnly}
-          onChange={(e) => onChange && onChange(e.target.value)}
+          onBlur={handleBlur}
+          onChange={handleInputChange}
         />
       ) : (
         <input
@@ -81,12 +102,15 @@ export default function Input({
           defaultValue={defaultValue}
           autoFocus={autoFocus}
           autoComplete="off"
-          onChange={(e) => onChange && onChange(e.target.value)}
+          onBlur={handleBlur}
+          onChange={handleInputChange}
           readOnly={readOnly}
         />
       )}
 
-      {error && <ErrorMessage error={error} />}
+      {(inputError || error) && (
+        <ErrorMessage error={inputError || error || ''} />
+      )}
     </div>
   );
 }

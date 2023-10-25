@@ -1,5 +1,6 @@
 import {
   add,
+  compareAsc,
   format,
   formatISO,
   isBefore,
@@ -111,4 +112,19 @@ export const genCodigo = (array: any, prefixToOmit: string) => {
   );
   const findMaxValue = Math.max(...cleanArray);
   return findMaxValue + 1;
+};
+
+export const isTimeGreater = (horaInicio: string, horaFinal: string) => {
+  //TODO: improve this function!!
+  const startTime = parse(horaInicio, 'HH:mm', new Date());
+  const endTime = parse(horaFinal, 'HH:mm', new Date());
+  const comparison = compareAsc(startTime, endTime);
+
+  if (comparison === -1) {
+    return false;
+  } else if (comparison === 1) {
+    return true;
+  } else {
+    return true;
+  }
 };
