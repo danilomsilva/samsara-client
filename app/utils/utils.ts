@@ -1,9 +1,10 @@
 import {
   add,
-  compareAsc,
   format,
   formatISO,
+  isAfter,
   isBefore,
+  isEqual,
   isValid,
   parse,
   parseISO,
@@ -114,17 +115,15 @@ export const genCodigo = (array: any, prefixToOmit: string) => {
   return findMaxValue + 1;
 };
 
-export const isTimeGreater = (horaInicio: string, horaFinal: string) => {
-  //TODO: improve this function!!
-  const startTime = parse(horaInicio, 'HH:mm', new Date());
-  const endTime = parse(horaFinal, 'HH:mm', new Date());
-  const comparison = compareAsc(startTime, endTime);
+export function isTimeGreater(time_1: string, time_2: string): boolean {
+  const parsedTime_1 = parse(time_1, 'HH:mm', new Date());
+  const parsedTime_2 = parse(time_2, 'HH:mm', new Date());
 
-  if (comparison === -1) {
-    return false;
-  } else if (comparison === 1) {
-    return true;
-  } else {
+  if (
+    isAfter(parsedTime_2, parsedTime_1) ||
+    isEqual(parsedTime_2, parsedTime_1)
+  ) {
     return true;
   }
-};
+  return false;
+}

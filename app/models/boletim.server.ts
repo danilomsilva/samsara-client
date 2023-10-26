@@ -6,7 +6,7 @@ import { getOperador } from './operador.server';
 import { getObra } from './obra.server';
 
 export type EquipamentoLog = {
-  index: string;
+  index: string | number;
   OS: string;
   OP: string;
   hora_inicio: string;
@@ -18,7 +18,7 @@ export type EquipamentoLog = {
 export type Boletim = {
   created?: string;
   id?: string;
-  codigo?: string; // TODO: make sure it appears on boletim form
+  codigo?: string;
   abastecimento_1?: number;
   abastecimento_2?: number;
   abastecimento_3?: number;
@@ -59,7 +59,7 @@ export async function getBoletins(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -104,7 +104,7 @@ export async function getBoletim(userToken: User['token'], boletimId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -158,7 +158,7 @@ export async function createBoletim(userToken: User['token'], body: Boletim) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -221,7 +221,7 @@ export async function updateBoletim(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -244,7 +244,7 @@ export async function deleteBoletim(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

@@ -45,6 +45,7 @@ import {
   type EquipamentoLog,
   _updateBoletim,
 } from '~/models/boletim.server';
+import { PairLabelValue } from '~/components/PairLabelValue';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -135,12 +136,12 @@ export async function action({ params, request }: ActionArgs) {
 
     return {
       errors: {
-        ...dynamicErrors, //TODO: check if this is the right
+        ...dynamicErrors,
         data_boletim: errors.data_boletim?._errors[0], // create function to simplify this lines
         equipamento: errors.equipamento?._errors[0],
         descricao_equipamento: errors.descricao_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
-        invalidInput: errors?._errors[0], //TODO: improve on this, to show error only for each line not all of them
+        invalidInput: errors?._errors[0],
       },
     };
   }
@@ -155,7 +156,7 @@ export async function action({ params, request }: ActionArgs) {
       encarregado: formData.encarregado,
     };
 
-    const boletim = await _createBoletim(userToken, body as Boletim); // TODO: fix this ts error
+    const boletim = await _createBoletim(userToken, body as Boletim);
 
     if (boletim.data) {
       return json({ error: boletim.data });
@@ -179,7 +180,7 @@ export async function action({ params, request }: ActionArgs) {
     const boletim = await _updateBoletim(
       userToken,
       params.id as string,
-      body as Boletim // TODO: fix this ts error
+      body as Boletim
     );
 
     if (boletim.data) {
@@ -219,12 +220,37 @@ export default function NewOperador() {
   const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
   const [horaInicio, setHoraInicio] = useState<string | null>(null);
   const [horaFinal, setHoraFinal] = useState<string | null>(null);
+  const [isHoraValid, setIsHoraValid] = useState<boolean | undefined>(
+    undefined
+  );
   const [IMInicio, setIMInicio] = useState<string | null>(null);
   const [IMFinal, setIMFinal] = useState<string | null>(null);
+  const [isIMValid, setIsIMValid] = useState<boolean | undefined>(undefined);
+  const [actionDataErrors, setActionDataErrors] = useState<{
+    errors: { [key: string]: string };
+  } | null>(null);
 
   const [rows, setRows] = useState(
     boletim ? boletim?.equipamento_logs?.length : 1
   );
+
+  useEffect(() => {
+    setActionDataErrors(actionData);
+  }, [actionData]);
+
+  useEffect(() => {
+    if (IMInicio && IMFinal) {
+      setIsIMValid(Number(IMFinal) >= Number(IMInicio));
+      setActionDataErrors(null);
+    }
+  }, [IMInicio, IMFinal]);
+
+  useEffect(() => {
+    if (horaInicio && horaFinal) {
+      setIsHoraValid(isTimeGreater(String(horaInicio), String(horaFinal)));
+      setActionDataErrors(null);
+    }
+  }, [horaInicio, horaFinal]);
 
   useEffect(() => {
     setEquipamento(
@@ -330,7 +356,7 @@ export default function NewOperador() {
                     : getCurrentDate()
                 }
                 className="!w-[132px]"
-                error={actionData?.errors?.data_boletim}
+                error={actionDataErrors?.errors?.data_boletim}
               />
               <Select
                 name="equipamento"
@@ -338,7 +364,7 @@ export default function NewOperador() {
                 label="Equipamento"
                 defaultValue={boletim?.equipamento}
                 placeholder="-"
-                error={actionData?.errors?.equipamento}
+                error={actionDataErrors?.errors?.equipamento}
                 onChange={setSelectedEquipamento}
                 className="!w-[132px]"
               />
@@ -356,7 +382,7 @@ export default function NewOperador() {
                 label="Operador"
                 defaultValue={boletim?.operador}
                 placeholder="-"
-                error={actionData?.errors?.operador}
+                error={actionDataErrors?.errors?.operador}
                 className="!w-[280px]"
               />
             </Row>
@@ -378,7 +404,7 @@ export default function NewOperador() {
                       label="O.S."
                       defaultValue={log?.OS}
                       placeholder="-"
-                      error={actionData?.errors?.[`OS_${index}`]}
+                      error={actionDataErrors?.errors?.[`OS_${index}`]}
                       className="!w-[132px]"
                       noLabel={index !== 0}
                       onChange={setSelectedOS}
@@ -390,7 +416,7 @@ export default function NewOperador() {
                       labelBold
                       defaultValue={log?.OP}
                       placeholder="-"
-                      error={actionData?.errors?.[`operacao_${index}`]}
+                      error={actionDataErrors?.errors?.[`operacao_${index}`]}
                       className="!w-[132px]"
                       noLabel={index !== 0}
                       onChange={setSelectedOP}
@@ -402,7 +428,7 @@ export default function NewOperador() {
                       labelBold
                       className="!w-[132px]"
                       defaultValue={log?.hora_inicio}
-                      error={actionData?.errors?.[`hora_inicio_${index}`]}
+                      error={actionDataErrors?.errors?.[`hora_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={setHoraInicio}
                     />
@@ -414,11 +440,14 @@ export default function NewOperador() {
                       className="!w-[132px]"
                       defaultValue={log?.hora_final}
                       error={
-                        actionData?.errors?.[`hora_final_${index}`] ||
-                        isTimeGreater(
-                          String(horaInicio),
-                          String(horaFinal) ? 'Hora inválida' : 'test' //TODO: fix this validation!!
-                        )
+                        actionData?.errors?.[`hora_final_${index}`] || //TODO: improve this logic
+                        index + 1 === rows
+                          ? isHoraValid === undefined
+                            ? ''
+                            : isHoraValid
+                            ? ''
+                            : 'Hora inválida'
+                          : ''
                       }
                       noLabel={index !== 0}
                       onChange={setHoraFinal}
@@ -440,7 +469,7 @@ export default function NewOperador() {
                           ? equipamento?.instrumento_medicao_atual
                           : ''
                       }
-                      error={actionData?.errors?.[`IM_inicio_${index}`]}
+                      error={actionDataErrors?.errors?.[`IM_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={setIMInicio}
                     />
@@ -456,11 +485,14 @@ export default function NewOperador() {
                       className="!w-[130px]"
                       defaultValue={log?.IM_final}
                       error={
+                        //TODO: fix this error
                         actionData?.errors?.[`IM_final_${index}`] ||
-                        (IMInicio &&
-                          IMFinal &&
-                          Number(IMInicio) > Number(IMFinal) &&
-                          'Valor inválido!')
+                        index + 1 === rows
+                          ? IMInicio &&
+                            IMFinal &&
+                            Number(IMInicio) > Number(IMFinal) &&
+                            'Valor inválido!'
+                          : ''
                       }
                       noLabel={index !== 0}
                       onChange={setIMFinal}
@@ -498,10 +530,18 @@ export default function NewOperador() {
               {rows < 12 && (
                 <div className="w-full flex justify-center">
                   <div
-                    className="hover:bg-white rounded-full cursor-pointer"
+                    className={`${
+                      !isHoraValid || !isIMValid
+                        ? 'rounded-full cursor-default pointer-events-none'
+                        : 'hover:bg-white rounded-full cursor-pointer'
+                    }`}
                     onClick={handleAddRow}
                   >
-                    <PlusCircleIcon className="text-blue h-8 w-8" />
+                    <PlusCircleIcon
+                      className={`${
+                        !isHoraValid || !isIMValid ? 'text-grey' : 'text-blue'
+                      } h-8 w-8`}
+                    />
                   </div>
                 </div>
               )}
@@ -512,12 +552,12 @@ export default function NewOperador() {
       }
       footerSummary={
         <div className="flex gap-16 -mt-1">
-          <SummaryItemPair label="Obra" value={loggedInUser?.obraX} />
-          <SummaryItemPair
+          <PairLabelValue label="Obra" value={loggedInUser?.obraX} />
+          <PairLabelValue
             label="Encarregado"
             value={loggedInUser?.nome_completo}
           />
-          <SummaryItemPair
+          <PairLabelValue
             label={`${
               equipamento?.instrumento_medicao
                 ? equipamento?.instrumento_medicao
@@ -525,7 +565,7 @@ export default function NewOperador() {
             } Início`}
             value={`--- `}
           />
-          <SummaryItemPair
+          <PairLabelValue
             label={`${
               equipamento?.instrumento_medicao
                 ? equipamento?.instrumento_medicao
@@ -533,7 +573,7 @@ export default function NewOperador() {
             } Final`}
             value={`--- `}
           />
-          <SummaryItemPair label="Total" value={` --- `} />
+          <PairLabelValue label="Total" value={` --- `} />
         </div>
       }
       footerActions={
@@ -556,19 +596,3 @@ export default function NewOperador() {
     ></Modal>
   );
 }
-
-//TODO: extract to a separated component
-const SummaryItemPair = ({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}) => {
-  return (
-    <div>
-      <p>{label}</p>
-      <p className="font-bold leading-tight">{value}</p>
-    </div>
-  );
-};
