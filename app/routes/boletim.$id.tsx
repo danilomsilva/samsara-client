@@ -273,12 +273,15 @@ export default function NewBoletim() {
         (equip: Equipamento) => equip.id === boletim?.equipamento
       )
     );
-    setTimeout(() => {
-      if (boletim) {
-        setIsHoraValid(true);
-        setIsIMValid(true);
-      }
-    }, 500);
+
+    if (boletim) {
+      setIsHoraValid(true);
+      setIsIMValid(true);
+      setLogs(boletim.equipamento_logs);
+      setIMInicio(
+        boletim.equipamento_logs[boletim.equipamento_logs.length - 1]?.IM_inicio
+      );
+    }
   }, []);
 
   useEffect(() => {
@@ -308,11 +311,15 @@ export default function NewBoletim() {
     setHoraInicio(null);
     setHoraFinal(null);
     setIsHoraValid(undefined);
+    const IMValue =
+      rows > boletim?.equipamento_logs?.length ? 'IM_final' : 'IM_inicio';
+    setIMInicio(
+      boletim?.equipamento_logs[boletim?.equipamento_logs.length - 1][IMValue]
+    );
     setIMFinal(null);
     setIsIMValid(undefined);
     setOS(null);
     setOP(null);
-    setIMInicio(logs[rows - 2]?.IMFinal);
   }, [rows]);
 
   const sortedEquipamentos: Option[] = equipamentos
@@ -478,6 +485,7 @@ export default function NewBoletim() {
                       noLabel={index !== 0}
                       onChange={setHoraInicio}
                       disabled={index + 1 !== rows}
+                      readOnly={index + 1 !== rows}
                     />
                     <Input
                       type="time"
@@ -498,6 +506,7 @@ export default function NewBoletim() {
                       noLabel={index !== 0}
                       onChange={setHoraFinal}
                       disabled={index + 1 !== rows}
+                      readOnly={index + 1 !== rows}
                     />
                     <InputValue
                       type="text"
@@ -509,14 +518,17 @@ export default function NewBoletim() {
                       } Início`}
                       labelBold
                       className="!w-[130px]"
-                      // value={
-                      //   log?.IM_inicio
-                      //     ? log?.IM_inicio
-                      //     : index === 0
-                      //     ? equipamento?.instrumento_medicao_atual
-                      //     : ''
-                      // } // TODO: edit is not working!!! review this logic
-                      value={index === 0 ? IMInicio0 : IMInicio}
+                      value={
+                        boletim
+                          ? index === rows - 1
+                            ? IMInicio
+                            : log?.IM_inicio
+                          : index === 0
+                          ? IMInicio0
+                          : logs[index]
+                          ? logs[index]?.IM_inicio
+                          : logs[index - 1]?.IM_final // TODO: add IM to types aliases AND when creating make sure the final value from prev row will be copied to inicio value new row
+                      }
                       error={actionDataErrors?.errors?.[`IM_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={setIMInicio}
@@ -596,7 +608,9 @@ export default function NewBoletim() {
                 <div className="w-full flex justify-center">
                   <div
                     className={`${
-                      !isHoraValid || !isIMValid
+                      boletim
+                        ? 'hover:bg-white rounded-full cursor-pointer'
+                        : !isHoraValid || !isIMValid
                         ? 'rounded-full cursor-default pointer-events-none'
                         : 'hover:bg-white rounded-full cursor-pointer'
                     }`}
@@ -604,7 +618,11 @@ export default function NewBoletim() {
                   >
                     <PlusCircleIcon
                       className={`${
-                        !isHoraValid || !isIMValid ? 'text-grey' : 'text-blue'
+                        boletim
+                          ? 'text-blue'
+                          : !isHoraValid || !isIMValid
+                          ? 'text-grey'
+                          : 'text-blue'
                       } h-8 w-8`}
                     />
                   </div>
@@ -641,9 +659,9 @@ export default function NewBoletim() {
           <PairLabelValue
             label="Total"
             value={
-              IMInicio && IMFinal
-                ? +IMFinal - +IMInicio > 0
-                  ? String(+IMFinal - +IMInicio)
+              IMInicio0 && IMFinal
+                ? +IMFinal - +IMInicio0 > 0
+                  ? String(+IMFinal - +IMInicio0)
                   : '-'
                 : '-'
             }
@@ -665,7 +683,7 @@ export default function NewBoletim() {
           text={boletim ? 'Editar' : 'Adicionar'}
           name="_action"
           value={boletim ? 'edit' : 'create'}
-          disabled={!isIMValid || !isHoraValid}
+          disabled={boletim ? false : !isIMValid || !isHoraValid}
         />
       }
     />
