@@ -7,6 +7,7 @@ type PropTypes = {
   value?: string;
   variant: 'blue' | 'grey' | 'red';
   onClick?: () => void;
+  disabled?: boolean;
 };
 
 export default function Button({
@@ -16,15 +17,19 @@ export default function Button({
   value,
   variant,
   onClick,
+  disabled,
 }: PropTypes) {
   const variantStyle = {
-    blue: 'bg-blue hover:bg-blue/50',
-    grey: 'bg-grey-dark hover:bg-grey-dark/50',
-    red: 'bg-red hover:bg-red/50',
+    blue: `${disabled ? 'bg-blue/50' : 'bg-blue hover:bg-blue/50'}`,
+    grey: `${
+      disabled ? 'bg-grey-dark/50' : 'bg-grey-dark hover:bg-grey-dark/50/50'
+    }`,
+    red: `${disabled ? 'bg-red/50' : 'bg-red hover:bg-red/50'}`,
   };
 
   return (
     <button
+      disabled={disabled}
       type="submit"
       name={name}
       value={value}

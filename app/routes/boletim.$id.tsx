@@ -46,6 +46,7 @@ import {
   _updateBoletim,
 } from '~/models/boletim.server';
 import { PairLabelValue } from '~/components/PairLabelValue';
+import ErrorMessage from '~/components/ErrorMessage';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -110,13 +111,42 @@ export async function action({ params, request }: ActionArgs) {
     return schema;
   };
 
-  const validationSchema = z.object({
-    data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
-    equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    operador: z.string().min(1, CAMPO_OBRIGATORIO),
-    ...generateValidationSchema(),
-  });
+  const validationSchema = z
+    .object({
+      data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
+      equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+      descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+      operador: z.string().min(1, CAMPO_OBRIGATORIO),
+      ...generateValidationSchema(),
+    })
+    .refine(
+      (schema) => {
+        const horas_inicio = Object.keys(schema).filter((key) =>
+          key.startsWith('hora_inicio_')
+        ).length;
+
+        let isValid = true;
+
+        for (let i = 0; i < horas_inicio; i++) {
+          const hora_inicio = schema[`hora_inicio_${i}`];
+          const hora_final = schema[`hora_final_${i}`];
+          const IM_inicio = schema[`IM_inicio_${i}`];
+          const IM_final = schema[`IM_final_${i}`];
+
+          if (
+            !(+IM_final >= +IM_inicio) ||
+            !isTimeGreater(hora_inicio, hora_final)
+          ) {
+            isValid = false;
+          }
+        }
+        return isValid;
+      },
+      {
+        message:
+          'Valores Finais precisam ser iguais ou maiores que os valores Iniciais',
+      }
+    );
 
   const validatedSchema = validationSchema.safeParse(formData);
 
@@ -196,7 +226,7 @@ export async function action({ params, request }: ActionArgs) {
   return json({});
 }
 
-export default function NewOperador() {
+export default function NewBoletim() {
   const {
     loggedInUser,
     equipamentos,
@@ -235,20 +265,22 @@ export default function NewOperador() {
   );
 
   useEffect(() => {
+    setActionDataErrors(null);
+  }, [OS, OP, equipamento, horaInicio, horaFinal, IMInicio, IMFinal]);
+
+  useEffect(() => {
     setActionDataErrors(actionData);
   }, [actionData]);
 
   useEffect(() => {
     if (IMInicio && IMFinal) {
       setIsIMValid(Number(IMFinal) >= Number(IMInicio));
-      setActionDataErrors(null);
     }
   }, [IMInicio, IMFinal]);
 
   useEffect(() => {
     if (horaInicio && horaFinal) {
       setIsHoraValid(isTimeGreater(String(horaInicio), String(horaFinal)));
-      setActionDataErrors(null);
     }
   }, [horaInicio, horaFinal]);
 
@@ -258,15 +290,21 @@ export default function NewOperador() {
         (equip: Equipamento) => equip.id === boletim?.equipamento
       )
     );
+    setTimeout(() => {
+      if (boletim) {
+        setIsHoraValid(true);
+        setIsIMValid(true);
+      }
+    }, 500);
   }, []);
 
   useEffect(() => {
     if (selectedEquipamento) {
-      setEquipamento(
-        equipamentos.find(
-          (equip: Equipamento) => equip.id === selectedEquipamento.name
-        )
+      const equip = equipamentos.find(
+        (equip: Equipamento) => equip.id === selectedEquipamento.name
       );
+      setEquipamento(equip);
+      setIMInicio(equip.instrumento_medicao_inicio);
     }
   }, [selectedEquipamento]);
 
@@ -281,6 +319,13 @@ export default function NewOperador() {
       setOP(operacoes.find((op: Operacao) => op.id === selectedOP.name));
     }
   }, [selectedOP]);
+
+  useEffect(() => {
+    setIsHoraValid(undefined);
+    setIsIMValid(undefined);
+    setOS(null);
+    setOP(null);
+  }, [rows]);
 
   const sortedEquipamentos: Option[] = equipamentos
     ?.map((item: Equipamento) => {
@@ -331,8 +376,6 @@ export default function NewOperador() {
   const handleAddRow = () => {
     if (rows < 12) {
       setRows(rows + 1);
-      setOS(null);
-      setOP(null);
     }
   };
 
@@ -395,6 +438,7 @@ export default function NewOperador() {
                 const log: EquipamentoLog = boletim?.equipamento_logs?.find(
                   (log: EquipamentoLog) => Number(log.index) === index
                 );
+
                 return (
                   <Row key={index} className="mt-1">
                     <Select
@@ -440,14 +484,13 @@ export default function NewOperador() {
                       className="!w-[132px]"
                       defaultValue={log?.hora_final}
                       error={
-                        actionData?.errors?.[`hora_final_${index}`] || //TODO: improve this logic
-                        index + 1 === rows
-                          ? isHoraValid === undefined
-                            ? ''
-                            : isHoraValid
-                            ? ''
-                            : 'Hora inválida'
-                          : ''
+                        actionDataErrors
+                          ? actionData?.errors?.[`hora_final_${index}`]
+                          : index + 1 === rows
+                          ? horaFinal && !isHoraValid
+                            ? 'Hora inválida!'
+                            : undefined
+                          : undefined
                       }
                       noLabel={index !== 0}
                       onChange={setHoraFinal}
@@ -485,14 +528,13 @@ export default function NewOperador() {
                       className="!w-[130px]"
                       defaultValue={log?.IM_final}
                       error={
-                        //TODO: fix this error
-                        actionData?.errors?.[`IM_final_${index}`] ||
-                        index + 1 === rows
-                          ? IMInicio &&
-                            IMFinal &&
-                            Number(IMInicio) > Number(IMFinal) &&
-                            'Valor inválido!'
-                          : ''
+                        actionDataErrors
+                          ? actionDataErrors?.errors?.[`IM_final_${index}`]
+                          : index + 1 === rows &&
+                            Number(IMFinal) > 0 &&
+                            Number(IMInicio) > Number(IMFinal)
+                          ? 'Valor inválido!'
+                          : undefined
                       }
                       noLabel={index !== 0}
                       onChange={setIMFinal}
@@ -501,29 +543,36 @@ export default function NewOperador() {
                 );
               })}
 
-              <div className="p-2 flex gap-2 mt-3 text-sm">
-                {(OS || OP) && (
-                  <InfoCircleIcon className="h-6 w-6 text-orange" />
+              <div className="p-2 flex flex-col gap-2 mt-3 text-sm h-16">
+                {actionDataErrors?.errors?.invalidInput && (
+                  <ErrorMessage
+                    error={actionDataErrors?.errors?.invalidInput}
+                  />
                 )}
-                <div>
-                  <p>
-                    {OS && (
-                      <>
-                        <span className="font-bold">{OS?.codigo}</span>
-                        <span> - </span>
-                        <span>{OS?.descricao}</span>
-                      </>
-                    )}
-                  </p>
-                  <p>
-                    {OP && (
-                      <>
-                        <span className="font-bold">{OP?.codigo}</span>
-                        <span> - </span>
-                        <span>{OP?.descricao}</span>
-                      </>
-                    )}
-                  </p>
+                <div className="flex gap-2 ">
+                  {(OS || OP) && (
+                    <InfoCircleIcon className="h-6 w-6 text-orange" />
+                  )}
+                  <div>
+                    <p>
+                      {OS && (
+                        <>
+                          <span className="font-bold">{OS?.codigo}</span>
+                          <span> - </span>
+                          <span>{OS?.descricao}</span>
+                        </>
+                      )}
+                    </p>
+                    <p>
+                      {OP && (
+                        <>
+                          <span className="font-bold">{OP?.codigo}</span>
+                          <span> - </span>
+                          <span>{OP?.descricao}</span>
+                        </>
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
 
@@ -563,7 +612,7 @@ export default function NewOperador() {
                 ? equipamento?.instrumento_medicao
                 : 'IM'
             } Início`}
-            value={`--- `}
+            value={IMInicio ?? '-'}
           />
           <PairLabelValue
             label={`${
@@ -571,9 +620,18 @@ export default function NewOperador() {
                 ? equipamento?.instrumento_medicao
                 : 'IM'
             } Final`}
-            value={`--- `}
+            value={IMFinal ?? '-'}
           />
-          <PairLabelValue label="Total" value={` --- `} />
+          <PairLabelValue
+            label="Total"
+            value={
+              IMInicio && IMFinal
+                ? +IMFinal - +IMInicio > 0
+                  ? String(+IMFinal - +IMInicio)
+                  : '-'
+                : '-'
+            }
+          />
         </div>
       }
       footerActions={
@@ -591,8 +649,9 @@ export default function NewOperador() {
           text={boletim ? 'Editar' : 'Adicionar'}
           name="_action"
           value={boletim ? 'edit' : 'create'}
+          disabled={!isHoraValid || !isIMValid}
         />
       }
-    ></Modal>
+    />
   );
 }
