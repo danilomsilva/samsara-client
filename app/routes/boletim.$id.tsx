@@ -47,6 +47,7 @@ import {
 } from '~/models/boletim.server';
 import { PairLabelValue } from '~/components/PairLabelValue';
 import ErrorMessage from '~/components/ErrorMessage';
+import InputValue from '~/components/InputValue';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -111,42 +112,13 @@ export async function action({ params, request }: ActionArgs) {
     return schema;
   };
 
-  const validationSchema = z
-    .object({
-      data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
-      equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-      descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-      operador: z.string().min(1, CAMPO_OBRIGATORIO),
-      ...generateValidationSchema(),
-    })
-    .refine(
-      (schema) => {
-        const horas_inicio = Object.keys(schema).filter((key) =>
-          key.startsWith('hora_inicio_')
-        ).length;
-
-        let isValid = true;
-
-        for (let i = 0; i < horas_inicio; i++) {
-          const hora_inicio = schema[`hora_inicio_${i}`];
-          const hora_final = schema[`hora_final_${i}`];
-          const IM_inicio = schema[`IM_inicio_${i}`];
-          const IM_final = schema[`IM_final_${i}`];
-
-          if (
-            !(+IM_final >= +IM_inicio) ||
-            !isTimeGreater(hora_inicio, hora_final)
-          ) {
-            isValid = false;
-          }
-        }
-        return isValid;
-      },
-      {
-        message:
-          'Valores Finais precisam ser iguais ou maiores que os valores Iniciais',
-      }
-    );
+  const validationSchema = z.object({
+    data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
+    equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+    descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+    operador: z.string().min(1, CAMPO_OBRIGATORIO),
+    ...generateValidationSchema(),
+  });
 
   const validatedSchema = validationSchema.safeParse(formData);
 
@@ -253,6 +225,7 @@ export default function NewBoletim() {
   const [isHoraValid, setIsHoraValid] = useState<boolean | undefined>(
     undefined
   );
+  const [IMInicio0, setIMInicio0] = useState<string | null>(null);
   const [IMInicio, setIMInicio] = useState<string | null>(null);
   const [IMFinal, setIMFinal] = useState<string | null>(null);
   const [isIMValid, setIsIMValid] = useState<boolean | undefined>(undefined);
@@ -263,6 +236,16 @@ export default function NewBoletim() {
   const [rows, setRows] = useState(
     boletim ? boletim?.equipamento_logs?.length : 1
   );
+  const [logs, setLogs] = useState<
+    {
+      OS: OS | null;
+      OP: Operacao | null;
+      horaInicio: string | null;
+      horaFinal: string | null;
+      IMInicio: string | null;
+      IMFinal: string | null;
+    }[]
+  >([]);
 
   useEffect(() => {
     setActionDataErrors(null);
@@ -304,6 +287,7 @@ export default function NewBoletim() {
         (equip: Equipamento) => equip.id === selectedEquipamento.name
       );
       setEquipamento(equip);
+      setIMInicio0(equip.instrumento_medicao_inicio);
       setIMInicio(equip.instrumento_medicao_inicio);
     }
   }, [selectedEquipamento]);
@@ -321,10 +305,14 @@ export default function NewBoletim() {
   }, [selectedOP]);
 
   useEffect(() => {
+    setHoraInicio(null);
+    setHoraFinal(null);
     setIsHoraValid(undefined);
+    setIMFinal(null);
     setIsIMValid(undefined);
     setOS(null);
     setOP(null);
+    setIMInicio(logs[rows - 2]?.IMFinal);
   }, [rows]);
 
   const sortedEquipamentos: Option[] = equipamentos
@@ -375,6 +363,17 @@ export default function NewBoletim() {
 
   const handleAddRow = () => {
     if (rows < 12) {
+      setLogs((prev) => [
+        ...prev,
+        {
+          OS,
+          OP,
+          horaInicio,
+          horaFinal,
+          IMInicio,
+          IMFinal,
+        },
+      ]);
       setRows(rows + 1);
     }
   };
@@ -418,6 +417,7 @@ export default function NewBoletim() {
                 className="!w-[280px]"
                 defaultValue={equipamento?.tipo_equipamentoX}
                 disabled
+                tabIndex={-1}
               />
               <Select
                 name="operador"
@@ -440,7 +440,7 @@ export default function NewBoletim() {
                 );
 
                 return (
-                  <Row key={index} className="mt-1">
+                  <Row key={index}>
                     <Select
                       name={`OS_${index}`}
                       options={sortedOSs}
@@ -452,6 +452,7 @@ export default function NewBoletim() {
                       className="!w-[132px]"
                       noLabel={index !== 0}
                       onChange={setSelectedOS}
+                      disabled={index + 1 !== rows}
                     />
                     <Select
                       name={`operacao_${index}`}
@@ -464,6 +465,7 @@ export default function NewBoletim() {
                       className="!w-[132px]"
                       noLabel={index !== 0}
                       onChange={setSelectedOP}
+                      disabled={index + 1 !== rows}
                     />
                     <Input
                       type="time"
@@ -475,6 +477,7 @@ export default function NewBoletim() {
                       error={actionDataErrors?.errors?.[`hora_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={setHoraInicio}
+                      disabled={index + 1 !== rows}
                     />
                     <Input
                       type="time"
@@ -494,8 +497,9 @@ export default function NewBoletim() {
                       }
                       noLabel={index !== 0}
                       onChange={setHoraFinal}
+                      disabled={index + 1 !== rows}
                     />
-                    <Input
+                    <InputValue
                       type="text"
                       name={`IM_inicio_${index}`}
                       label={`${
@@ -505,16 +509,19 @@ export default function NewBoletim() {
                       } Início`}
                       labelBold
                       className="!w-[130px]"
-                      defaultValue={
-                        log?.IM_inicio
-                          ? log?.IM_inicio
-                          : index === 0
-                          ? equipamento?.instrumento_medicao_atual
-                          : ''
-                      }
+                      // value={
+                      //   log?.IM_inicio
+                      //     ? log?.IM_inicio
+                      //     : index === 0
+                      //     ? equipamento?.instrumento_medicao_atual
+                      //     : ''
+                      // } // TODO: edit is not working!!! review this logic
+                      value={index === 0 ? IMInicio0 : IMInicio}
                       error={actionDataErrors?.errors?.[`IM_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={setIMInicio}
+                      disabled={index + 1 !== rows || index === 0}
+                      tabIndex={index === 0 ? -1 : 0}
                     />
                     <Input
                       type="text"
@@ -538,7 +545,16 @@ export default function NewBoletim() {
                       }
                       noLabel={index !== 0}
                       onChange={setIMFinal}
+                      disabled={index + 1 !== rows}
                     />
+                    {index + 1 !== rows && (
+                      <div
+                        className="bg-white rounded-full h-8 w-8 flex items-center justify-center hover:shadow-md cursor-pointer self-end mb-1"
+                        onClick={() => console.log(index + 1)}
+                      >
+                        <PencilIcon />
+                      </div>
+                    )}
                   </Row>
                 );
               })}
@@ -612,7 +628,7 @@ export default function NewBoletim() {
                 ? equipamento?.instrumento_medicao
                 : 'IM'
             } Início`}
-            value={IMInicio ?? '-'}
+            value={IMInicio0 ?? '-'}
           />
           <PairLabelValue
             label={`${
@@ -649,7 +665,7 @@ export default function NewBoletim() {
           text={boletim ? 'Editar' : 'Adicionar'}
           name="_action"
           value={boletim ? 'edit' : 'create'}
-          disabled={!isHoraValid || !isIMValid}
+          disabled={!isIMValid || !isHoraValid}
         />
       }
     />

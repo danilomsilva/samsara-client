@@ -16,6 +16,7 @@ type PropTypes = {
   onChange?: (value: string) => void;
   suffix?: string;
   readOnly?: boolean;
+  tabIndex?: number;
 };
 
 export default function Input({
@@ -32,6 +33,7 @@ export default function Input({
   onChange,
   suffix,
   readOnly,
+  tabIndex,
 }: PropTypes) {
   const [inputValue, setInputValue] = useState(defaultValue || '');
   const [inputError, setInputError] = useState('');
@@ -105,6 +107,7 @@ export default function Input({
           onBlur={handleBlur}
           onChange={handleInputChange}
           readOnly={readOnly}
+          tabIndex={tabIndex}
         />
       )}
 

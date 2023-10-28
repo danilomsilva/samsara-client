@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NumericFormat } from 'react-number-format';
 import ErrorMessage from './ErrorMessage';
-import classnames from 'classnames'; // You can use a library like classnames for managing classNames.
 
 type PropTypes = {
   name: string;
@@ -17,6 +16,7 @@ type PropTypes = {
   onChange?: (value: string) => void;
   suffix?: string;
   readOnly?: boolean;
+  tabIndex?: number;
 };
 
 export default function Input({
@@ -33,17 +33,17 @@ export default function Input({
   onChange,
   suffix,
   readOnly,
+  tabIndex,
 }: PropTypes) {
-  const [inputValue, setInputValue] = useState(value || '');
+  const [inputValue, setInputValue] = useState(value);
   const [inputError, setInputError] = useState('');
 
   useEffect(() => {
-    // Update inputValue when the value prop changes.
-    setInputValue(value || '');
+    setInputValue(value);
   }, [value]);
 
   const handleBlur = () => {
-    if (inputValue.trim() === '') {
+    if (inputValue === '') {
       setInputError('Campo obrigatório');
     } else {
       setInputError('');
@@ -58,13 +58,8 @@ export default function Input({
     }
   };
 
-  const inputClasses = classnames(
-    className,
-    'flex flex-col gap-1 text-sm w-full'
-  );
-
   return (
-    <div className={inputClasses}>
+    <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
       <label
         htmlFor={name}
         className={`${
@@ -73,30 +68,18 @@ export default function Input({
       >
         {noLabel ? null : label}
       </label>
-      {type === 'currency' ? (
+      {type === 'IM' ? (
         <NumericFormat
           name={name}
-          className="rounded-lg p-2 px-4 focus:outline-blue h-9"
-          thousandSeparator="."
-          decimalSeparator=","
-          prefix="R$ "
-          allowNegative={false}
-          fixedDecimalScale
-          decimalScale={2}
-          value={inputValue} // Use inputValue instead of value
-        />
-      ) : type === 'IM' ? (
-        <NumericFormat
-          name={name}
-          className={classnames('rounded-lg p-2 px-4 focus:outline-blue h-9', {
-            'border border-grey/50 bg-grey/10 pointer-events-none': disabled,
-          })}
+          className={`${
+            disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
+          } rounded-lg p-2 px-4 focus:outline-blue h-9`}
           thousandSeparator="."
           decimalSeparator=","
           allowNegative={false}
           fixedDecimalScale
           decimalScale={0}
-          value={inputValue} // Use inputValue instead of value
+          value={value}
           suffix={suffix}
           readOnly={readOnly}
           onBlur={handleBlur}
@@ -107,15 +90,16 @@ export default function Input({
           name={name}
           type={type}
           min={1}
-          className={classnames('rounded-lg p-2 px-4 focus:outline-blue h-9', {
-            'border border-grey/50 bg-grey/10 pointer-events-none': disabled,
-          })}
-          value={inputValue} // Use inputValue instead of value
+          className={`${
+            disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
+          } rounded-lg p-2 px-4 focus:outline-blue h-9`}
+          value={value}
           autoFocus={autoFocus}
           autoComplete="off"
           onBlur={handleBlur}
           onChange={handleInputChange}
           readOnly={readOnly}
+          tabIndex={tabIndex}
         />
       )}
 
