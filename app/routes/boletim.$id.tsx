@@ -46,35 +46,84 @@ import {
   _updateBoletim,
 } from '~/models/boletim.server';
 import { PairLabelValue } from '~/components/PairLabelValue';
+import TwoRowsInfo from '~/components/TwoRowsInfo';
+import FooterSummaryBoletim from '~/components/FooterSummaryBoletim';
+import InputValue from '~/components/InputValue';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
   const loggedInUser: Usuario = await getUsuario(userToken, userId);
   const equipamentos = await getEquipamentos(userToken, 'created');
-  const operadores = await getOperadores(userToken, 'created');
+  const sortedEquipamentos: Option[] = equipamentos
+    ?.map((item: Equipamento) => {
+      const { id, codigo } = item;
+      return {
+        name: id,
+        displayName: codigo,
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
+  const operad = await getOperadores(userToken, 'created');
+  const operadores: Option[] = operad
+    ?.map((item: Operador) => {
+      const { id, nome_completo } = item;
+      return {
+        name: id,
+        displayName: nome_completo,
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
   const OSs = await getOSs(userToken, 'created');
+  const sortedOSs: Option[] = OSs?.map((item: OS) => {
+    const { id, codigo } = item;
+    return {
+      name: id,
+      displayName: codigo?.replace('OS-', ''),
+    };
+  })?.sort((a: Option, b: Option) =>
+    a.displayName.localeCompare(b.displayName)
+  );
   const operacoes = await getOperacoes(userToken, 'created');
+  const sortedOperacoes: Option[] = operacoes
+    ?.map((item: Operacao) => {
+      const { id, codigo } = item;
+      return {
+        name: id,
+        displayName: codigo?.replace('OM-', ''),
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
   const boletins = await getBoletins(userToken, 'created');
   const newCode = genCodigo(boletins, 'BOL-');
 
   if (params.id === 'new') {
     return json({
+      newCode,
       loggedInUser,
       equipamentos,
+      sortedEquipamentos,
       operadores,
-      OSs,
-      operacoes,
-      newCode,
+      sortedOSs,
+      sortedOperacoes,
     });
   } else {
     const boletim = await getBoletim(userToken, params.id as string);
     return json({
       boletim,
-      equipamentos,
       loggedInUser,
+      equipamentos,
+      sortedEquipamentos,
       operadores,
-      OSs,
-      operacoes,
+      sortedOSs,
+      sortedOperacoes,
     });
   }
 }
@@ -83,6 +132,7 @@ export async function action({ params, request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
+  console.log('📘📘📘📘📘📘📘📘📘📘📘📘📘', formData);
 
   const equipamento_logs = [];
   for (let i = 0; i < Number(formData?.rows); i++) {
@@ -96,50 +146,25 @@ export async function action({ params, request }: ActionArgs) {
       IM_final: formData?.[`IM_final_${i}`],
     });
   }
-  const generateValidationSchema = () => {
-    const schema: any = {};
-
-    for (let i = 0; i < Number(formData.rows); i++) {
-      schema[`OS_${i}`] = z.string().min(1, CAMPO_OBRIGATORIO);
-      schema[`operacao_${i}`] = z.string().min(1, CAMPO_OBRIGATORIO);
-      schema[`hora_inicio_${i}`] = z.string().min(1, CAMPO_OBRIGATORIO);
-      schema[`hora_final_${i}`] = z.string().min(1, CAMPO_OBRIGATORIO);
-      schema[`IM_inicio_${i}`] = z.string().min(1, CAMPO_OBRIGATORIO);
-      schema[`IM_final_${i}`] = z.string().min(1, CAMPO_OBRIGATORIO);
-    }
-    return schema;
-  };
 
   const validationSchema = z.object({
     data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
     equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+    tipo_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
     operador: z.string().min(1, CAMPO_OBRIGATORIO),
-    ...generateValidationSchema(),
   });
 
   const validatedSchema = validationSchema.safeParse(formData);
 
   if (!validatedSchema.success) {
     const errors = validatedSchema.error.format();
-    const dynamicErrors: any = {};
-
-    for (let i = 0; i < Number(formData.rows); i++) {
-      dynamicErrors[`OS_${i}`] = errors[`OS_${i}`]?._errors[0];
-      dynamicErrors[`operacao_${i}`] = errors[`operacao_${i}`]?._errors[0];
-      dynamicErrors[`hora_inicio_${i}`] =
-        errors[`hora_inicio_${i}`]?._errors[0];
-      dynamicErrors[`hora_final_${i}`] = errors[`hora_final_${i}`]?._errors[0];
-      dynamicErrors[`IM_inicio_${i}`] = errors[`IM_inicio_${i}`]?._errors[0];
-      dynamicErrors[`IM_final_${i}`] = errors[`IM_final_${i}`]?._errors[0];
-    }
+    console.log('📕📕📕📕📕📕📕📕📕📕📕📕📕📕', errors);
 
     return {
       errors: {
-        ...dynamicErrors,
-        data_boletim: errors.data_boletim?._errors[0], // create function to simplify this lines
+        data_boletim: errors.data_boletim?._errors[0],
         equipamento: errors.equipamento?._errors[0],
-        descricao_equipamento: errors.descricao_equipamento?._errors[0],
+        tipo_equipamento: errors.tipo_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
         invalidInput: errors?._errors[0],
       },
@@ -168,6 +193,7 @@ export async function action({ params, request }: ActionArgs) {
       },
     });
   }
+
   if (formData._action === 'edit') {
     const body = {
       ...formData,
@@ -193,255 +219,110 @@ export async function action({ params, request }: ActionArgs) {
       },
     });
   }
+
   return json({});
 }
 
 export default function NewBoletim() {
   const {
+    newCode,
+    boletim,
     loggedInUser,
     equipamentos,
-    boletim,
+    sortedEquipamentos,
     operadores,
-    OSs,
-    operacoes,
-    newCode,
+    sortedOSs,
+    sortedOperacoes,
   } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
-  const [selectedEquipamento, setSelectedEquipamento] = useState<Option | null>(
-    null
-  );
-  const [selectedOS, setSelectedOS] = useState<Option | null>(null);
-  const [OS, setOS] = useState<OS | null>(null);
-  const [selectedOP, setSelectedOP] = useState<Option | null>(null);
-  const [OP, setOP] = useState<OS | null>(null);
-  const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
-  const [horaInicio, setHoraInicio] = useState<string | null>(null);
-  const [horaFinal, setHoraFinal] = useState<string | null>(null);
-  const [isHoraValid, setIsHoraValid] = useState<boolean | undefined>(
-    undefined
-  );
-  const [IMInicio0, setIMInicio0] = useState<string | null>(null);
-  const [IMInicio, setIMInicio] = useState<string | null>(null);
-  const [IMFinal, setIMFinal] = useState<string | null>(null);
-  const [isIMValid, setIsIMValid] = useState<boolean | undefined>(undefined);
-  const [actionDataErrors, setActionDataErrors] = useState<{
-    errors: { [key: string]: string };
-  } | null>(null);
 
-  const [rows, setRows] = useState(
-    boletim ? boletim?.equipamento_logs?.length : 1
-  );
-  const [logs, setLogs] = useState<
-    {
-      OS: OS | null;
-      OP: Operacao | null;
-      horaInicio: string | null;
-      horaFinal: string | null;
-      IMInicio: string | null;
-      IMFinal: string | null;
-    }[]
-  >([]);
+  //STATES
+  const [dataBoletim, setDataBoletim] = useState<string>(getCurrentDate()); //Data
+  const [equipamento, setEquipamento] = useState<Equipamento>(); //Equipamento
 
-  const [isEditing, setIsEditing] = useState<number | undefined>(undefined);
+  const [actionErrors, setActionErrors] = useState<{ [key: string]: string }>(); //Errors
+  const [rows, setRows] = useState<number>(); // Log Rows
+  const [logs, setLogs] = useState<EquipamentoLog[]>([]);
 
-  useEffect(() => {
-    setActionDataErrors(null);
-  }, [OS, OP, equipamento, horaInicio, horaFinal, IMInicio, IMFinal]);
-
-  useEffect(() => {
-    setActionDataErrors(actionData);
-  }, [actionData]);
-
-  useEffect(() => {
-    if (IMInicio && IMFinal) {
-      setIsIMValid(Number(IMFinal) >= Number(IMInicio));
-    }
-  }, [IMInicio, IMFinal]);
-
-  useEffect(() => {
-    if (horaInicio && horaFinal) {
-      setIsHoraValid(isTimeGreater(String(horaInicio), String(horaFinal)));
-    }
-  }, [horaInicio, horaFinal]);
-
-  useEffect(() => {
-    setEquipamento(
-      equipamentos.find(
-        (equip: Equipamento) => equip.id === boletim?.equipamento
-      )
+  const handleSelectEquipamento = (option: Option) => {
+    const findEquipamento = equipamentos.find(
+      (equip: Equipamento) => equip.id === option.name
     );
+    setEquipamento(findEquipamento);
+  };
 
+  useEffect(() => {
+    //create
+    if (!boletim) {
+      setRows(1);
+    }
+
+    //edit
     if (boletim) {
-      setIsHoraValid(true);
-      setIsIMValid(true);
-      setLogs(boletim.equipamento_logs);
-      setIMInicio(
-        boletim.equipamento_logs[boletim.equipamento_logs.length - 1]?.IM_inicio
+      const findEquipamento = equipamentos.find(
+        (equip: Equipamento) => equip.id === boletim?.equipamento
       );
+      setEquipamento(findEquipamento);
+      setRows(boletim?.equipamento_logs?.length);
+      setLogs(boletim?.equipamento_logs);
     }
   }, []);
 
   useEffect(() => {
-    if (selectedEquipamento) {
-      const equip = equipamentos.find(
-        (equip: Equipamento) => equip.id === selectedEquipamento.name
-      );
-      setEquipamento(equip);
-      setIMInicio0(equip.instrumento_medicao_inicio);
-      setIMInicio(equip.instrumento_medicao_inicio);
-    }
-  }, [selectedEquipamento]);
-
-  useEffect(() => {
-    if (selectedOS) {
-      setOS(OSs.find((OS: Equipamento) => OS.id === selectedOS.name));
-    }
-  }, [selectedOS]);
-
-  useEffect(() => {
-    if (selectedOP) {
-      setOP(operacoes.find((op: Operacao) => op.id === selectedOP.name));
-    }
-  }, [selectedOP]);
-
-  useEffect(() => {
-    setHoraInicio(null);
-    setHoraFinal(null);
-    setIsHoraValid(undefined);
-    const IMValue =
-      rows > boletim?.equipamento_logs?.length ? 'IM_final' : 'IM_inicio';
-    setIMInicio(
-      boletim?.equipamento_logs[boletim?.equipamento_logs.length - 1][IMValue]
-    );
-    setIMFinal(null);
-    setIsIMValid(undefined);
-    setOS(null);
-    setOP(null);
-  }, [rows]);
-
-  const sortedEquipamentos: Option[] = equipamentos
-    ?.map((item: Equipamento) => {
-      const { id, codigo } = item;
-      return {
-        name: id,
-        displayName: codigo,
-      };
-    })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
-
-  const sortedOperadores: Option[] = operadores
-    ?.map((item: Operador) => {
-      const { id, nome_completo } = item;
-      return {
-        name: id,
-        displayName: nome_completo,
-      };
-    })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
-
-  const sortedOSs: Option[] = OSs?.map((item: OS) => {
-    const { id, codigo } = item;
-    return {
-      name: id,
-      displayName: codigo?.replace('OS-', ''),
-    };
-  })?.sort((a: Option, b: Option) =>
-    a.displayName.localeCompare(b.displayName)
-  );
-
-  const sortedOperacoes: Option[] = operacoes
-    ?.map((item: Operacao) => {
-      const { id, codigo } = item;
-      return {
-        name: id,
-        displayName: codigo?.replace('OM-', ''),
-      };
-    })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
-
-  const handleAddRow = () => {
-    if (rows < 12) {
-      setLogs((prev) => [
-        ...prev,
-        {
-          OS,
-          OP,
-          horaInicio,
-          horaFinal,
-          IMInicio,
-          IMFinal,
-        },
-      ]);
-      setRows(rows + 1);
-    }
-  };
-
-  const handleEditRow = (index: number) => {
-    if (isEditing === index) {
-      setIsEditing(rows - 1);
-    } else {
-      setIsEditing(index);
-    }
-  };
+    setActionErrors(actionData?.errors);
+  }, [actionData]);
 
   return (
-    <Modal //TODO: when closing modal, reset useSelectRow
+    <Modal
       size="xxl"
       title={`${boletim ? 'Editar' : 'Adicionar'} Boletim`}
       variant={boletim ? 'grey' : 'blue'}
       content={
         <div className="flex">
           <div className="pr-4 border-r-grey/40 border-r">
-            <Row>
+            {/* TODO: revisit if this fixed height helps or not */}
+            <Row className="h-20">
               <InputMask
                 mask="99/99/9999"
                 type="text"
                 name="data_boletim"
                 label="Data de início"
-                defaultValue={
-                  boletim
-                    ? convertISOToDate(boletim?.data_boletim)
-                    : getCurrentDate()
-                }
+                value={dataBoletim}
                 className="!w-[132px]"
-                error={actionDataErrors?.errors?.data_boletim}
+                onChange={setDataBoletim}
+                error={actionErrors?.data_boletim}
               />
               <Select
                 name="equipamento"
                 options={sortedEquipamentos}
                 label="Equipamento"
-                defaultValue={boletim?.equipamento}
+                value={boletim?.equipamento}
                 placeholder="-"
-                error={actionDataErrors?.errors?.equipamento}
-                onChange={setSelectedEquipamento}
                 className="!w-[132px]"
+                onChange={handleSelectEquipamento}
+                error={actionErrors?.equipamento}
               />
               <Input
                 type="text"
-                name="descricao_equipamento"
-                label="Descrição do equipamento"
+                name="tipo_equipamento"
+                label="Tipo do equipamento"
                 className="!w-[280px]"
-                defaultValue={equipamento?.tipo_equipamentoX}
                 disabled
                 tabIndex={-1}
+                defaultValue={equipamento?.tipo_equipamentoX}
+                error={actionErrors?.tipo_equipamento}
               />
               <Select
                 name="operador"
-                options={sortedOperadores}
+                options={operadores}
                 label="Operador"
-                defaultValue={boletim?.operador}
+                value={boletim?.operador}
                 placeholder="-"
-                error={actionDataErrors?.errors?.operador}
                 className="!w-[280px]"
+                error={actionErrors?.operador}
               />
             </Row>
             <input type="hidden" name="rows" value={rows} />
@@ -450,265 +331,87 @@ export default function NewBoletim() {
             <input type="hidden" name="newCode" value={newCode} />
             <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
               {Array.from(new Array(rows), (_, index) => {
-                const log: EquipamentoLog = boletim?.equipamento_logs?.find(
-                  (log: EquipamentoLog) => Number(log.index) === index
-                );
-
                 return (
-                  <Row key={index}>
+                  <Row key={index} className="h-20">
                     <Select
+                      className="!w-[132px]"
                       name={`OS_${index}`}
                       options={sortedOSs}
+                      noLabel={index !== 0}
                       labelBold
                       label="O.S."
-                      defaultValue={log?.OS}
                       placeholder="-"
-                      error={actionDataErrors?.errors?.[`OS_${index}`]}
-                      className="!w-[132px]"
-                      noLabel={index !== 0}
-                      onChange={setSelectedOS}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `OS_${index}` !== `OS_${isEditing}`
-                          : index + 1 !== rows &&
-                            `OS_${index}` !== `OS_${isEditing}`
-                      }
+                      value={logs[index]?.OP || ''}
                     />
                     <Select
+                      className="!w-[132px]"
                       name={`operacao_${index}`}
                       options={sortedOperacoes}
+                      noLabel={index !== 0}
                       label="Operação"
                       labelBold
-                      defaultValue={log?.OP}
                       placeholder="-"
-                      error={actionDataErrors?.errors?.[`operacao_${index}`]}
-                      className="!w-[132px]"
-                      noLabel={index !== 0}
-                      onChange={setSelectedOP}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `operacao_${index}` !== `operacao_${isEditing}`
-                          : index + 1 !== rows &&
-                            `operacao_${index}` !== `operacao_${isEditing}`
-                      }
+                      value={logs ? logs[index]?.OP : ''}
                     />
-                    <Input
+                    {/* <InputValue
                       type="time"
+                      className="!w-[132px]"
                       name={`hora_inicio_${index}`}
+                      noLabel={index !== 0}
                       label="Hora Início"
                       labelBold
-                      className="!w-[132px]"
-                      defaultValue={log?.hora_inicio}
-                      error={actionDataErrors?.errors?.[`hora_inicio_${index}`]}
-                      noLabel={index !== 0}
-                      onChange={setHoraInicio}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `hora_inicio_${index}` !==
-                            `hora_inicio_${isEditing}`
-                          : index + 1 !== rows &&
-                            `hora_inicio_${index}` !==
-                              `hora_inicio_${isEditing}`
-                      }
-                      readOnly={
-                        `hora_inicio_${index}` !== `hora_inicio_${isEditing}`
-                      }
-                      tabIndex={isEditing !== index ? -1 : 0}
+                      value={logs ? logs[index]?.hora_inicio : ''}
                     />
-                    <Input
+                    <InputValue
                       type="time"
+                      className="!w-[132px]"
                       name={`hora_final_${index}`}
+                      noLabel={index !== 0}
                       label="Hora Final"
                       labelBold
-                      className="!w-[132px]"
-                      defaultValue={log?.hora_final}
-                      error={
-                        actionDataErrors
-                          ? actionData?.errors?.[`hora_final_${index}`]
-                          : `hora_final_${index}` === `hora_final_${isEditing}`
-                          ? horaFinal && !isHoraValid
-                            ? 'Hora inválida!'
-                            : undefined
-                          : undefined
-                      }
-                      noLabel={index !== 0}
-                      onChange={setHoraFinal}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `hora_final_${index}` !== `hora_final_${isEditing}`
-                          : index + 1 !== rows &&
-                            `hora_final_${index}` !== `hora_final_${isEditing}`
-                      }
-                      readOnly={
-                        `hora_inicio_${index}` !== `hora_inicio_${isEditing}`
-                      }
-                      tabIndex={isEditing !== index ? -1 : 0}
+                      value={logs ? logs[index]?.hora_final : ''}
                     />
-                    <Input
-                      type="text"
+                    <InputValue
+                      type="IM"
+                      className="!w-[130px]"
                       name={`IM_inicio_${index}`}
+                      noLabel={index !== 0}
                       label={`${
                         equipamento?.instrumento_medicao
                           ? equipamento?.instrumento_medicao
                           : 'IM'
                       } Início`}
                       labelBold
-                      className="!w-[130px]"
-                      defaultValue={
-                        boletim
-                          ? log?.IM_inicio
-                          : index === 0
-                          ? IMInicio0
-                          : logs[index - 1]?.IM_final
-                      }
-                      error={actionDataErrors?.errors?.[`IM_inicio_${index}`]}
-                      noLabel={index !== 0}
-                      onChange={setIMInicio}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `IM_inicio_${index}` !== `IM_inicio_${isEditing}`
-                          : index + 1 !== rows &&
-                            `IM_inicio_${index}` !== `IM_inicio_${isEditing}`
-                      }
-                      tabIndex={isEditing ? (isEditing !== index ? -1 : 0) : 0}
+                      value={logs ? logs[index]?.IM_inicio : ''}
                     />
-                    <Input
-                      type="text"
+                    <InputValue
+                      type="IM"
+                      className="!w-[130px]"
                       name={`IM_final_${index}`}
+                      noLabel={index !== 0}
                       label={`${
                         equipamento?.instrumento_medicao
                           ? equipamento?.instrumento_medicao
                           : 'IM'
                       } Final`}
                       labelBold
-                      className="!w-[130px]"
-                      defaultValue={log?.IM_final}
-                      error={
-                        actionDataErrors
-                          ? actionDataErrors?.errors?.[`IM_final_${index}`]
-                          : `IM_final_${index}` === `IM_final_${isEditing}` &&
-                            Number(IMFinal) > 0 &&
-                            Number(IMInicio) > Number(IMFinal) // TODO: remeber to also validate zeros and empty strings
-                          ? 'Valor inválido!'
-                          : undefined
-                      }
-                      noLabel={index !== 0}
-                      onChange={setIMFinal}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `IM_final_${index}` !== `IM_final_${isEditing}`
-                          : index + 1 !== rows &&
-                            `IM_final_${index}` !== `IM_final_${isEditing}`
-                      }
-                      tabIndex={isEditing ? (isEditing !== index ? -1 : 0) : 0}
-                    />
-                    {(index + 1 !== rows ||
-                      (Number(isEditing) >= 0 && isEditing !== index)) && (
-                      <div
-                        className={`${
-                          index === isEditing ? '!bg-orange text-white' : ''
-                        } bg-white rounded-full h-7 w-7 flex items-center justify-center hover:shadow-md cursor-pointer self-end mb-1`}
-                        onClick={() => handleEditRow(index)}
-                      >
-                        <PencilIcon />
-                      </div>
-                    )}
+                      value={logs ? logs[index]?.IM_final : ''}
+                    /> */}
                   </Row>
                 );
               })}
-
-              <div className="p-2 flex flex-col gap-2 mt-3 text-sm h-16">
-                <div className="flex gap-2 ">
-                  {(OS || OP) && (
-                    <InfoCircleIcon className="h-6 w-6 text-orange" />
-                  )}
-                  <div>
-                    <p>
-                      {OS && (
-                        <>
-                          <span className="font-bold">{OS?.codigo}</span>
-                          <span> - </span>
-                          <span>{OS?.descricao}</span>
-                        </>
-                      )}
-                    </p>
-                    <p>
-                      {OP && (
-                        <>
-                          <span className="font-bold">{OP?.codigo}</span>
-                          <span> - </span>
-                          <span>{OP?.descricao}</span>
-                        </>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {rows < 12 && (
-                <div className="w-full flex justify-center">
-                  <div
-                    className={`${
-                      boletim
-                        ? 'hover:bg-white rounded-full cursor-pointer'
-                        : !isHoraValid || !isIMValid
-                        ? 'rounded-full cursor-default pointer-events-none'
-                        : 'hover:bg-white rounded-full cursor-pointer'
-                    }`}
-                    onClick={handleAddRow}
-                  >
-                    <PlusCircleIcon
-                      className={`${
-                        boletim
-                          ? 'text-blue'
-                          : !isHoraValid || !isIMValid
-                          ? 'text-grey'
-                          : 'text-blue'
-                      } h-8 w-8`}
-                    />
-                  </div>
-                </div>
-              )}
+              {/* <TwoRowsInfo OS={OS} OP={OP} /> */}
             </div>
           </div>
-          <div className="w-full pl-4">test</div>
+          {/* <div className="w-full pl-4">Combustivel + Arquivos</div> */}
         </div>
       }
-      footerSummary={
-        <div className="flex gap-16 -mt-1">
-          <PairLabelValue label="Obra" value={loggedInUser?.obraX} />
-          <PairLabelValue
-            label="Encarregado"
-            value={loggedInUser?.nome_completo}
-          />
-          <PairLabelValue
-            label={`${
-              equipamento?.instrumento_medicao
-                ? equipamento?.instrumento_medicao
-                : 'IM'
-            } Início`}
-            value={IMInicio0 ?? '-'}
-          />
-          <PairLabelValue
-            label={`${
-              equipamento?.instrumento_medicao
-                ? equipamento?.instrumento_medicao
-                : 'IM'
-            } Final`}
-            value={IMFinal ?? '-'}
-          />
-          <PairLabelValue
-            label="Total"
-            value={
-              IMInicio0 && IMFinal
-                ? +IMFinal - +IMInicio0 > 0
-                  ? String(+IMFinal - +IMInicio0)
-                  : '-'
-                : '-'
-            }
-          />
-        </div>
-      }
+      // footerSummary={
+      //   <FooterSummaryBoletim
+      //     loggedInUser={loggedInUser}
+      //     equipamento={equipamento}
+      //   />
+      // }
       footerActions={
         <Button
           variant={boletim ? 'grey' : 'blue'}

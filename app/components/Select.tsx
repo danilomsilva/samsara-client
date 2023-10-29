@@ -14,7 +14,7 @@ type PropTypes = {
   className?: string;
   placeholder?: string;
   error?: string;
-  defaultValue?: string;
+  value?: string;
   onChange?: (option: Option) => void;
   disabled?: boolean;
 };
@@ -28,21 +28,34 @@ export default function Select({
   className,
   placeholder,
   error,
-  defaultValue,
+  value,
   onChange,
   disabled,
 }: PropTypes) {
   const [selected, setSelected] = useState<Option | null>(null);
   const [query, setQuery] = useState('');
+  const [inputError, setInputError] = useState('');
+  const [hasInteracted, setHasInteracted] = useState(false); // Track user interaction
 
   useEffect(() => {
-    const optionObj = options?.find((option) => option.name === defaultValue);
-    setSelected(optionObj as Option);
+    const optionObj = options?.find((option) => option.name === value);
+    setTimeout(() => {
+      setSelected(optionObj as Option);
+    }, 100);
   }, []);
 
   const handleChange = (option: Option) => {
     setSelected(option);
+    setHasInteracted(true); // User has interacted
     onChange && onChange(option);
+  };
+
+  const handleBlur = () => {
+    if (!selected && query === '') {
+      setInputError('Campo obrigatório');
+    } else {
+      setInputError('');
+    }
   };
 
   const filteredOptions =
@@ -73,7 +86,7 @@ export default function Select({
                   'border border-grey/50 bg-grey/10 pointer-events-none'
                 }`}
                 displayValue={(option: Option) =>
-                  defaultValue ? defaultValue : option.displayName
+                  value ? value : option.displayName
                 }
                 onChange={(event) => {
                   setQuery(event.target.value);
@@ -81,6 +94,7 @@ export default function Select({
                 }}
                 placeholder={placeholder}
                 value={selected?.displayName || query}
+                onBlur={handleBlur}
               />
               <Combobox.Button className="absolute inset-y-0 right-1 flex items-center pr-2 w-fit translate-y-0.5">
                 <ChevronDownIcon className="text-blue w-4 h-4" />
@@ -113,7 +127,9 @@ export default function Select({
           </Combobox.Options>
         </div>
       </Combobox>
-      {error && <ErrorMessage error={error} />}
+      {(error || (inputError && !hasInteracted)) && (
+        <ErrorMessage error={error || inputError} />
+      )}
     </fieldset>
   );
 }
