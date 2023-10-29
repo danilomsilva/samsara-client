@@ -46,8 +46,6 @@ import {
   _updateBoletim,
 } from '~/models/boletim.server';
 import { PairLabelValue } from '~/components/PairLabelValue';
-import ErrorMessage from '~/components/ErrorMessage';
-import InputValue from '~/components/InputValue';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -247,6 +245,8 @@ export default function NewBoletim() {
     }[]
   >([]);
 
+  const [isEditing, setIsEditing] = useState<number | undefined>(undefined);
+
   useEffect(() => {
     setActionDataErrors(null);
   }, [OS, OP, equipamento, horaInicio, horaFinal, IMInicio, IMFinal]);
@@ -385,8 +385,16 @@ export default function NewBoletim() {
     }
   };
 
+  const handleEditRow = (index: number) => {
+    if (isEditing === index) {
+      setIsEditing(rows - 1);
+    } else {
+      setIsEditing(index);
+    }
+  };
+
   return (
-    <Modal
+    <Modal //TODO: when closing modal, reset useSelectRow
       size="xxl"
       title={`${boletim ? 'Editar' : 'Adicionar'} Boletim`}
       variant={boletim ? 'grey' : 'blue'}
@@ -459,7 +467,12 @@ export default function NewBoletim() {
                       className="!w-[132px]"
                       noLabel={index !== 0}
                       onChange={setSelectedOS}
-                      disabled={index + 1 !== rows}
+                      disabled={
+                        Number(isEditing) >= 0
+                          ? `OS_${index}` !== `OS_${isEditing}`
+                          : index + 1 !== rows &&
+                            `OS_${index}` !== `OS_${isEditing}`
+                      }
                     />
                     <Select
                       name={`operacao_${index}`}
@@ -472,7 +485,12 @@ export default function NewBoletim() {
                       className="!w-[132px]"
                       noLabel={index !== 0}
                       onChange={setSelectedOP}
-                      disabled={index + 1 !== rows}
+                      disabled={
+                        Number(isEditing) >= 0
+                          ? `operacao_${index}` !== `operacao_${isEditing}`
+                          : index + 1 !== rows &&
+                            `operacao_${index}` !== `operacao_${isEditing}`
+                      }
                     />
                     <Input
                       type="time"
@@ -484,8 +502,18 @@ export default function NewBoletim() {
                       error={actionDataErrors?.errors?.[`hora_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={setHoraInicio}
-                      disabled={index + 1 !== rows}
-                      readOnly={index + 1 !== rows}
+                      disabled={
+                        Number(isEditing) >= 0
+                          ? `hora_inicio_${index}` !==
+                            `hora_inicio_${isEditing}`
+                          : index + 1 !== rows &&
+                            `hora_inicio_${index}` !==
+                              `hora_inicio_${isEditing}`
+                      }
+                      readOnly={
+                        `hora_inicio_${index}` !== `hora_inicio_${isEditing}`
+                      }
+                      tabIndex={isEditing !== index ? -1 : 0}
                     />
                     <Input
                       type="time"
@@ -497,7 +525,7 @@ export default function NewBoletim() {
                       error={
                         actionDataErrors
                           ? actionData?.errors?.[`hora_final_${index}`]
-                          : index + 1 === rows
+                          : `hora_final_${index}` === `hora_final_${isEditing}`
                           ? horaFinal && !isHoraValid
                             ? 'Hora inválida!'
                             : undefined
@@ -505,10 +533,18 @@ export default function NewBoletim() {
                       }
                       noLabel={index !== 0}
                       onChange={setHoraFinal}
-                      disabled={index + 1 !== rows}
-                      readOnly={index + 1 !== rows}
+                      disabled={
+                        Number(isEditing) >= 0
+                          ? `hora_final_${index}` !== `hora_final_${isEditing}`
+                          : index + 1 !== rows &&
+                            `hora_final_${index}` !== `hora_final_${isEditing}`
+                      }
+                      readOnly={
+                        `hora_inicio_${index}` !== `hora_inicio_${isEditing}`
+                      }
+                      tabIndex={isEditing !== index ? -1 : 0}
                     />
-                    <InputValue
+                    <Input
                       type="text"
                       name={`IM_inicio_${index}`}
                       label={`${
@@ -518,22 +554,23 @@ export default function NewBoletim() {
                       } Início`}
                       labelBold
                       className="!w-[130px]"
-                      value={
+                      defaultValue={
                         boletim
-                          ? index === rows - 1
-                            ? IMInicio
-                            : log?.IM_inicio
+                          ? log?.IM_inicio
                           : index === 0
                           ? IMInicio0
-                          : logs[index]
-                          ? logs[index]?.IM_inicio
-                          : logs[index - 1]?.IM_final // TODO: add IM to types aliases AND when creating make sure the final value from prev row will be copied to inicio value new row
+                          : logs[index - 1]?.IM_final
                       }
                       error={actionDataErrors?.errors?.[`IM_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={setIMInicio}
-                      disabled={index + 1 !== rows || index === 0}
-                      tabIndex={index === 0 ? -1 : 0}
+                      disabled={
+                        Number(isEditing) >= 0
+                          ? `IM_inicio_${index}` !== `IM_inicio_${isEditing}`
+                          : index + 1 !== rows &&
+                            `IM_inicio_${index}` !== `IM_inicio_${isEditing}`
+                      }
+                      tabIndex={isEditing ? (isEditing !== index ? -1 : 0) : 0}
                     />
                     <Input
                       type="text"
@@ -549,20 +586,29 @@ export default function NewBoletim() {
                       error={
                         actionDataErrors
                           ? actionDataErrors?.errors?.[`IM_final_${index}`]
-                          : index + 1 === rows &&
+                          : `IM_final_${index}` === `IM_final_${isEditing}` &&
                             Number(IMFinal) > 0 &&
-                            Number(IMInicio) > Number(IMFinal)
+                            Number(IMInicio) > Number(IMFinal) // TODO: remeber to also validate zeros and empty strings
                           ? 'Valor inválido!'
                           : undefined
                       }
                       noLabel={index !== 0}
                       onChange={setIMFinal}
-                      disabled={index + 1 !== rows}
+                      disabled={
+                        Number(isEditing) >= 0
+                          ? `IM_final_${index}` !== `IM_final_${isEditing}`
+                          : index + 1 !== rows &&
+                            `IM_final_${index}` !== `IM_final_${isEditing}`
+                      }
+                      tabIndex={isEditing ? (isEditing !== index ? -1 : 0) : 0}
                     />
-                    {index + 1 !== rows && (
+                    {(index + 1 !== rows ||
+                      (Number(isEditing) >= 0 && isEditing !== index)) && (
                       <div
-                        className="bg-white rounded-full h-8 w-8 flex items-center justify-center hover:shadow-md cursor-pointer self-end mb-1"
-                        onClick={() => console.log(index + 1)}
+                        className={`${
+                          index === isEditing ? '!bg-orange text-white' : ''
+                        } bg-white rounded-full h-7 w-7 flex items-center justify-center hover:shadow-md cursor-pointer self-end mb-1`}
+                        onClick={() => handleEditRow(index)}
                       >
                         <PencilIcon />
                       </div>
@@ -572,11 +618,6 @@ export default function NewBoletim() {
               })}
 
               <div className="p-2 flex flex-col gap-2 mt-3 text-sm h-16">
-                {actionDataErrors?.errors?.invalidInput && (
-                  <ErrorMessage
-                    error={actionDataErrors?.errors?.invalidInput}
-                  />
-                )}
                 <div className="flex gap-2 ">
                   {(OS || OP) && (
                     <InfoCircleIcon className="h-6 w-6 text-orange" />
@@ -683,7 +724,6 @@ export default function NewBoletim() {
           text={boletim ? 'Editar' : 'Adicionar'}
           name="_action"
           value={boletim ? 'edit' : 'create'}
-          disabled={boletim ? false : !isIMValid || !isHoraValid}
         />
       }
     />
