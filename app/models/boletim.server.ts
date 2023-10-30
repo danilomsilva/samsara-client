@@ -59,7 +59,7 @@ export async function getBoletins(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -104,7 +104,7 @@ export async function getBoletim(userToken: User['token'], boletimId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -136,7 +136,8 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
       encarregadoX: encarregado,
       operadorX: operador,
       equipamentoX: equipamento.codigo,
-      IM_inicioX: body.IM_inicio_0,
+      IM_inicioX: body.equipamento_logs?.find((log) => log.index === 0)
+        ?.IM_inicio,
       IM_finalX:
         body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
       total_abastecimento:
@@ -158,7 +159,7 @@ export async function createBoletim(userToken: User['token'], body: Boletim) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -195,7 +196,8 @@ export async function _updateBoletim(
       encarregadoX: encarregado,
       operadorX: operador,
       equipamentoX: equipamento.codigo,
-      IM_inicioX: body.IM_inicio_0, // TODO: fix this error
+      IM_inicioX: body.equipamento_logs?.find((log) => log.index === 0)
+        ?.IM_inicio,
       IM_finalX:
         body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
       total_abastecimento:
@@ -221,7 +223,7 @@ export async function updateBoletim(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -244,7 +246,7 @@ export async function deleteBoletim(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

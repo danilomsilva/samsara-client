@@ -28,14 +28,11 @@ import {
   convertISOToDate,
   genCodigo,
   getCurrentDate,
-  isTimeGreater,
 } from '~/utils/utils';
 import { useEffect, useState } from 'react';
-import Input from '~/components/Input';
 import { type Operador, getOperadores } from '~/models/operador.server';
 import { type OS, getOSs } from '~/models/ordem-servico.server';
 import { type Operacao, getOperacoes } from '~/models/operacao.server';
-import InfoCircleIcon from '~/components/icons/InfoCircleIcon';
 import { z } from 'zod';
 import {
   type Boletim,
@@ -45,7 +42,9 @@ import {
   type EquipamentoLog,
   _updateBoletim,
 } from '~/models/boletim.server';
-import { PairLabelValue } from '~/components/PairLabelValue';
+import TwoLinesInfo from '~/components/TwoLinesInfo';
+import FooterSummary from '~/components/FooterSummary';
+import InputValue from '~/components/InputValue';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -57,13 +56,63 @@ export async function loader({ params, request }: LoaderArgs) {
   const boletins = await getBoletins(userToken, 'created');
   const newCode = genCodigo(boletins, 'BOL-');
 
+  const sortedEquipamentos: Option[] = equipamentos
+    ?.map((item: Equipamento) => {
+      const { id, codigo } = item;
+      return {
+        name: id,
+        displayName: codigo,
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
+  const sortedOperadores: Option[] = operadores
+    ?.map((item: Operador) => {
+      const { id, nome_completo } = item;
+      return {
+        name: id,
+        displayName: nome_completo,
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
+  const sortedOSs: Option[] = OSs?.map((item: OS) => {
+    const { id, codigo } = item;
+    return {
+      name: id,
+      displayName: codigo?.replace('OS-', ''),
+    };
+  })?.sort((a: Option, b: Option) =>
+    a.displayName.localeCompare(b.displayName)
+  );
+
+  const sortedOperacoes: Option[] = operacoes
+    ?.map((item: Operacao) => {
+      const { id, codigo } = item;
+      return {
+        name: id,
+        displayName: codigo?.replace('OM-', ''),
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
   if (params.id === 'new') {
     return json({
       loggedInUser,
       equipamentos,
+      sortedEquipamentos,
       operadores,
+      sortedOperadores,
       OSs,
+      sortedOSs,
       operacoes,
+      sortedOperacoes,
       newCode,
     });
   } else {
@@ -71,10 +120,14 @@ export async function loader({ params, request }: LoaderArgs) {
     return json({
       boletim,
       equipamentos,
+      sortedEquipamentos,
       loggedInUser,
       operadores,
+      sortedOperadores,
       OSs,
+      sortedOSs,
       operacoes,
+      sortedOperacoes,
     });
   }
 }
@@ -96,9 +149,9 @@ export async function action({ params, request }: ActionArgs) {
       IM_final: formData?.[`IM_final_${i}`],
     });
   }
+
   const generateValidationSchema = () => {
     const schema: any = {};
-
     for (let i = 0; i < Number(formData.rows); i++) {
       schema[`OS_${i}`] = z.string().min(1, CAMPO_OBRIGATORIO);
       schema[`operacao_${i}`] = z.string().min(1, CAMPO_OBRIGATORIO);
@@ -113,7 +166,7 @@ export async function action({ params, request }: ActionArgs) {
   const validationSchema = z.object({
     data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
     equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    descricao_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+    tipo_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
     operador: z.string().min(1, CAMPO_OBRIGATORIO),
     ...generateValidationSchema(),
   });
@@ -139,7 +192,7 @@ export async function action({ params, request }: ActionArgs) {
         ...dynamicErrors,
         data_boletim: errors.data_boletim?._errors[0], // create function to simplify this lines
         equipamento: errors.equipamento?._errors[0],
-        descricao_equipamento: errors.descricao_equipamento?._errors[0],
+        tipo_equipamento: errors.tipo_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
         invalidInput: errors?._errors[0],
       },
@@ -201,8 +254,11 @@ export default function NewBoletim() {
     loggedInUser,
     equipamentos,
     boletim,
-    operadores,
+    sortedOperacoes,
+    sortedEquipamentos,
+    sortedOperadores,
     OSs,
+    sortedOSs,
     operacoes,
     newCode,
   } = useLoaderData();
@@ -210,191 +266,59 @@ export default function NewBoletim() {
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
-  const [selectedEquipamento, setSelectedEquipamento] = useState<Option | null>(
-    null
-  );
-  const [selectedOS, setSelectedOS] = useState<Option | null>(null);
-  const [OS, setOS] = useState<OS | null>(null);
-  const [selectedOP, setSelectedOP] = useState<Option | null>(null);
-  const [OP, setOP] = useState<OS | null>(null);
-  const [equipamento, setEquipamento] = useState<Equipamento | null>(null);
-  const [horaInicio, setHoraInicio] = useState<string | null>(null);
-  const [horaFinal, setHoraFinal] = useState<string | null>(null);
-  const [isHoraValid, setIsHoraValid] = useState<boolean | undefined>(
-    undefined
-  );
-  const [IMInicio0, setIMInicio0] = useState<string | null>(null);
-  const [IMInicio, setIMInicio] = useState<string | null>(null);
-  const [IMFinal, setIMFinal] = useState<string | null>(null);
-  const [isIMValid, setIsIMValid] = useState<boolean | undefined>(undefined);
-  const [actionDataErrors, setActionDataErrors] = useState<{
-    errors: { [key: string]: string };
-  } | null>(null);
+
+  const [equipamento, setEquipamento] = useState<Equipamento>();
+  const [currentLog, setCurrentLog] = useState<Partial<EquipamentoLog>>();
 
   const [rows, setRows] = useState(
     boletim ? boletim?.equipamento_logs?.length : 1
   );
-  const [logs, setLogs] = useState<
-    {
-      OS: OS | null;
-      OP: Operacao | null;
-      horaInicio: string | null;
-      horaFinal: string | null;
-      IMInicio: string | null;
-      IMFinal: string | null;
-    }[]
-  >([]);
 
-  const [isEditing, setIsEditing] = useState<number | undefined>(undefined);
-
+  //USE EFFECTS
   useEffect(() => {
-    setActionDataErrors(null);
-  }, [OS, OP, equipamento, horaInicio, horaFinal, IMInicio, IMFinal]);
-
-  useEffect(() => {
-    setActionDataErrors(actionData);
-  }, [actionData]);
-
-  useEffect(() => {
-    if (IMInicio && IMFinal) {
-      setIsIMValid(Number(IMFinal) >= Number(IMInicio));
-    }
-  }, [IMInicio, IMFinal]);
-
-  useEffect(() => {
-    if (horaInicio && horaFinal) {
-      setIsHoraValid(isTimeGreater(String(horaInicio), String(horaFinal)));
-    }
-  }, [horaInicio, horaFinal]);
-
-  useEffect(() => {
-    setEquipamento(
-      equipamentos.find(
-        (equip: Equipamento) => equip.id === boletim?.equipamento
-      )
-    );
-
     if (boletim) {
-      setIsHoraValid(true);
-      setIsIMValid(true);
-      setLogs(boletim.equipamento_logs);
-      setIMInicio(
-        boletim.equipamento_logs[boletim.equipamento_logs.length - 1]?.IM_inicio
+      const findEquipamento = equipamentos?.find(
+        (equip: Equipamento) => equip?.id === boletim?.equipamento
+      );
+      setEquipamento(findEquipamento);
+      setCurrentLog(
+        boletim?.equipamento_logs[boletim?.equipamento_logs.length - 1]
       );
     }
   }, []);
 
-  useEffect(() => {
-    if (selectedEquipamento) {
-      const equip = equipamentos.find(
-        (equip: Equipamento) => equip.id === selectedEquipamento.name
-      );
-      setEquipamento(equip);
-      setIMInicio0(equip.instrumento_medicao_inicio);
-      setIMInicio(equip.instrumento_medicao_inicio);
-    }
-  }, [selectedEquipamento]);
-
-  useEffect(() => {
-    if (selectedOS) {
-      setOS(OSs.find((OS: Equipamento) => OS.id === selectedOS.name));
-    }
-  }, [selectedOS]);
-
-  useEffect(() => {
-    if (selectedOP) {
-      setOP(operacoes.find((op: Operacao) => op.id === selectedOP.name));
-    }
-  }, [selectedOP]);
-
-  useEffect(() => {
-    setHoraInicio(null);
-    setHoraFinal(null);
-    setIsHoraValid(undefined);
-    const IMValue =
-      rows > boletim?.equipamento_logs?.length ? 'IM_final' : 'IM_inicio';
-    setIMInicio(
-      boletim?.equipamento_logs[boletim?.equipamento_logs.length - 1][IMValue]
+  const handleSelectEquipamento = (option: Option) => {
+    const equip = equipamentos.find(
+      (equip: Equipamento) => equip.id === option.name
     );
-    setIMFinal(null);
-    setIsIMValid(undefined);
-    setOS(null);
-    setOP(null);
-  }, [rows]);
+    setEquipamento(equip);
+  };
 
-  const sortedEquipamentos: Option[] = equipamentos
-    ?.map((item: Equipamento) => {
-      const { id, codigo } = item;
-      return {
-        name: id,
-        displayName: codigo,
-      };
-    })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
+  const handleChange = (value: Option | string, name: string) => {
+    const newValue =
+      typeof value !== 'string'
+        ? name === 'OS'
+          ? OSs?.find((OS: OS) => OS.id === value.name)
+          : name === 'OP'
+          ? operacoes?.find((operacao: Operacao) => operacao.id === value.name)
+          : value
+        : value;
 
-  const sortedOperadores: Option[] = operadores
-    ?.map((item: Operador) => {
-      const { id, nome_completo } = item;
-      return {
-        name: id,
-        displayName: nome_completo,
-      };
-    })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
-
-  const sortedOSs: Option[] = OSs?.map((item: OS) => {
-    const { id, codigo } = item;
-    return {
-      name: id,
-      displayName: codigo?.replace('OS-', ''),
-    };
-  })?.sort((a: Option, b: Option) =>
-    a.displayName.localeCompare(b.displayName)
-  );
-
-  const sortedOperacoes: Option[] = operacoes
-    ?.map((item: Operacao) => {
-      const { id, codigo } = item;
-      return {
-        name: id,
-        displayName: codigo?.replace('OM-', ''),
-      };
-    })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
+    setCurrentLog({
+      ...currentLog,
+      [name]: newValue,
+    });
+  };
 
   const handleAddRow = () => {
     if (rows < 12) {
-      setLogs((prev) => [
-        ...prev,
-        {
-          OS,
-          OP,
-          horaInicio,
-          horaFinal,
-          IMInicio,
-          IMFinal,
-        },
-      ]);
+      setCurrentLog({});
       setRows(rows + 1);
     }
   };
 
-  const handleEditRow = (index: number) => {
-    if (isEditing === index) {
-      setIsEditing(rows - 1);
-    } else {
-      setIsEditing(index);
-    }
-  };
-
   return (
-    <Modal //TODO: when closing modal, reset useSelectRow
+    <Modal
       size="xxl"
       title={`${boletim ? 'Editar' : 'Adicionar'} Boletim`}
       variant={boletim ? 'grey' : 'blue'}
@@ -413,7 +337,7 @@ export default function NewBoletim() {
                     : getCurrentDate()
                 }
                 className="!w-[132px]"
-                error={actionDataErrors?.errors?.data_boletim}
+                error={actionData?.errors?.data_boletim}
               />
               <Select
                 name="equipamento"
@@ -421,18 +345,19 @@ export default function NewBoletim() {
                 label="Equipamento"
                 defaultValue={boletim?.equipamento}
                 placeholder="-"
-                error={actionDataErrors?.errors?.equipamento}
-                onChange={setSelectedEquipamento}
+                error={actionData?.errors?.equipamento}
+                onChange={handleSelectEquipamento}
                 className="!w-[132px]"
               />
-              <Input
+              <InputValue
                 type="text"
-                name="descricao_equipamento"
+                name="tipo_equipamento"
                 label="Descrição do equipamento"
                 className="!w-[280px]"
-                defaultValue={equipamento?.tipo_equipamentoX}
+                value={equipamento?.tipo_equipamentoX}
                 disabled
                 tabIndex={-1}
+                error={actionData?.errors?.tipo_equipamento}
               />
               <Select
                 name="operador"
@@ -440,7 +365,7 @@ export default function NewBoletim() {
                 label="Operador"
                 defaultValue={boletim?.operador}
                 placeholder="-"
-                error={actionDataErrors?.errors?.operador}
+                error={actionData?.errors?.operador}
                 className="!w-[280px]"
               />
             </Row>
@@ -453,7 +378,6 @@ export default function NewBoletim() {
                 const log: EquipamentoLog = boletim?.equipamento_logs?.find(
                   (log: EquipamentoLog) => Number(log.index) === index
                 );
-
                 return (
                   <Row key={index}>
                     <Select
@@ -463,16 +387,10 @@ export default function NewBoletim() {
                       label="O.S."
                       defaultValue={log?.OS}
                       placeholder="-"
-                      error={actionDataErrors?.errors?.[`OS_${index}`]}
+                      error={actionData?.errors?.[`OS_${index}`]}
                       className="!w-[132px]"
                       noLabel={index !== 0}
-                      onChange={setSelectedOS}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `OS_${index}` !== `OS_${isEditing}`
-                          : index + 1 !== rows &&
-                            `OS_${index}` !== `OS_${isEditing}`
-                      }
+                      onChange={(value) => handleChange(value, 'OS')}
                     />
                     <Select
                       name={`operacao_${index}`}
@@ -481,70 +399,34 @@ export default function NewBoletim() {
                       labelBold
                       defaultValue={log?.OP}
                       placeholder="-"
-                      error={actionDataErrors?.errors?.[`operacao_${index}`]}
+                      error={actionData?.errors?.[`operacao_${index}`]}
                       className="!w-[132px]"
                       noLabel={index !== 0}
-                      onChange={setSelectedOP}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `operacao_${index}` !== `operacao_${isEditing}`
-                          : index + 1 !== rows &&
-                            `operacao_${index}` !== `operacao_${isEditing}`
-                      }
+                      onChange={(value) => handleChange(value, 'OP')}
                     />
-                    <Input
+                    <InputValue
                       type="time"
                       name={`hora_inicio_${index}`}
                       label="Hora Início"
                       labelBold
                       className="!w-[132px]"
-                      defaultValue={log?.hora_inicio}
-                      error={actionDataErrors?.errors?.[`hora_inicio_${index}`]}
+                      value={log?.hora_inicio}
+                      error={actionData?.errors?.[`hora_inicio_${index}`]}
                       noLabel={index !== 0}
-                      onChange={setHoraInicio}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `hora_inicio_${index}` !==
-                            `hora_inicio_${isEditing}`
-                          : index + 1 !== rows &&
-                            `hora_inicio_${index}` !==
-                              `hora_inicio_${isEditing}`
-                      }
-                      readOnly={
-                        `hora_inicio_${index}` !== `hora_inicio_${isEditing}`
-                      }
-                      tabIndex={isEditing !== index ? -1 : 0}
+                      onChange={(value) => handleChange(value, 'hora_inicio')}
                     />
-                    <Input
+                    <InputValue
                       type="time"
                       name={`hora_final_${index}`}
                       label="Hora Final"
                       labelBold
                       className="!w-[132px]"
-                      defaultValue={log?.hora_final}
-                      error={
-                        actionDataErrors
-                          ? actionData?.errors?.[`hora_final_${index}`]
-                          : `hora_final_${index}` === `hora_final_${isEditing}`
-                          ? horaFinal && !isHoraValid
-                            ? 'Hora inválida!'
-                            : undefined
-                          : undefined
-                      }
+                      value={log?.hora_final}
+                      error={actionData?.errors?.[`hora_final_${index}`]}
                       noLabel={index !== 0}
-                      onChange={setHoraFinal}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `hora_final_${index}` !== `hora_final_${isEditing}`
-                          : index + 1 !== rows &&
-                            `hora_final_${index}` !== `hora_final_${isEditing}`
-                      }
-                      readOnly={
-                        `hora_inicio_${index}` !== `hora_inicio_${isEditing}`
-                      }
-                      tabIndex={isEditing !== index ? -1 : 0}
+                      onChange={(value) => handleChange(value, 'hora_final')}
                     />
-                    <Input
+                    <InputValue
                       type="text"
                       name={`IM_inicio_${index}`}
                       label={`${
@@ -554,25 +436,12 @@ export default function NewBoletim() {
                       } Início`}
                       labelBold
                       className="!w-[130px]"
-                      defaultValue={
-                        boletim
-                          ? log?.IM_inicio
-                          : index === 0
-                          ? IMInicio0
-                          : logs[index - 1]?.IM_final
-                      }
-                      error={actionDataErrors?.errors?.[`IM_inicio_${index}`]}
+                      value={log?.IM_inicio}
+                      error={actionData?.errors?.[`IM_inicio_${index}`]}
                       noLabel={index !== 0}
-                      onChange={setIMInicio}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `IM_inicio_${index}` !== `IM_inicio_${isEditing}`
-                          : index + 1 !== rows &&
-                            `IM_inicio_${index}` !== `IM_inicio_${isEditing}`
-                      }
-                      tabIndex={isEditing ? (isEditing !== index ? -1 : 0) : 0}
+                      onChange={(value) => handleChange(value, 'IM_inicio')}
                     />
-                    <Input
+                    <InputValue
                       type="text"
                       name={`IM_final_${index}`}
                       label={`${
@@ -582,90 +451,25 @@ export default function NewBoletim() {
                       } Final`}
                       labelBold
                       className="!w-[130px]"
-                      defaultValue={log?.IM_final}
-                      error={
-                        actionDataErrors
-                          ? actionDataErrors?.errors?.[`IM_final_${index}`]
-                          : `IM_final_${index}` === `IM_final_${isEditing}` &&
-                            Number(IMFinal) > 0 &&
-                            Number(IMInicio) > Number(IMFinal) // TODO: remeber to also validate zeros and empty strings
-                          ? 'Valor inválido!'
-                          : undefined
-                      }
+                      value={log?.IM_final}
+                      error={actionData?.errors?.[`IM_final_${index}`]}
                       noLabel={index !== 0}
-                      onChange={setIMFinal}
-                      disabled={
-                        Number(isEditing) >= 0
-                          ? `IM_final_${index}` !== `IM_final_${isEditing}`
-                          : index + 1 !== rows &&
-                            `IM_final_${index}` !== `IM_final_${isEditing}`
-                      }
-                      tabIndex={isEditing ? (isEditing !== index ? -1 : 0) : 0}
+                      onChange={(value) => handleChange(value, 'IM_final')}
                     />
-                    {(index + 1 !== rows ||
-                      (Number(isEditing) >= 0 && isEditing !== index)) && (
-                      <div
-                        className={`${
-                          index === isEditing ? '!bg-orange text-white' : ''
-                        } bg-white rounded-full h-7 w-7 flex items-center justify-center hover:shadow-md cursor-pointer self-end mb-1`}
-                        onClick={() => handleEditRow(index)}
-                      >
-                        <PencilIcon />
-                      </div>
-                    )}
                   </Row>
                 );
               })}
 
-              <div className="p-2 flex flex-col gap-2 mt-3 text-sm h-16">
-                <div className="flex gap-2 ">
-                  {(OS || OP) && (
-                    <InfoCircleIcon className="h-6 w-6 text-orange" />
-                  )}
-                  <div>
-                    <p>
-                      {OS && (
-                        <>
-                          <span className="font-bold">{OS?.codigo}</span>
-                          <span> - </span>
-                          <span>{OS?.descricao}</span>
-                        </>
-                      )}
-                    </p>
-                    <p>
-                      {OP && (
-                        <>
-                          <span className="font-bold">{OP?.codigo}</span>
-                          <span> - </span>
-                          <span>{OP?.descricao}</span>
-                        </>
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
+              {/* TODO: fix this ts error */}
+              {/* <TwoLinesInfo OS={currentLog?.OS} OP={currentLog?.OP} /> */}
 
               {rows < 12 && (
                 <div className="w-full flex justify-center">
                   <div
-                    className={`${
-                      boletim
-                        ? 'hover:bg-white rounded-full cursor-pointer'
-                        : !isHoraValid || !isIMValid
-                        ? 'rounded-full cursor-default pointer-events-none'
-                        : 'hover:bg-white rounded-full cursor-pointer'
-                    }`}
+                    className={`${'hover:bg-white rounded-full cursor-pointer'}`}
                     onClick={handleAddRow}
                   >
-                    <PlusCircleIcon
-                      className={`${
-                        boletim
-                          ? 'text-blue'
-                          : !isHoraValid || !isIMValid
-                          ? 'text-grey'
-                          : 'text-blue'
-                      } h-8 w-8`}
-                    />
+                    <PlusCircleIcon className={`${'text-blue'} h-8 w-8`} />
                   </div>
                 </div>
               )}
@@ -675,39 +479,7 @@ export default function NewBoletim() {
         </div>
       }
       footerSummary={
-        <div className="flex gap-16 -mt-1">
-          <PairLabelValue label="Obra" value={loggedInUser?.obraX} />
-          <PairLabelValue
-            label="Encarregado"
-            value={loggedInUser?.nome_completo}
-          />
-          <PairLabelValue
-            label={`${
-              equipamento?.instrumento_medicao
-                ? equipamento?.instrumento_medicao
-                : 'IM'
-            } Início`}
-            value={IMInicio0 ?? '-'}
-          />
-          <PairLabelValue
-            label={`${
-              equipamento?.instrumento_medicao
-                ? equipamento?.instrumento_medicao
-                : 'IM'
-            } Final`}
-            value={IMFinal ?? '-'}
-          />
-          <PairLabelValue
-            label="Total"
-            value={
-              IMInicio0 && IMFinal
-                ? +IMFinal - +IMInicio0 > 0
-                  ? String(+IMFinal - +IMInicio0)
-                  : '-'
-                : '-'
-            }
-          />
-        </div>
+        <FooterSummary loggedInUser={loggedInUser} equipamento={equipamento} />
       }
       footerActions={
         <Button

@@ -79,7 +79,7 @@ export default function Input({
           allowNegative={false}
           fixedDecimalScale
           decimalScale={0}
-          value={value}
+          value={inputValue}
           suffix={suffix}
           readOnly={readOnly}
           onBlur={handleBlur}
@@ -93,7 +93,7 @@ export default function Input({
           className={`${
             disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
           } rounded-lg p-2 px-4 focus:outline-blue h-9`}
-          value={value}
+          value={inputValue}
           autoFocus={autoFocus}
           autoComplete="off"
           onBlur={handleBlur}
