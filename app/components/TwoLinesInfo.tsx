@@ -9,7 +9,7 @@ type PropTypes = {
 
 export default function TwoLinesInfo({ OP, OS }: PropTypes) {
   return (
-    <div className="p-2 flex flex-col gap-2 mt-3 text-sm h-16">
+    <div className="p-2 flex flex-col gap-2 mt-3 text-sm h-14">
       <div className="flex gap-2 ">
         {(OS || OP) && <InfoCircleIcon className="h-6 w-6 text-orange" />}
         <div>

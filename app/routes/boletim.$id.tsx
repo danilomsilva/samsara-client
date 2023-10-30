@@ -28,6 +28,7 @@ import {
   convertISOToDate,
   genCodigo,
   getCurrentDate,
+  isTimeGreater,
 } from '~/utils/utils';
 import { useEffect, useState } from 'react';
 import { type Operador, getOperadores } from '~/models/operador.server';
@@ -42,7 +43,6 @@ import {
   type EquipamentoLog,
   _updateBoletim,
 } from '~/models/boletim.server';
-import TwoLinesInfo from '~/components/TwoLinesInfo';
 import FooterSummary from '~/components/FooterSummary';
 import InputValue from '~/components/InputValue';
 
@@ -269,10 +269,21 @@ export default function NewBoletim() {
 
   const [equipamento, setEquipamento] = useState<Equipamento>();
   const [currentLog, setCurrentLog] = useState<Partial<EquipamentoLog>>();
+  console.log(currentLog);
 
   const [rows, setRows] = useState(
     boletim ? boletim?.equipamento_logs?.length : 1
   );
+
+  const isFormValid =
+    currentLog?.OS &&
+    currentLog?.OP &&
+    currentLog?.hora_inicio &&
+    currentLog?.hora_final &&
+    currentLog?.IM_inicio &&
+    currentLog?.IM_final &&
+    currentLog?.isHoraValid &&
+    currentLog?.isIMValid;
 
   //USE EFFECTS
   useEffect(() => {
@@ -285,6 +296,13 @@ export default function NewBoletim() {
         boletim?.equipamento_logs[boletim?.equipamento_logs.length - 1]
       );
     }
+    //CREATE - NEW FORM ONLY 1 ROW so INDEX 0
+    setCurrentLog({
+      ...currentLog,
+      isHoraValid: true,
+      isIMValid: true,
+      index: 0,
+    });
   }, []);
 
   const handleSelectEquipamento = (option: Option) => {
@@ -294,7 +312,11 @@ export default function NewBoletim() {
     setEquipamento(equip);
   };
 
-  const handleChange = (value: Option | string, name: string) => {
+  const handleChange = (
+    value: Option | string,
+    name: string,
+    index?: number
+  ) => {
     const newValue =
       typeof value !== 'string'
         ? name === 'OS'
@@ -304,15 +326,28 @@ export default function NewBoletim() {
           : value
         : value;
 
-    setCurrentLog({
+    let newLog = {
       ...currentLog,
+      index: index,
       [name]: newValue,
-    });
+    };
+
+    // Check if hora_final is greater than hora_inicio
+    if (newLog.hora_inicio && newLog.hora_final) {
+      newLog.isHoraValid = isTimeGreater(newLog.hora_inicio, newLog.hora_final);
+    }
+
+    // Check if IM_final is greater than IM_inicio
+    if (newLog.IM_inicio && newLog.IM_final) {
+      newLog.isIMValid = Number(newLog.IM_inicio) < Number(newLog.IM_final);
+    }
+
+    setCurrentLog(newLog);
   };
 
   const handleAddRow = () => {
     if (rows < 12) {
-      setCurrentLog({});
+      setCurrentLog({ isHoraValid: true, isIMValid: true, index: rows });
       setRows(rows + 1);
     }
   };
@@ -378,6 +413,7 @@ export default function NewBoletim() {
                 const log: EquipamentoLog = boletim?.equipamento_logs?.find(
                   (log: EquipamentoLog) => Number(log.index) === index
                 );
+
                 return (
                   <Row key={index}>
                     <Select
@@ -413,7 +449,9 @@ export default function NewBoletim() {
                       value={log?.hora_inicio}
                       error={actionData?.errors?.[`hora_inicio_${index}`]}
                       noLabel={index !== 0}
-                      onChange={(value) => handleChange(value, 'hora_inicio')}
+                      onChange={(value) =>
+                        handleChange(value, 'hora_inicio', index)
+                      }
                     />
                     <InputValue
                       type="time"
@@ -422,9 +460,19 @@ export default function NewBoletim() {
                       labelBold
                       className="!w-[132px]"
                       value={log?.hora_final}
-                      error={actionData?.errors?.[`hora_final_${index}`]}
+                      error={
+                        actionData?.errors?.[`hora_final_${index}`] ||
+                        currentLog
+                          ? (currentLog?.index === index &&
+                              !currentLog?.isHoraValid &&
+                              'Hora inválida!') ||
+                            ''
+                          : ''
+                      }
                       noLabel={index !== 0}
-                      onChange={(value) => handleChange(value, 'hora_final')}
+                      onChange={(value) =>
+                        handleChange(value, 'hora_final', index)
+                      }
                     />
                     <InputValue
                       type="text"
@@ -439,7 +487,9 @@ export default function NewBoletim() {
                       value={log?.IM_inicio}
                       error={actionData?.errors?.[`IM_inicio_${index}`]}
                       noLabel={index !== 0}
-                      onChange={(value) => handleChange(value, 'IM_inicio')}
+                      onChange={(value) =>
+                        handleChange(value, 'IM_inicio', index)
+                      }
                     />
                     <InputValue
                       type="text"
@@ -452,27 +502,44 @@ export default function NewBoletim() {
                       labelBold
                       className="!w-[130px]"
                       value={log?.IM_final}
-                      error={actionData?.errors?.[`IM_final_${index}`]}
+                      error={
+                        actionData?.errors?.[`IM_final_${index}`] || currentLog
+                          ? (currentLog?.index === index &&
+                              !currentLog?.isIMValid &&
+                              'IM inválido!') ||
+                            ''
+                          : ''
+                      }
                       noLabel={index !== 0}
-                      onChange={(value) => handleChange(value, 'IM_final')}
+                      onChange={(value) =>
+                        handleChange(value, 'IM_final', index)
+                      }
                     />
                   </Row>
                 );
               })}
 
-              {/* TODO: fix this ts error */}
-              {/* <TwoLinesInfo OS={currentLog?.OS} OP={currentLog?.OP} /> */}
-
               {rows < 12 && (
-                <div className="w-full flex justify-center">
+                <div className="w-full flex justify-center mt-10 mb-4">
                   <div
-                    className={`${'hover:bg-white rounded-full cursor-pointer'}`}
+                    className={`${
+                      isFormValid
+                        ? 'hover:bg-white rounded-full cursor-pointer'
+                        : 'cursor-default pointer-events-none'
+                    }`}
                     onClick={handleAddRow}
                   >
-                    <PlusCircleIcon className={`${'text-blue'} h-8 w-8`} />
+                    <PlusCircleIcon
+                      className={`${
+                        isFormValid ? 'text-blue' : 'text-grey'
+                      } h-8 w-8`}
+                    />
                   </div>
                 </div>
               )}
+              {/* {!boletim && (
+                <TwoLinesInfo OS={currentLog?.OS} OP={currentLog?.OP} />
+              )} */}
             </div>
           </div>
           <div className="w-full pl-4">test</div>
@@ -496,6 +563,7 @@ export default function NewBoletim() {
           text={boletim ? 'Editar' : 'Adicionar'}
           name="_action"
           value={boletim ? 'edit' : 'create'}
+          disabled={!isFormValid}
         />
       }
     />

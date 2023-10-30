@@ -13,6 +13,8 @@ export type EquipamentoLog = {
   hora_final: string;
   IM_inicio: string;
   IM_final: string;
+  isHoraValid?: boolean;
+  isIMValid?: boolean;
 };
 
 export type Boletim = {
