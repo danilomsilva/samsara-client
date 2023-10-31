@@ -17,6 +17,7 @@ type PropTypes = {
   suffix?: string;
   readOnly?: boolean;
   tabIndex?: number;
+  onClick?: (value: string) => void;
 };
 
 export default function Input({
@@ -34,6 +35,7 @@ export default function Input({
   suffix,
   readOnly,
   tabIndex,
+  onClick,
 }: PropTypes) {
   const [inputValue, setInputValue] = useState(value);
   const [inputError, setInputError] = useState('');
@@ -100,6 +102,7 @@ export default function Input({
           onChange={handleInputChange}
           readOnly={readOnly}
           tabIndex={tabIndex}
+          onClick={onClick}
         />
       )}
 

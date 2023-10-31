@@ -3,8 +3,8 @@ import InfoCircleIcon from './icons/InfoCircleIcon';
 import { type OS } from '~/models/ordem-servico.server';
 
 type PropTypes = {
-  OS: OS;
-  OP: Operacao;
+  OS: OS | any;
+  OP: Operacao | any;
 };
 
 export default function TwoLinesInfo({ OP, OS }: PropTypes) {

@@ -45,6 +45,7 @@ import {
 } from '~/models/boletim.server';
 import FooterSummary from '~/components/FooterSummary';
 import InputValue from '~/components/InputValue';
+import TwoLinesInfo from '~/components/TwoLinesInfo';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -194,7 +195,7 @@ export async function action({ params, request }: ActionArgs) {
         equipamento: errors.equipamento?._errors[0],
         tipo_equipamento: errors.tipo_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
-        invalidInput: errors?._errors[0],
+        invalidInput: errors?._errors[0], //TODO: make sure htat if the user submits the form with final maior que inicio, return a toast message or action error
       },
     };
   }
@@ -269,7 +270,10 @@ export default function NewBoletim() {
 
   const [equipamento, setEquipamento] = useState<Equipamento>();
   const [currentLog, setCurrentLog] = useState<Partial<EquipamentoLog>>();
-  console.log(currentLog);
+  const [firstHour, setFirstHour] = useState<string>();
+  const [lastHour, setLastHour] = useState<string>();
+  const [IMInicio, setIMInicio] = useState<string>();
+  const [IMFinal, setIMFinal] = useState<string>();
 
   const [rows, setRows] = useState(
     boletim ? boletim?.equipamento_logs?.length : 1
@@ -288,13 +292,24 @@ export default function NewBoletim() {
   //USE EFFECTS
   useEffect(() => {
     if (boletim) {
+      //EQUIPAMENTO
       const findEquipamento = equipamentos?.find(
         (equip: Equipamento) => equip?.id === boletim?.equipamento
       );
       setEquipamento(findEquipamento);
-      setCurrentLog(
-        boletim?.equipamento_logs[boletim?.equipamento_logs.length - 1]
-      );
+
+      //LOG
+      const firstLog = boletim?.equipamento_logs[0];
+      const lastLog =
+        boletim?.equipamento_logs[boletim?.equipamento_logs?.length - 1];
+      setCurrentLog(lastLog);
+
+      //HORA
+      setFirstHour(firstLog?.hora_inicio);
+      setLastHour(lastLog?.hora_final);
+      //IM
+      setIMInicio(firstLog?.IM_inicio);
+      setIMFinal(lastLog?.IM_final);
     }
     //CREATE - NEW FORM ONLY 1 ROW so INDEX 0
     setCurrentLog({
@@ -304,6 +319,18 @@ export default function NewBoletim() {
       index: 0,
     });
   }, []);
+
+  useEffect(() => {
+    if (rows - 1 === currentLog?.index) {
+      setLastHour(currentLog?.hora_final);
+    }
+  }, [rows, currentLog?.hora_final]);
+
+  useEffect(() => {
+    if (rows - 1 === currentLog?.index) {
+      setIMFinal(currentLog?.IM_final);
+    }
+  }, [rows, currentLog?.IM_final]);
 
   const handleSelectEquipamento = (option: Option) => {
     const equip = equipamentos.find(
@@ -315,7 +342,7 @@ export default function NewBoletim() {
   const handleChange = (
     value: Option | string,
     name: string,
-    index?: number
+    rowIndex?: number
   ) => {
     const newValue =
       typeof value !== 'string'
@@ -328,7 +355,7 @@ export default function NewBoletim() {
 
     let newLog = {
       ...currentLog,
-      index: index,
+      index: rowIndex,
       [name]: newValue,
     };
 
@@ -350,6 +377,17 @@ export default function NewBoletim() {
       setCurrentLog({ isHoraValid: true, isIMValid: true, index: rows });
       setRows(rows + 1);
     }
+  };
+
+  const handleClickField = (rowIndex: number) => {
+    setCurrentLog({
+      ...currentLog,
+      ...boletim?.equipamento_logs?.find(
+        (log: EquipamentoLog) => log.index === rowIndex
+      ),
+      isHoraValid: true,
+      isIMValid: true,
+    });
   };
 
   return (
@@ -452,6 +490,7 @@ export default function NewBoletim() {
                       onChange={(value) =>
                         handleChange(value, 'hora_inicio', index)
                       }
+                      onClick={() => handleClickField(index)}
                     />
                     <InputValue
                       type="time"
@@ -473,6 +512,7 @@ export default function NewBoletim() {
                       onChange={(value) =>
                         handleChange(value, 'hora_final', index)
                       }
+                      onClick={() => handleClickField(index)}
                     />
                     <InputValue
                       type="text"
@@ -490,6 +530,7 @@ export default function NewBoletim() {
                       onChange={(value) =>
                         handleChange(value, 'IM_inicio', index)
                       }
+                      onClick={() => handleClickField(index)}
                     />
                     <InputValue
                       type="text"
@@ -514,13 +555,16 @@ export default function NewBoletim() {
                       onChange={(value) =>
                         handleChange(value, 'IM_final', index)
                       }
+                      onClick={() => handleClickField(index)}
                     />
                   </Row>
                 );
               })}
 
+              <TwoLinesInfo OS={currentLog?.OS} OP={currentLog?.OP} />
+
               {rows < 12 && (
-                <div className="w-full flex justify-center mt-10 mb-4">
+                <div className="w-full flex justify-center mt-2 mb-4">
                   <div
                     className={`${
                       isFormValid
@@ -537,16 +581,20 @@ export default function NewBoletim() {
                   </div>
                 </div>
               )}
-              {/* {!boletim && (
-                <TwoLinesInfo OS={currentLog?.OS} OP={currentLog?.OP} />
-              )} */}
             </div>
           </div>
           <div className="w-full pl-4">test</div>
         </div>
       }
       footerSummary={
-        <FooterSummary loggedInUser={loggedInUser} equipamento={equipamento} />
+        <FooterSummary
+          loggedInUser={loggedInUser}
+          equipamento={equipamento}
+          firstHour={firstHour}
+          lastHour={lastHour}
+          IMInicio={IMInicio}
+          IMFinal={IMFinal}
+        />
       }
       footerActions={
         <Button

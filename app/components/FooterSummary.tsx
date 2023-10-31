@@ -5,45 +5,49 @@ import { type Equipamento } from '~/models/equipamento.server';
 type PropTypes = {
   loggedInUser?: Usuario;
   equipamento?: Equipamento;
+  firstHour?: string;
+  lastHour?: string;
+  IMInicio?: string;
+  IMFinal?: string;
 };
 
 export default function FooterSummary({
   loggedInUser,
   equipamento,
+  firstHour,
+  lastHour,
+  IMInicio,
+  IMFinal,
 }: PropTypes) {
   return (
-    <div className="flex gap-16 -mt-1">
+    <div className="flex gap-10 -mt-1">
       <PairLabelValue label="Obra" value={loggedInUser?.obraX ?? ''} />
       <PairLabelValue
         label="Encarregado"
         value={loggedInUser?.nome_completo ?? ''}
       />
-      {/* <PairLabelValue
-        label={`${
-          equipamento?.instrumento_medicao
-            ? equipamento?.instrumento_medicao
-            : 'IM'
-        } Início`}
-        value={IMInicio0 ?? '-'}
+      <PairLabelValue
+        label="Horário"
+        value={`${firstHour ?? '-'} / ${lastHour ?? '-'}`}
       />
       <PairLabelValue
         label={`${
           equipamento?.instrumento_medicao
             ? equipamento?.instrumento_medicao
             : 'IM'
-        } Final`}
-        value={IMFinal ?? '-'}
+        } `}
+        value={`${IMInicio ?? '-'} / ${IMFinal ?? '-'}`}
       />
       <PairLabelValue
-        label="Total"
+        label={`${
+          equipamento?.instrumento_medicao
+            ? equipamento?.instrumento_medicao
+            : 'IM'
+        } Total`}
         value={
-          IMInicio0 && IMFinal
-            ? +IMFinal - +IMInicio0 > 0
-              ? String(+IMFinal - +IMInicio0)
-              : '-'
-            : '-'
+          IMInicio && IMFinal ? String(Number(IMFinal) - Number(IMInicio)) : '-'
         }
-      /> */}
+      />
     </div>
   );
 }
