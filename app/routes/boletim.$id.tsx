@@ -321,10 +321,22 @@ export default function NewBoletim() {
   }, []);
 
   useEffect(() => {
+    if (currentLog?.index === 0) {
+      setFirstHour(currentLog?.hora_inicio);
+    }
+  }, [rows, currentLog?.hora_inicio]);
+
+  useEffect(() => {
     if (rows - 1 === currentLog?.index) {
       setLastHour(currentLog?.hora_final);
     }
   }, [rows, currentLog?.hora_final]);
+
+  useEffect(() => {
+    if (currentLog?.index === 0) {
+      setIMInicio(currentLog?.IM_inicio);
+    }
+  }, [rows, currentLog?.IM_inicio]);
 
   useEffect(() => {
     if (rows - 1 === currentLog?.index) {
