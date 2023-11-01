@@ -58,6 +58,7 @@ export async function getManutencoes(
       IM_atual: item.IM_atual,
       tipo_manutencao: item.tipo_manutencao,
       feito_porX: item?.feito_porX,
+      equipamento: item?.equipamento,
       equipamentoX: item.equipamentoX,
       encarregadoX: item.encarregadoX,
     }));

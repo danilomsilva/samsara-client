@@ -5,7 +5,13 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -100,29 +106,40 @@ export default function ManutencaoPage() {
     useLoaderData();
   const navigate = useNavigate();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get('filter');
+  console.log(filter);
 
   const handleCloseModal = () => {
     navigate('/manutencao');
     setModalOpen(false);
   };
 
-  const formattedManutencoes: Manutencao[] = manutencoes.map((manutencao) => {
-    const isHorimetro =
-      equipamentos.find((equip) => equip.codigo === manutencao.equipamentoX)
-        ?.instrumento_medicao === 'Horímetro';
-    const suffix = isHorimetro ? ' h' : ' km';
-    return {
-      ...manutencao,
-      IM_atual: `${formatNumberWithDotDelimiter(
-        Number(manutencao.IM_atual)
-      )} ${suffix}`,
-    };
-  });
+  const formattedManutencoes: Manutencao[] = manutencoes
+    .map((manutencao) => {
+      const isHorimetro =
+        equipamentos.find((equip) => equip.codigo === manutencao.equipamentoX)
+          ?.instrumento_medicao === 'Horímetro';
+      const suffix = isHorimetro ? ' h' : ' km';
+      return {
+        ...manutencao,
+        IM_atual: `${formatNumberWithDotDelimiter(
+          Number(manutencao.IM_atual)
+        )} ${suffix}`,
+      };
+    })
+    .filter((manutecao) => !filter || manutecao.equipamento === filter);
+
+  const equipamento = formattedManutencoes[0]?.equipamentoX;
 
   return (
     <>
       <div className="flex justify-between items-end">
-        <h1 className="font-semibold">Lista de Manutenções</h1>
+        <h1 className="font-semibold">
+          {filter
+            ? `Histórico de Manutenções > Equipamento ${equipamento}`
+            : 'Lista de Manutenções'}
+        </h1>
         <div className="flex gap-4">
           {selectedRow ? (
             <>
