@@ -177,7 +177,6 @@ export async function action({ params, request }: ActionArgs) {
     .refine(
       (schema) => {
         for (let i = 0; i < Number(formData.rows); i++) {
-          console.log(schema[`hora_inicio_${i}`], schema[`hora_final_${i}`]);
           if (
             Number(schema[`IM_final_${i}`]) <=
               Number(schema[`IM_inicio_${i}`]) ||

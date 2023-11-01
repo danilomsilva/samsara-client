@@ -142,10 +142,10 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
         ?.IM_inicio,
       IM_finalX:
         body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
-      total_abastecimento:
-        Number(body?.abastecimento_1) +
-          Number(body?.abastecimento_2) +
-          Number(body?.abastecimento_3) || '0',
+      total_abastecimento: `${
+        Number(body?.abastecimento_1?.replace(' L', '')) +
+          Number(body?.abastecimento_2?.replace(' L', '')) || '0'
+      } L`,
     };
 
     await updateBoletim(userToken, boletim.id, editBody);
