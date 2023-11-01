@@ -108,7 +108,6 @@ export default function ManutencaoPage() {
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const [searchParams] = useSearchParams();
   const filter = searchParams.get('filter');
-  console.log(filter);
 
   const handleCloseModal = () => {
     navigate('/manutencao');
@@ -130,14 +129,16 @@ export default function ManutencaoPage() {
     })
     .filter((manutecao) => !filter || manutecao.equipamento === filter);
 
-  const equipamento = formattedManutencoes[0]?.equipamentoX;
+  const equipamento = equipamentos?.find(
+    (equip: Equipamento) => equip.id === filter
+  );
 
   return (
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">
           {filter
-            ? `Histórico de Manutenções > Equipamento ${equipamento}`
+            ? `Histórico de Manutenções / Equipamento / ${equipamento?.codigo} - ${equipamento?.tipo_equipamentoX}`
             : 'Lista de Manutenções'}
         </h1>
         <div className="flex gap-4">
