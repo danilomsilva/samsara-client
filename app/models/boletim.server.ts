@@ -21,9 +21,9 @@ export type Boletim = {
   created?: string;
   id?: string;
   codigo?: string;
-  abastecimento_1?: number;
-  abastecimento_2?: number;
-  abastecimento_3?: number;
+  abastecimento_1?: string;
+  abastecimento_2?: string;
+  abastecimento_3?: string;
   data_boletim?: string;
   descricao_equipamento?: string;
   encarregado?: string;
