@@ -70,6 +70,7 @@ export default function Input({
           defaultValue={defaultValue}
           suffix={suffix}
           readOnly={readOnly}
+          onChange={(e) => onChange && onChange(e.target.value)}
         />
       ) : (
         <input
@@ -84,6 +85,7 @@ export default function Input({
           autoComplete="off"
           readOnly={readOnly}
           tabIndex={tabIndex}
+          onChange={(e) => onChange && onChange(e.target.value)}
         />
       )}
 

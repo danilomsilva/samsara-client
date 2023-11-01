@@ -136,7 +136,11 @@ export default function EquipamentoPage() {
         <div className="flex gap-4">
           {selectedRow ? (
             <>
-              <LinkButton to={`./`} variant="blue" icon={<ListIcon />}>
+              <LinkButton
+                to={`/manutencao?filter=${selectedRow}`}
+                variant="blue"
+                icon={<ListIcon />}
+              >
                 Histórico de manutenção
               </LinkButton>
               <LinkButton
