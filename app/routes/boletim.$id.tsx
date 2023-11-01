@@ -164,13 +164,35 @@ export async function action({ params, request }: ActionArgs) {
     return schema;
   };
 
-  const validationSchema = z.object({
-    data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
-    equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    tipo_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    operador: z.string().min(1, CAMPO_OBRIGATORIO),
-    ...generateValidationSchema(),
-  });
+  const validationSchema = z
+    .object({
+      data_boletim: z.string().min(1, CAMPO_OBRIGATORIO),
+      equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+      tipo_equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+      operador: z.string().min(1, CAMPO_OBRIGATORIO),
+      ...generateValidationSchema(),
+    })
+    .refine(
+      (schema) => {
+        for (let i = 0; i < Number(formData.rows); i++) {
+          console.log(schema[`hora_inicio_${i}`], schema[`hora_final_${i}`]);
+          if (
+            Number(schema[`IM_final_${i}`]) <=
+              Number(schema[`IM_inicio_${i}`]) ||
+            !isTimeGreater(
+              schema[`hora_inicio_${i}`],
+              schema[`hora_final_${i}`]
+            )
+          ) {
+            return false;
+          }
+        }
+        return true;
+      },
+      (schema) => ({
+        message: JSON.stringify(schema),
+      })
+    );
 
   const validatedSchema = validationSchema.safeParse(formData);
 
@@ -278,6 +300,7 @@ export default function NewBoletim() {
   const [rows, setRows] = useState(
     boletim ? boletim?.equipamento_logs?.length : 1
   );
+  const [errors, setErrors] = useState<string[]>([]);
 
   const isFormValid =
     currentLog?.OS &&
@@ -319,6 +342,58 @@ export default function NewBoletim() {
       index: 0,
     });
   }, []);
+
+  useEffect(() => {
+    if (actionData?.errors?.invalidInput) {
+      const parsedJSON = JSON?.parse(actionData?.errors?.invalidInput);
+
+      // Create a copy of the current errors array and an update flag
+      let updatedErrors = [...errors];
+      let updated = false;
+
+      for (let i = 0; i < rows; i++) {
+        const horaInicio = `hora_inicio_${i}`;
+        const horaFinal = `hora_final_${i}`;
+        const IMInicio = `IM_inicio_${i}`;
+        const IMFinal = `IM_final_${i}`;
+
+        if (!isTimeGreater(parsedJSON[horaInicio], parsedJSON[horaFinal])) {
+          // Check if horaFinal is in the errors array and add it if not
+          if (!updatedErrors.includes(horaFinal)) {
+            updatedErrors.push(horaFinal);
+            updated = true;
+          }
+        } else {
+          // Check if horaFinal is in the errors array and remove it if present
+          const index = updatedErrors.indexOf(horaFinal);
+          if (index !== -1) {
+            updatedErrors.splice(index, 1);
+            updated = true;
+          }
+        }
+
+        if (Number(parsedJSON[IMInicio]) > Number(parsedJSON[IMFinal])) {
+          // Check if IMFinal is in the errors array and add it if not
+          if (!updatedErrors.includes(IMFinal)) {
+            updatedErrors.push(IMFinal);
+            updated = true;
+          }
+        } else {
+          // Check if IMFinal is in the errors array and remove it if present
+          const index = updatedErrors.indexOf(IMFinal);
+          if (index !== -1) {
+            updatedErrors.splice(index, 1);
+            updated = true;
+          }
+        }
+      }
+
+      // Update the errors state only if changes were made
+      if (updated) {
+        setErrors(updatedErrors);
+      }
+    }
+  }, [actionData, errors, rows]);
 
   useEffect(() => {
     if (currentLog?.index === 0) {
@@ -513,7 +588,9 @@ export default function NewBoletim() {
                       value={log?.hora_final}
                       error={
                         actionData?.errors?.[`hora_final_${index}`] ||
-                        currentLog
+                        errors.includes(`hora_final_${index}`)
+                          ? 'Hora Inválida!'
+                          : currentLog
                           ? (currentLog?.index === index &&
                               !currentLog?.isHoraValid &&
                               'Hora inválida!') ||
@@ -556,7 +633,10 @@ export default function NewBoletim() {
                       className="!w-[130px]"
                       value={log?.IM_final}
                       error={
-                        actionData?.errors?.[`IM_final_${index}`] || currentLog
+                        actionData?.errors?.[`IM_final_${index}`] ||
+                        errors?.includes(`IM_final_${index}`)
+                          ? 'IM Inválido!'
+                          : currentLog
                           ? (currentLog?.index === index &&
                               !currentLog?.isIMValid &&
                               'IM inválido!') ||
