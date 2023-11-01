@@ -8,7 +8,9 @@ import { normalizeString } from '~/utils/utils';
 type PropTypes = {
   name: string;
   options: Option[];
+  labelBold?: boolean;
   label: string;
+  noLabel?: boolean;
   className?: string;
   placeholder?: string;
   error?: string;
@@ -20,7 +22,9 @@ type PropTypes = {
 export default function Select({
   name,
   options,
+  labelBold,
   label,
+  noLabel,
   className,
   placeholder,
   error,
@@ -55,8 +59,12 @@ export default function Select({
       <Combobox onChange={handleChange} name={name} disabled={disabled}>
         <div className="relative text-sm">
           <div className="flex flex-col gap-1">
-            <Combobox.Label className="ml-1 text-grey-dark">
-              {label}
+            <Combobox.Label
+              className={`${
+                labelBold && 'font-bold text-grey/90'
+              } ml-1 text-grey-dark`}
+            >
+              {noLabel ? null : label}
             </Combobox.Label>
             <div className="relative">
               <Combobox.Input
@@ -80,7 +88,7 @@ export default function Select({
             </div>
           </div>
 
-          <Combobox.Options className="absolute mt-1 py-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg z-50">
+          <Combobox.Options className="absolute mt-1 py-1 max-h-60 w-full overflow-auto rounded-md bg-white shadow-lg z-50 scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded">
             {filteredOptions.length === 0 && query !== '' ? (
               <div className="relative cursor-default select-none py-1 px-2">
                 Nenhum resultado!

@@ -1,3 +1,4 @@
+import React, { useEffect, useState } from 'react';
 import { NumericFormat } from 'react-number-format';
 import ErrorMessage from './ErrorMessage';
 
@@ -9,13 +10,14 @@ type PropTypes = {
   className?: string;
   type: 'text' | 'number' | 'password' | 'currency' | 'IM' | 'time';
   disabled?: boolean;
-  defaultValue?: string;
+  value?: string;
   autoFocus?: boolean;
   error?: string;
   onChange?: (value: string) => void;
   suffix?: string;
   readOnly?: boolean;
   tabIndex?: number;
+  onClick?: (value: string) => void;
 };
 
 export default function Input({
@@ -26,14 +28,38 @@ export default function Input({
   className,
   type,
   disabled,
-  defaultValue,
+  value,
   autoFocus,
   error,
   onChange,
   suffix,
   readOnly,
   tabIndex,
+  onClick,
 }: PropTypes) {
+  const [inputValue, setInputValue] = useState(value);
+  const [inputError, setInputError] = useState('');
+
+  useEffect(() => {
+    setInputValue(value);
+  }, [value]);
+
+  const handleBlur = () => {
+    if (inputValue === '') {
+      setInputError('Campo obrigatório');
+    } else {
+      setInputError('');
+    }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    if (onChange) {
+      onChange(newValue);
+    }
+  };
+
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
       <label
@@ -44,19 +70,7 @@ export default function Input({
       >
         {noLabel ? null : label}
       </label>
-      {type === 'currency' ? (
-        <NumericFormat
-          name="valor_locacao"
-          className="rounded-lg p-2 px-4 focus:outline-blue h-9"
-          thousandSeparator="."
-          decimalSeparator=","
-          prefix="R$ "
-          allowNegative={false}
-          fixedDecimalScale
-          decimalScale={2}
-          defaultValue={defaultValue}
-        />
-      ) : type === 'IM' ? (
+      {type === 'IM' ? (
         <NumericFormat
           name={name}
           className={`${
@@ -67,9 +81,11 @@ export default function Input({
           allowNegative={false}
           fixedDecimalScale
           decimalScale={0}
-          defaultValue={defaultValue}
+          value={inputValue}
           suffix={suffix}
           readOnly={readOnly}
+          onBlur={handleBlur}
+          onChange={handleInputChange}
         />
       ) : (
         <input
@@ -79,15 +95,20 @@ export default function Input({
           className={`${
             disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
           } rounded-lg p-2 px-4 focus:outline-blue h-9`}
-          defaultValue={defaultValue}
+          value={inputValue}
           autoFocus={autoFocus}
           autoComplete="off"
+          onBlur={handleBlur}
+          onChange={handleInputChange}
           readOnly={readOnly}
           tabIndex={tabIndex}
+          onClick={onClick}
         />
       )}
 
-      {error && <ErrorMessage error={error} />}
+      {(inputError || error) && (
+        <ErrorMessage error={inputError || error || ''} />
+      )}
     </div>
   );
 }

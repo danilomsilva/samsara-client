@@ -5,6 +5,7 @@ import InfoIcon from './icons/InfoIcon';
 import Tooltip from './Tooltip';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { useEffect } from 'react';
+import CogIcon from './icons/CogIcon';
 
 type ColumnType = {
   name: string;
@@ -42,7 +43,7 @@ export default function DataTable({
     return (
       <div className="w-full h-full overflow-hidden rounded mt-4 pb-14">
         <div
-          className="overflow-y-auto h-full  scrollbar-thin scrollbar-thumb-grey/30 rounded"
+          className="overflow-y-auto h-full  scrollbar-thin scrollbar-thumb-grey/30 rounded scrollbar-thumb-rounded"
           style={{ scrollbarGutter: 'stable' }}
         >
           <table className="bg-white w-full text-sm">
@@ -93,7 +94,15 @@ export default function DataTable({
                                 </div>
                               ) : (
                                 <div className="mr-2 whitespace-nowrap">
-                                  {row[columnName]}
+                                  {/* TODO: pass icon dinamically instead of hardcode COG */}
+                                  {typeof row[columnName] === 'boolean' ? (
+                                    <div className="flex gap-1 items-center">
+                                      <CogIcon />
+                                      <p>{row[columnName] ? 'Sim' : 'Não'}</p>
+                                    </div>
+                                  ) : (
+                                    row[columnName]
+                                  )}
                                 </div>
                               )}
                             </div>
