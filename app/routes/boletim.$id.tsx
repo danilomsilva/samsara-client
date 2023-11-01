@@ -46,6 +46,8 @@ import {
 import FooterSummary from '~/components/FooterSummary';
 import InputValue from '~/components/InputValue';
 import TwoLinesInfo from '~/components/TwoLinesInfo';
+import Checkbox from '~/components/Checkbox';
+import Textarea from '~/components/Textarea';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -213,11 +215,11 @@ export async function action({ params, request }: ActionArgs) {
     return {
       errors: {
         ...dynamicErrors,
-        data_boletim: errors.data_boletim?._errors[0], // create function to simplify this lines
+        data_boletim: errors.data_boletim?._errors[0],
         equipamento: errors.equipamento?._errors[0],
         tipo_equipamento: errors.tipo_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
-        invalidInput: errors?._errors[0], //TODO: make sure htat if the user submits the form with final maior que inicio, return a toast message or action error
+        invalidInput: errors?._errors[0],
       },
     };
   }
@@ -230,6 +232,9 @@ export async function action({ params, request }: ActionArgs) {
       equipamento_logs,
       obra: formData.obra,
       encarregado: formData.encarregado,
+      manutencao: formData?.manutencao === 'on' ? true : false,
+      lubrificacao: formData?.lubrificacao === 'on' ? true : false,
+      limpeza: formData?.limpeza === 'on' ? true : false,
     };
 
     const boletim = await _createBoletim(userToken, body as Boletim);
@@ -251,6 +256,9 @@ export async function action({ params, request }: ActionArgs) {
       equipamento_logs,
       obra: formData.obra,
       encarregado: formData.encarregado,
+      manutencao: formData?.manutencao === 'on' ? true : false,
+      lubrificacao: formData?.lubrificacao === 'on' ? true : false,
+      limpeza: formData?.limpeza === 'on' ? true : false,
     };
 
     const boletim = await _updateBoletim(
@@ -325,7 +333,7 @@ export default function NewBoletim() {
       const firstLog = boletim?.equipamento_logs[0];
       const lastLog =
         boletim?.equipamento_logs[boletim?.equipamento_logs?.length - 1];
-      setCurrentLog(lastLog);
+      setCurrentLog({ ...lastLog, isHoraValid: true, isIMValid: true });
 
       //HORA
       setFirstHour(firstLog?.hora_inicio);
@@ -333,14 +341,15 @@ export default function NewBoletim() {
       //IM
       setIMInicio(firstLog?.IM_inicio);
       setIMFinal(lastLog?.IM_final);
+    } else {
+      //CREATE - NEW FORM ONLY 1 ROW so INDEX 0
+      setCurrentLog({
+        ...currentLog,
+        isHoraValid: true,
+        isIMValid: true,
+        index: 0,
+      });
     }
-    //CREATE - NEW FORM ONLY 1 ROW so INDEX 0
-    setCurrentLog({
-      ...currentLog,
-      isHoraValid: true,
-      isIMValid: true,
-      index: 0,
-    });
   }, []);
 
   useEffect(() => {
@@ -675,7 +684,50 @@ export default function NewBoletim() {
               )}
             </div>
           </div>
-          <div className="w-full pl-4">test</div>
+          <div className="w-full pl-4">
+            <Row>
+              <InputValue
+                type="IM"
+                name="abastecimento_1"
+                label="Abast. 1"
+                value={boletim?.abastecimento_1}
+                suffix=" L"
+                className="!w-[114px]"
+              />
+              <InputValue
+                type="IM"
+                name="abastecimento_2"
+                label="Abast. 2"
+                value={boletim?.abastecimento_2}
+                suffix=" L"
+                className="!w-[114px]"
+              />
+            </Row>
+            <Row className="!gap-3">
+              <Checkbox
+                label="Manutenção"
+                name="manutencao"
+                value={boletim?.manutencao}
+              />
+              <Checkbox
+                label="Lubrificação"
+                name="lubrificacao"
+                value={boletim?.lubrificacao}
+              />
+              <Checkbox
+                label="Limpeza"
+                name="limpeza"
+                value={boletim?.limpeza}
+              />
+            </Row>
+            <Row className="mt-2">
+              <Textarea
+                name="descricao_manutencao"
+                label="Descrição da Manutenção"
+                defaultValue={boletim?.descricao_manutencao}
+              />
+            </Row>
+          </div>
         </div>
       }
       footerSummary={
