@@ -7,6 +7,7 @@ import {
 } from '@remix-run/node';
 import {
   Form,
+  Link,
   Outlet,
   useLoaderData,
   useNavigate,
@@ -136,11 +137,15 @@ export default function ManutencaoPage() {
   return (
     <>
       <div className="flex justify-between items-end">
-        <h1 className="font-semibold">
-          {filter
-            ? `Histórico de Manutenções / Equipamento / ${equipamento?.codigo} - ${equipamento?.tipo_equipamentoX}`
-            : 'Lista de Manutenções'}
-        </h1>
+        <div className="flex gap-2">
+          {filter && <Link to="/equipamento">Lista de equipamentos</Link>}
+          {filter && '/'}
+          <h1 className="font-semibold">
+            {filter
+              ? `Histórico de Manutenções (${equipamento?.codigo} - ${equipamento?.tipo_equipamentoX})`
+              : 'Lista de Manutenções'}
+          </h1>
+        </div>
         <div className="flex gap-4">
           {selectedRow ? (
             <>

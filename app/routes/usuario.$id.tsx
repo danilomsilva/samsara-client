@@ -30,7 +30,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type Option, TIPOS_ACESSO, CAMPO_OBRIGATORIO } from '~/utils/consts';
-import { capitalizeWords, generateCodigo } from '~/utils/utils';
+import { capitalizeWords, genCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -38,8 +38,8 @@ export async function loader({ params, request }: LoaderArgs) {
   const obras: Obra[] = await getObras(userToken, 'created');
   if (params.id === 'new') {
     const usuarios = await getUsuarios(userToken, 'created');
-    const generatedCodigo = generateCodigo('U', usuarios);
-    return json({ obras, generatedCodigo });
+    const newCode = genCodigo(usuarios, 'U-');
+    return json({ obras, newCode });
   } else {
     const usuario = await getUsuario(userToken, params.id as string);
     return json({ obras, usuario });
@@ -118,7 +118,7 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewUsuario() {
-  const { usuario, obras, generatedCodigo } = useLoaderData();
+  const { usuario, obras, newCode } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -147,12 +147,12 @@ export default function NewUsuario() {
       content={
         <>
           <Row>
-            <Input // TODO: improve! instead of checking for the next available, check for the last available to avoid duplication!
+            <Input
               type="text"
               name="codigo"
               label="Código"
               className="w-[100px]"
-              defaultValue={usuario ? usuario?.codigo : generatedCodigo}
+              defaultValue={usuario ? usuario?.codigo : `U-${newCode}`}
               error={actionData?.errors?.codigo}
               disabled
             />

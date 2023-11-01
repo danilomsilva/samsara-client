@@ -34,7 +34,7 @@ import {
   OPERADOR_ATIVIDADES,
   CAMPO_OBRIGATORIO,
 } from '~/utils/consts';
-import { capitalizeWords, generateCodigo } from '~/utils/utils';
+import { capitalizeWords, genCodigo } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -50,8 +50,8 @@ export async function loader({ params, request }: LoaderArgs) {
 
   if (params.id === 'new') {
     const operadores = await getOperadores(userToken, 'created');
-    const generatedCodigo = generateCodigo('OP', operadores);
-    return json({ obras, encarregados, generatedCodigo });
+    const newCode = genCodigo(operadores, 'OP-');
+    return json({ obras, encarregados, newCode });
   } else {
     const operador = await getOperador(userToken, params.id as string);
     return json({ obras, encarregados, operador });
@@ -126,7 +126,7 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewOperador() {
-  const { operador, obras, generatedCodigo, encarregados } = useLoaderData();
+  const { operador, obras, newCode, encarregados } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -151,12 +151,12 @@ export default function NewOperador() {
       content={
         <>
           <Row>
-            <Input // TODO: improve! instead of checking for the next available, check for the last available to avoid duplication!
+            <Input
               type="text"
               name="codigo"
               label="Código"
               className="!w-[100px]"
-              defaultValue={operador ? operador?.codigo : generatedCodigo}
+              defaultValue={operador ? operador?.codigo : `OP-${newCode}`}
               error={actionData?.errors?.codigo}
               disabled
             />
