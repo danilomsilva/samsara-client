@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
 
 type PropTypes = {
-  text: string;
+  text?: string;
   icon: ReactNode;
   name?: string;
   value?: string;
-  variant: 'blue' | 'grey' | 'red';
+  variant: 'blue' | 'grey' | 'red' | 'green';
   onClick?: () => void;
   disabled?: boolean;
+  children?: ReactNode;
 };
 
 export default function Button({
@@ -18,6 +19,7 @@ export default function Button({
   variant,
   onClick,
   disabled,
+  children,
 }: PropTypes) {
   const variantStyle = {
     blue: `${disabled ? 'bg-blue/50' : 'bg-blue hover:bg-blue/50'}`,
@@ -25,6 +27,7 @@ export default function Button({
       disabled ? 'bg-grey-dark/50' : 'bg-grey-dark hover:bg-grey-dark/50/50'
     }`,
     red: `${disabled ? 'bg-red/50' : 'bg-red hover:bg-red/50'}`,
+    green: `${disabled ? 'bg-green/50' : 'bg-green hover:bg-green/50'}`,
   };
 
   return (
@@ -41,6 +44,7 @@ export default function Button({
       <div className="flex items-center text-white font-semibold uppercase text-xs gap-4">
         {text}
         {icon}
+        {children}
       </div>
     </button>
   );

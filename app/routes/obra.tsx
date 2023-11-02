@@ -23,6 +23,8 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
+import { CSVLink } from 'react-csv';
+import SheetIcon from '~/components/icons/SheetIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -97,6 +99,14 @@ export default function ObrasPage() {
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Obras</h1>
         <div className="flex gap-4">
+          <CSVLink
+            data={obras}
+            className="bg-green text-white flex gap-2 p-2 px-4 rounded-lg justify-center h-10 items-center font-semibold uppercase text-xs"
+          >
+            <p>Exportar CSV</p>
+            <SheetIcon />
+          </CSVLink>
+
           {selectedRow ? (
             <>
               <LinkButton
