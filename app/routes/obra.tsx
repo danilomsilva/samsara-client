@@ -25,6 +25,7 @@ import {
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { CSVLink } from 'react-csv';
 import SheetIcon from '~/components/icons/SheetIcon';
+import { exportPDF, getCurrentDate } from '~/utils/utils';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -94,18 +95,34 @@ export default function ObrasPage() {
 
   const deletingObra = obras.find((obra) => obra?.id === selectedRow);
 
+  const tableHeaders = [
+    { key: 'created', label: 'Data de criação' },
+    { key: 'nome', label: 'Nome da obra' },
+    { key: 'cidade', label: 'Cidade' },
+    { key: 'data_inicio', label: 'Data de início' },
+    { key: 'data_final_previsto', label: 'Data final prevista' },
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Obras</h1>
         <div className="flex gap-4">
           <CSVLink
+            headers={tableHeaders}
             data={obras}
+            filename={`obras_${getCurrentDate()}`}
             className="bg-green text-white flex gap-2 p-2 px-4 rounded-lg justify-center h-10 items-center font-semibold uppercase text-xs"
           >
             <p>Exportar CSV</p>
             <SheetIcon />
           </CSVLink>
+          <button
+            onClick={() => exportPDF('Relatório de Obras', 'obra')}
+            className="bg-red text-white flex gap-2 p-2 px-4 rounded-lg justify-center h-10 items-center font-semibold uppercase text-xs"
+          >
+            EXPORT PDF
+          </button>
 
           {selectedRow ? (
             <>
@@ -131,13 +148,8 @@ export default function ObrasPage() {
         </div>
       </div>
       <DataTable
-        columns={[
-          { name: 'created', displayName: 'Data de criação' },
-          { name: 'nome', displayName: 'Nome da obra' },
-          { name: 'cidade', displayName: 'Cidade' },
-          { name: 'data_inicio', displayName: 'Data de início' },
-          { name: 'data_final_previsto', displayName: 'Data final prevista' },
-        ]}
+        id="table-obra"
+        columns={tableHeaders}
         rows={obras}
         path="/obra"
         placeholder="Nenhuma obra cadastrada."

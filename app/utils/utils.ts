@@ -9,6 +9,8 @@ import {
   parse,
   parseISO,
 } from 'date-fns';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 //codigo
 export const generateCodigo = (prefix: string, array: unknown) => {
@@ -105,7 +107,6 @@ export const removeIMSuffix = (string: string) => {
   return string?.replace(' h', '')?.replace(' km', '')?.replaceAll('.', '');
 };
 
-// TODO: make all the other routes use this function!!! IMPORTANT
 export const genCodigo = (array: any, prefixToOmit: string) => {
   if (!array.length) return 1;
   const cleanArray = array.map((item: any) =>
@@ -127,3 +128,13 @@ export function isTimeGreater(time_1: string, time_2: string): boolean {
   }
   return false;
 }
+
+//PDF functions
+export const exportPDF = (title: string, tableId: string) => {
+  const doc = new jsPDF({ orientation: 'landscape' });
+  doc.text(title, 15, 10);
+  doc.autoTable({
+    html: `#table-${tableId}`,
+  });
+  doc.save(`${tableId}_${getCurrentDate()}`);
+};

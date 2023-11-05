@@ -138,12 +138,12 @@ export default function UsuarioPage() {
       </div>
       <DataTable
         columns={[
-          { name: 'created', displayName: 'Data de criação' },
-          { name: 'codigo', displayName: 'Código' },
-          { name: 'nome_completo', displayName: 'Nome completo' },
-          { name: 'email', displayName: 'Email' },
-          { name: 'tipo_acesso', displayName: 'Tipo de acesso' },
-          { name: 'obraX', displayName: 'Alocado à obra' },
+          { key: 'created', label: 'Data de criação' },
+          { key: 'codigo', label: 'Código' },
+          { key: 'nome_completo', label: 'Nome completo' },
+          { key: 'email', label: 'Email' },
+          { key: 'tipo_acesso', label: 'Tipo de acesso' },
+          { key: 'obraX', label: 'Alocado à obra' },
           // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
         ]}
         rows={formattedUsuario}

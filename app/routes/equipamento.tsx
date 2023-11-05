@@ -166,19 +166,19 @@ export default function EquipamentoPage() {
       </div>
       <DataTable
         columns={[
-          { name: 'created', displayName: 'Data de criação' },
-          { name: 'codigo', displayName: 'Código' },
-          { name: 'obraX', displayName: 'Alocado à obra' },
-          { name: 'valor_locacao', displayName: 'Custo' },
-          { name: 'tipo_locacao', displayName: 'Locação' },
-          { name: 'ano', displayName: 'Ano' },
-          { name: 'combustivel', displayName: 'Combustível' },
-          { name: 'instrumento_medicao', displayName: 'Tipo IM' },
-          { name: 'encarregadoX', displayName: 'Encarregado' },
-          { name: 'instrumento_medicao_inicio', displayName: 'IM Início' },
-          { name: 'instrumento_medicao_atual', displayName: 'IM Atual' },
-          { name: 'frequencia_revisao', displayName: 'Revisão' },
-          { name: 'proxima_revisao', displayName: 'Próx. Revisão' },
+          { key: 'created', label: 'Data de criação' },
+          { key: 'codigo', label: 'Código' },
+          { key: 'obraX', label: 'Alocado à obra' },
+          { key: 'valor_locacao', label: 'Custo' },
+          { key: 'tipo_locacao', label: 'Locação' },
+          { key: 'ano', label: 'Ano' },
+          { key: 'combustivel', label: 'Combustível' },
+          { key: 'instrumento_medicao', label: 'Tipo IM' },
+          { key: 'encarregadoX', label: 'Encarregado' },
+          { key: 'instrumento_medicao_inicio', label: 'IM Início' },
+          { key: 'instrumento_medicao_atual', label: 'IM Atual' },
+          { key: 'frequencia_revisao', label: 'Revisão' },
+          { key: 'proxima_revisao', label: 'Próx. Revisão' },
         ]}
         rows={formattedEquipamentos}
         path="/equipamento"

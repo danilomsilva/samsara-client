@@ -8,8 +8,8 @@ import { useEffect } from 'react';
 import CogIcon from './icons/CogIcon';
 
 type ColumnType = {
-  name: string;
-  displayName: string;
+  key: string;
+  label: string;
   disabledSort?: boolean;
 };
 
@@ -22,6 +22,7 @@ type PropTypes = {
     | any;
   path: string;
   placeholder: string;
+  id?: string;
 };
 
 export default function DataTable({
@@ -29,6 +30,7 @@ export default function DataTable({
   rows,
   path,
   placeholder,
+  id,
 }: PropTypes) {
   const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
 
@@ -38,7 +40,7 @@ export default function DataTable({
   }, []);
 
   if (rows.length) {
-    const columnNames = columns.map((col) => col.name);
+    const columnNames = columns.map((col) => col.key);
 
     return (
       <div className="w-full h-full overflow-hidden rounded mt-4 pb-14">
@@ -46,16 +48,16 @@ export default function DataTable({
           className="overflow-y-auto h-full  scrollbar-thin scrollbar-thumb-grey/30 rounded scrollbar-thumb-rounded"
           style={{ scrollbarGutter: 'stable' }}
         >
-          <table className="bg-white w-full text-sm">
+          <table className="bg-white w-full text-sm" id={id}>
             <thead className="sticky top-0 bg-white shadow-sm">
               <tr className="text-left h-10">
                 {columns.map((col: ColumnType, i: number) => (
                   <Column
-                    column={col.name}
+                    column={col.key}
                     key={i}
                     disabledSort={col.disabledSort ?? false}
                   >
-                    {col.displayName}
+                    {col.label}
                   </Column>
                 ))}
               </tr>

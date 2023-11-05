@@ -130,12 +130,12 @@ export default function OperadorPage() {
       </div>
       <DataTable
         columns={[
-          { name: 'created', displayName: 'Data de criação' },
-          { name: 'codigo', displayName: 'Código' },
-          { name: 'nome_completo', displayName: 'Nome completo' },
-          { name: 'atividade', displayName: 'Atividade' },
-          { name: 'obraX', displayName: 'Alocado à obra' },
-          { name: 'encarregadoX', displayName: 'Encarregado' },
+          { key: 'created', label: 'Data de criação' },
+          { key: 'codigo', label: 'Código' },
+          { key: 'nome_completo', label: 'Nome completo' },
+          { key: 'atividade', label: 'Atividade' },
+          { key: 'obraX', label: 'Alocado à obra' },
+          { key: 'encarregadoX', label: 'Encarregado' },
         ]}
         rows={operadores}
         path="/operador"

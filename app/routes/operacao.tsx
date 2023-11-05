@@ -128,9 +128,9 @@ export default function OperacaoPage() {
       </div>
       <DataTable
         columns={[
-          { name: 'created', displayName: 'Data de criação' },
-          { name: 'codigo', displayName: 'Código' },
-          { name: 'descricao', displayName: 'Descrição' },
+          { key: 'created', label: 'Data de criação' },
+          { key: 'codigo', label: 'Código' },
+          { key: 'descricao', label: 'Descrição' },
         ]}
         rows={operacoes}
         path="/operacao"

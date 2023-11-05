@@ -172,13 +172,13 @@ export default function ManutencaoPage() {
       </div>
       <DataTable
         columns={[
-          { name: 'created', displayName: 'Data de criação' },
-          { name: 'boletim', displayName: 'Boletim' },
-          { name: 'equipamentoX', displayName: 'Equipamento' },
-          { name: 'IM_atual', displayName: 'Horím./Odôm.' },
-          { name: 'tipo_manutencao', displayName: 'Tipo de Manutenção' },
-          { name: 'feito_porX', displayName: 'Feito por' },
-          { name: 'encarregadoX', displayName: 'Encarregado' },
+          { key: 'created', label: 'Data de criação' },
+          { key: 'boletim', label: 'Boletim' },
+          { key: 'equipamentoX', label: 'Equipamento' },
+          { key: 'IM_atual', label: 'Horím./Odôm.' },
+          { key: 'tipo_manutencao', label: 'Tipo de Manutenção' },
+          { key: 'feito_porX', label: 'Feito por' },
+          { key: 'encarregadoX', label: 'Encarregado' },
         ]}
         rows={formattedManutencoes}
         path="/manutencao"

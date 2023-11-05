@@ -7,6 +7,7 @@ import {
 } from '@remix-run/node';
 import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
+import { CSVLink } from 'react-csv';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
@@ -15,6 +16,7 @@ import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
+import SheetIcon from '~/components/icons/SheetIcon';
 import {
   type Boletim,
   deleteBoletim,
@@ -27,6 +29,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
+import { exportPDF, getCurrentDate } from '~/utils/utils';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -127,17 +130,17 @@ export default function BoletinsPage() {
       </div>
       <DataTable
         columns={[
-          { name: 'created', displayName: 'Data criação' },
-          { name: 'data_boletim', displayName: 'Data' },
-          { name: 'codigo', displayName: 'Boletim' },
-          { name: 'equipamentoX', displayName: 'Equipamento' },
-          { name: 'obraX', displayName: 'Obra' },
-          { name: 'IM_inicioX', displayName: 'IM Início' },
-          { name: 'IM_finalX', displayName: 'IM Final' },
-          { name: 'total_abastecimento', displayName: 'Abastecimento' },
-          { name: 'manutencao', displayName: 'Manutenção' },
-          { name: 'operadorX', displayName: 'Operador' },
-          { name: 'encarregadoX', displayName: 'Criado por' },
+          { key: 'created', label: 'Data criação' },
+          { key: 'data_boletim', label: 'Data' },
+          { key: 'codigo', label: 'Boletim' },
+          { key: 'equipamentoX', label: 'Equipamento' },
+          { key: 'obraX', label: 'Obra' },
+          { key: 'IM_inicioX', label: 'IM Início' },
+          { key: 'IM_finalX', label: 'IM Final' },
+          { key: 'total_abastecimento', label: 'Abastecimento' },
+          { key: 'manutencao', label: 'Manutenção' },
+          { key: 'operadorX', label: 'Operador' },
+          { key: 'encarregadoX', label: 'Criado por' },
         ]}
         rows={boletins}
         path="/boletim"
