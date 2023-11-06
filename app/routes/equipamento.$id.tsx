@@ -270,9 +270,11 @@ export default function NewEquipamento() {
     if (equipamento) {
       if (equipamento.instrumento_medicao === 'Horímetro') {
         setSelectedIMSuffix(' h');
+        setSelectedIM({ name: 'Horímetro', displayName: 'Horímetro' });
       }
       if (equipamento.instrumento_medicao === 'Odômetro') {
         setSelectedIMSuffix(' km');
+        setSelectedIM({ name: 'Odômetro', displayName: 'Odômetro' });
       }
     }
   }, []);
