@@ -291,6 +291,11 @@ export default function NewEquipamento() {
   useEffect(() => {
     if (selectedGrupo) {
       setCodigoPrefix(selectedGrupo.displayName.charAt(0));
+      if (selectedGrupo.displayName === 'Máquina') {
+        setSelectedIM({ name: 'Horímetro', displayName: 'Horímetro' });
+      } else {
+        setSelectedIM({ name: 'Odômetro', displayName: 'Odômetro' });
+      }
     }
   }, [selectedGrupo]);
 
@@ -386,6 +391,11 @@ export default function NewEquipamento() {
               readOnly
             />
           </Row>
+          <input
+            type="hidden"
+            name="instrumento_medicao"
+            value={selectedIM?.name}
+          />
           <Row>
             <Input
               type="text"
@@ -413,51 +423,8 @@ export default function NewEquipamento() {
               error={actionData?.errors?.combustivel}
             />
           </Row>
-          <Row className="flex flex-col w-full border-t border-grey/30 pt-2">
-            <label className="uppercase font-semibold text-xs">
-              Valor da Locação
-            </label>
-            <div className="flex gap-4">
-              <Input
-                type="currency"
-                name="valor_locacao_mensal"
-                label="Mensal"
-                className="!w-[150px]"
-                defaultValue={equipamento?.valor_locacao_mensal}
-                error={actionData?.errors?.valor_locacao_mensal}
-                placeholder="R$ 1.000,00"
-              />
-              <Input
-                type="currency"
-                name="valor_locacao_diario"
-                label="Diário"
-                className="!w-[150px]"
-                defaultValue={equipamento?.valor_locacao_diario}
-                error={actionData?.errors?.valor_locacao_diario}
-                placeholder="R$ 100,00"
-              />
-              <Input
-                type="currency"
-                name="valor_locacao_hora"
-                label="Hora"
-                className="!w-[150px]"
-                defaultValue={equipamento?.valor_locacao_hora}
-                error={actionData?.errors?.valor_locacao_hora}
-                placeholder="R$ 10,00"
-              />
-            </div>
-          </Row>
-          <Row className="border-t border-grey/30 pt-3">
-            <Select
-              name="instrumento_medicao"
-              options={INSTRUMENTOS_MEDICAO}
-              label="Instrum. de Medição"
-              className="!w-[150px]"
-              placeholder="-"
-              defaultValue={equipamento?.instrumento_medicao}
-              error={actionData?.errors?.instrumento_medicao}
-              onChange={setSelectedIM}
-            />
+
+          <Row>
             <Input
               type="IM"
               name={
@@ -501,6 +468,40 @@ export default function NewEquipamento() {
                 suffix={selectedIMSuffix}
               />
             )}
+          </Row>
+          <Row className="flex flex-col w-full border-t border-grey/30 pt-2">
+            <label className="uppercase font-semibold text-xs">
+              Valor da Locação
+            </label>
+            <div className="flex gap-4">
+              <Input
+                type="currency"
+                name="valor_locacao_mensal"
+                label="Mensal"
+                className="!w-[150px]"
+                defaultValue={equipamento?.valor_locacao_mensal}
+                error={actionData?.errors?.valor_locacao_mensal}
+                placeholder="Ex.: R$ 1.000,00"
+              />
+              <Input
+                type="currency"
+                name="valor_locacao_diario"
+                label="Diário"
+                className="!w-[150px]"
+                defaultValue={equipamento?.valor_locacao_diario}
+                error={actionData?.errors?.valor_locacao_diario}
+                placeholder="Ex.: R$ 100,00"
+              />
+              <Input
+                type="currency"
+                name="valor_locacao_hora"
+                label="Hora"
+                className="!w-[150px]"
+                defaultValue={equipamento?.valor_locacao_hora}
+                error={actionData?.errors?.valor_locacao_hora}
+                placeholder="Ex.: R$ 10,00"
+              />
+            </div>
           </Row>
           <Row>
             <Select
