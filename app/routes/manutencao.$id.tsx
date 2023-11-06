@@ -253,21 +253,16 @@ export default function NewOperador() {
             />
           </Row>
           <Row>
-            {/* <Select
-              name="boletim" // TODO: after boletim is complete, provide list of codigos so it can be selected!
-              options={sortedEquipamentos}
-              label="Código do Boletim"
-              defaultValue={manutencao?.boletim}
-              placeholder="-"
-              error={actionData?.errors?.boletim}
-            /> */}
-            <Input
-              type="text"
-              name="boletim"
-              label="Código do Boletim"
-              defaultValue={manutencao?.boletim}
-              error={actionData?.errors?.boletim}
-            />
+            {manutencao?.boletim && (
+              <Input
+                type="text"
+                name="boletim"
+                label="Código do Boletim"
+                defaultValue={manutencao?.boletim}
+                error={actionData?.errors?.boletim}
+                disabled
+              />
+            )}
           </Row>
           <Row>
             <Textarea

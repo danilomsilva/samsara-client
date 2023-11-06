@@ -29,7 +29,6 @@ export const INSTRUMENTOS_MEDICAO: Option[] = [
 export const TIPOS_MANUTENCAO: Option[] = [
   { name: 'Simples', displayName: 'Simples' },
   { name: 'Completa', displayName: 'Completa' },
-  { name: 'Revisão', displayName: 'Revisão' },
 ];
 
 export const CAMPO_OBRIGATORIO = { message: 'Campo obrigatório' };
