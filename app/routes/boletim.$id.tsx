@@ -118,8 +118,16 @@ export async function loader({ params, request }: LoaderArgs) {
       sortedOperacoes,
       newCode,
     });
-  } else {
-    const boletim = await getBoletim(userToken, params.id as string);
+  } else if (params.id?.startsWith('BOL-')) {
+    const boletins = await getBoletins(userToken, 'created');
+    const findBoletim = boletins?.find(
+      (boletim: Boletim) => boletim.codigo === params.id
+    )?.id;
+
+    const boletim = await getBoletim(
+      userToken,
+      findBoletim ? findBoletim : (params.id as string)
+    );
     return json({
       boletim,
       equipamentos,

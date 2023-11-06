@@ -7,7 +7,6 @@ import {
 } from '@remix-run/node';
 import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
-import { CSVLink } from 'react-csv';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
@@ -16,7 +15,6 @@ import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import SheetIcon from '~/components/icons/SheetIcon';
 import {
   type Boletim,
   deleteBoletim,
@@ -29,7 +27,6 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
-import { exportPDF, getCurrentDate } from '~/utils/utils';
 
 // page title
 export const meta: V2_MetaFunction = () => {

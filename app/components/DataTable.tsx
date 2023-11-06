@@ -6,6 +6,7 @@ import Tooltip from './Tooltip';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { useEffect } from 'react';
 import CogIcon from './icons/CogIcon';
+import { Link } from '@remix-run/react';
 
 type ColumnType = {
   key: string;
@@ -94,9 +95,16 @@ export default function DataTable({
                                     <InfoIcon className="h-7 w-7 text-orange" />
                                   </Tooltip>
                                 </div>
+                              ) : columnName === 'boletim' &&
+                                path === '/manutencao' ? (
+                                <Link
+                                  to={`/boletim/${row[columnName]}`}
+                                  className="text-blue font-semibold cursor-pointer"
+                                >
+                                  {row[columnName]}
+                                </Link>
                               ) : (
                                 <div className="mr-2 whitespace-nowrap">
-                                  {/* TODO: pass icon dinamically instead of hardcode COG */}
                                   {typeof row[columnName] === 'boolean' ? (
                                     <div className="flex gap-1 items-center">
                                       <CogIcon />
