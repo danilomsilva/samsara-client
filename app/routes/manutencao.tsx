@@ -138,7 +138,7 @@ export default function ManutencaoPage() {
     <>
       <div className="flex justify-between items-end">
         <div className="flex gap-2">
-          {filter && <Link to="/equipamento">Lista de equipamentos</Link>}
+          {filter && <Link to="/equipamento">Lista de Equipamentos</Link>}
           {filter && '/'}
           <h1 className="font-semibold">
             {filter

@@ -14,13 +14,6 @@ export const OPERADOR_ATIVIDADES: Option[] = [
   { name: 'Mecânico', displayName: 'Mecânico' },
 ];
 
-export const TIPOS_LOCACAO: Option[] = [
-  { name: 'Anual', displayName: 'Anual' },
-  { name: 'Mensal', displayName: 'Mensal' },
-  { name: 'Diária', displayName: 'Diária' },
-  { name: 'Hora', displayName: 'Hora' },
-];
-
 export const COMBUSTIVEIS: Option[] = [
   { name: 'Diesel_S10', displayName: 'Diesel S10' },
   { name: 'Diesel_S500', displayName: 'Diesel S500' },

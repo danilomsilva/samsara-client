@@ -169,8 +169,6 @@ export default function EquipamentoPage() {
           { key: 'created', label: 'Data de criação' },
           { key: 'codigo', label: 'Código' },
           { key: 'obraX', label: 'Alocado à obra' },
-          { key: 'valor_locacao', label: 'Custo' },
-          { key: 'tipo_locacao', label: 'Locação' },
           { key: 'ano', label: 'Ano' },
           { key: 'combustivel', label: 'Combustível' },
           { key: 'instrumento_medicao', label: 'Tipo IM' },

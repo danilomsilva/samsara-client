@@ -36,7 +36,6 @@ import {
 } from '~/session.server';
 import {
   type Option,
-  TIPOS_LOCACAO,
   COMBUSTIVEIS,
   INSTRUMENTOS_MEDICAO,
   CAMPO_OBRIGATORIO,
@@ -100,8 +99,6 @@ export async function action({ params, request }: ActionArgs) {
       .min(1, { message: 'Campo ...' })
       .refine((val) => +val > 1949, { message: 'Mín. 1950' }),
     combustivel: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
-    valor_locacao: z.string().min(1, CAMPO_OBRIGATORIO),
-    tipo_locacao: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     instrumento_medicao: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     frequencia_revisao: z.string().min(1, CAMPO_OBRIGATORIO),
     obra: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
@@ -133,8 +130,6 @@ export async function action({ params, request }: ActionArgs) {
         numero_serie: errors.numero_serie?._errors[0],
         ano: errors.ano?._errors[0],
         combustivel: errors.combustivel?._errors[0],
-        valor_locacao: errors.valor_locacao?._errors[0],
-        tipo_locacao: errors.tipo_locacao?._errors[0],
         instrumento_medicao: errors.instrumento_medicao?._errors[0],
         instrumento_medicao_inicio:
           errors.instrumento_medicao_inicio?._errors[0],
@@ -150,8 +145,14 @@ export async function action({ params, request }: ActionArgs) {
   if (formData._action === 'create') {
     const body: Equipamento = {
       ...formData,
-      valor_locacao: convertCurrencyStringToNumber(
-        formData.valor_locacao as string
+      valor_locacao_mensal: convertCurrencyStringToNumber(
+        formData.valor_locacao_mensal as string
+      ) as string,
+      valor_locacao_diario: convertCurrencyStringToNumber(
+        formData.valor_locacao_diario as string
+      ) as string,
+      valor_locacao_hora: convertCurrencyStringToNumber(
+        formData.valor_locacao_hora as string
       ) as string,
       instrumento_medicao_atual: removeIMSuffix(
         formData.instrumento_medicao_inicio as string
@@ -213,8 +214,14 @@ export async function action({ params, request }: ActionArgs) {
     } else {
       const body: Equipamento = {
         ...formData,
-        valor_locacao: convertCurrencyStringToNumber(
-          formData.valor_locacao as string
+        valor_locacao_mensal: convertCurrencyStringToNumber(
+          formData.valor_locacao_mensal as string
+        ) as string,
+        valor_locacao_diario: convertCurrencyStringToNumber(
+          formData.valor_locacao_diario as string
+        ) as string,
+        valor_locacao_hora: convertCurrencyStringToNumber(
+          formData.valor_locacao_hora as string
         ) as string,
         instrumento_medicao_atual: removeIMSuffix(
           formData.instrumento_medicao_atual as string
@@ -406,31 +413,46 @@ export default function NewEquipamento() {
               error={actionData?.errors?.combustivel}
             />
           </Row>
-          <Row>
-            <Input
-              type="currency"
-              name="valor_locacao"
-              label="Valor de Locação"
-              className="!w-[165px]"
-              defaultValue={equipamento?.valor_locacao}
-              error={actionData?.errors?.valor_locacao}
-            />
-            <Select
-              name="tipo_locacao"
-              options={TIPOS_LOCACAO}
-              label="Tipo de Locação"
-              className="!w-[180px]"
-              placeholder="-"
-              defaultValue={equipamento?.tipo_locacao}
-              error={actionData?.errors?.tipo_locacao}
-            />
+          <Row className="flex flex-col w-full border-t border-grey/30 pt-2">
+            <label className="uppercase font-semibold text-xs">
+              Valor da Locação
+            </label>
+            <div className="flex gap-4">
+              <Input
+                type="currency"
+                name="valor_locacao_mensal"
+                label="Mensal"
+                className="!w-[150px]"
+                defaultValue={equipamento?.valor_locacao_mensal}
+                error={actionData?.errors?.valor_locacao_mensal}
+                placeholder="R$ 1.000,00"
+              />
+              <Input
+                type="currency"
+                name="valor_locacao_diario"
+                label="Diário"
+                className="!w-[150px]"
+                defaultValue={equipamento?.valor_locacao_diario}
+                error={actionData?.errors?.valor_locacao_diario}
+                placeholder="R$ 100,00"
+              />
+              <Input
+                type="currency"
+                name="valor_locacao_hora"
+                label="Hora"
+                className="!w-[150px]"
+                defaultValue={equipamento?.valor_locacao_hora}
+                error={actionData?.errors?.valor_locacao_hora}
+                placeholder="R$ 10,00"
+              />
+            </div>
           </Row>
-          <Row>
+          <Row className="border-t border-grey/30 pt-3">
             <Select
               name="instrumento_medicao"
               options={INSTRUMENTOS_MEDICAO}
-              label="Instrumento de Medição"
-              className="!w-[165px]"
+              label="Instrum. de Medição"
+              className="!w-[150px]"
               placeholder="-"
               defaultValue={equipamento?.instrumento_medicao}
               error={actionData?.errors?.instrumento_medicao}
@@ -446,7 +468,7 @@ export default function NewEquipamento() {
               label={`${selectedIM ? selectedIM.displayName : 'Valor'} ${
                 equipamento ? 'atual' : 'inicial'
               }`}
-              className="!w-[180px]"
+              className="!w-[150px]"
               defaultValue={
                 equipamento
                   ? equipamento?.instrumento_medicao_atual
@@ -463,7 +485,7 @@ export default function NewEquipamento() {
               type="IM"
               name="frequencia_revisao"
               label="Revisar a cada"
-              className="!w-[130px]"
+              className="!w-[150px]"
               defaultValue={equipamento?.frequencia_revisao}
               error={actionData?.errors?.frequencia_revisao}
               suffix={selectedIMSuffix}
@@ -473,7 +495,7 @@ export default function NewEquipamento() {
                 type="IM"
                 name="proxima_revisao"
                 label="Próxima revisão"
-                className="!w-[130px]"
+                className="!w-[150px]"
                 defaultValue={equipamento?.proxima_revisao}
                 error={actionData?.errors?.proxima_revisao}
                 suffix={selectedIMSuffix}

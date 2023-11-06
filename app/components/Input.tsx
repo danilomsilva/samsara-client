@@ -16,6 +16,7 @@ type PropTypes = {
   suffix?: string;
   readOnly?: boolean;
   tabIndex?: number;
+  placeholder?: string;
 };
 
 export default function Input({
@@ -33,6 +34,7 @@ export default function Input({
   suffix,
   readOnly,
   tabIndex,
+  placeholder,
 }: PropTypes) {
   return (
     <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
@@ -46,7 +48,7 @@ export default function Input({
       </label>
       {type === 'currency' ? (
         <NumericFormat
-          name="valor_locacao"
+          name={name}
           className="rounded-lg p-2 px-4 focus:outline-blue h-9"
           thousandSeparator="."
           decimalSeparator=","
@@ -55,6 +57,7 @@ export default function Input({
           fixedDecimalScale
           decimalScale={2}
           defaultValue={defaultValue}
+          placeholder={placeholder}
         />
       ) : type === 'IM' ? (
         <NumericFormat
@@ -71,6 +74,7 @@ export default function Input({
           suffix={suffix}
           readOnly={readOnly}
           onChange={(e) => onChange && onChange(e.target.value)}
+          placeholder={placeholder}
         />
       ) : (
         <input
@@ -86,6 +90,7 @@ export default function Input({
           readOnly={readOnly}
           tabIndex={tabIndex}
           onChange={(e) => onChange && onChange(e.target.value)}
+          placeholder={placeholder}
         />
       )}
 
