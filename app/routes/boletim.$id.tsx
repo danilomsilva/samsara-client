@@ -105,17 +105,21 @@ export async function loader({ params, request }: LoaderArgs) {
       a.displayName.localeCompare(b.displayName)
     );
 
+  const commonProperties = {
+    equipamentos,
+    sortedEquipamentos,
+    loggedInUser,
+    operadores,
+    sortedOperadores,
+    OSs,
+    sortedOSs,
+    operacoes,
+    sortedOperacoes,
+  };
+
   if (params.id === 'new') {
     return json({
-      loggedInUser,
-      equipamentos,
-      sortedEquipamentos,
-      operadores,
-      sortedOperadores,
-      OSs,
-      sortedOSs,
-      operacoes,
-      sortedOperacoes,
+      ...commonProperties,
       newCode,
     });
   } else if (params.id?.startsWith('BOL-')) {
@@ -123,22 +127,19 @@ export async function loader({ params, request }: LoaderArgs) {
     const findBoletim = boletins?.find(
       (boletim: Boletim) => boletim.codigo === params.id
     )?.id;
-
     const boletim = await getBoletim(
       userToken,
       findBoletim ? findBoletim : (params.id as string)
     );
     return json({
+      ...commonProperties,
       boletim,
-      equipamentos,
-      sortedEquipamentos,
-      loggedInUser,
-      operadores,
-      sortedOperadores,
-      OSs,
-      sortedOSs,
-      operacoes,
-      sortedOperacoes,
+    });
+  } else {
+    const boletim = await getBoletim(userToken, params.id as string);
+    return json({
+      ...commonProperties,
+      boletim,
     });
   }
 }
