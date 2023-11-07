@@ -129,6 +129,20 @@ export default function EquipamentoPage() {
     };
   });
 
+  const tableHeaders = [
+    { key: 'created', label: 'Data de criação' },
+    { key: 'codigo', label: 'Código' },
+    { key: 'obraX', label: 'Alocado à obra' },
+    { key: 'ano', label: 'Ano' },
+    { key: 'combustivel', label: 'Combustível' },
+    { key: 'instrumento_medicao', label: 'Tipo IM' },
+    { key: 'encarregadoX', label: 'Encarregado' },
+    { key: 'instrumento_medicao_inicio', label: 'IM Início' },
+    { key: 'instrumento_medicao_atual', label: 'IM Atual' },
+    { key: 'frequencia_revisao', label: 'Revisão' },
+    { key: 'proxima_revisao', label: 'Próx. Revisão' },
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -165,19 +179,7 @@ export default function EquipamentoPage() {
         </div>
       </div>
       <DataTable
-        columns={[
-          { key: 'created', label: 'Data de criação' },
-          { key: 'codigo', label: 'Código' },
-          { key: 'obraX', label: 'Alocado à obra' },
-          { key: 'ano', label: 'Ano' },
-          { key: 'combustivel', label: 'Combustível' },
-          { key: 'instrumento_medicao', label: 'Tipo IM' },
-          { key: 'encarregadoX', label: 'Encarregado' },
-          { key: 'instrumento_medicao_inicio', label: 'IM Início' },
-          { key: 'instrumento_medicao_atual', label: 'IM Atual' },
-          { key: 'frequencia_revisao', label: 'Revisão' },
-          { key: 'proxima_revisao', label: 'Próx. Revisão' },
-        ]}
+        columns={tableHeaders}
         rows={formattedEquipamentos}
         path="/equipamento"
         placeholder="Nenhum equipamento cadastrado"

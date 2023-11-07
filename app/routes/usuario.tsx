@@ -108,6 +108,16 @@ export default function UsuarioPage() {
     tipo_acesso: item.tipo_acesso?.replaceAll('_', ' '),
   }));
 
+  const tableHeaders = [
+    { key: 'created', label: 'Data de criação' },
+    { key: 'codigo', label: 'Código' },
+    { key: 'nome_completo', label: 'Nome completo' },
+    { key: 'email', label: 'Email' },
+    { key: 'tipo_acesso', label: 'Tipo de acesso' },
+    { key: 'obraX', label: 'Alocado à obra' },
+    // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -137,15 +147,7 @@ export default function UsuarioPage() {
         </div>
       </div>
       <DataTable
-        columns={[
-          { key: 'created', label: 'Data de criação' },
-          { key: 'codigo', label: 'Código' },
-          { key: 'nome_completo', label: 'Nome completo' },
-          { key: 'email', label: 'Email' },
-          { key: 'tipo_acesso', label: 'Tipo de acesso' },
-          { key: 'obraX', label: 'Alocado à obra' },
-          // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
-        ]}
+        columns={tableHeaders}
         rows={formattedUsuario}
         path="/usuario"
         placeholder="Nenhum usuário cadastrado"

@@ -96,6 +96,12 @@ export default function OSPage() {
 
   const deletingOS = OSs.find((os) => os?.id === selectedRow);
 
+  const tableHeaders = [
+    { key: 'created', label: 'Data de criação' },
+    { key: 'codigo', label: 'Código' },
+    { key: 'descricao', label: 'Descrição' },
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -126,11 +132,7 @@ export default function OSPage() {
       </div>
 
       <DataTable
-        columns={[
-          { key: 'created', label: 'Data de criação' },
-          { key: 'codigo', label: 'Código' },
-          { key: 'descricao', label: 'Descrição' },
-        ]}
+        columns={tableHeaders}
         rows={OSs}
         path="/ordem-servico"
         placeholder="Nenhuma ordem de serviço cadastrada"

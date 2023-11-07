@@ -97,6 +97,20 @@ export default function BoletinsPage() {
     (boletim) => boletim?.id === selectedRow
   );
 
+  const tableHeaders = [
+    { key: 'created', label: 'Data criação' },
+    { key: 'data_boletim', label: 'Data' },
+    { key: 'codigo', label: 'Boletim' },
+    { key: 'equipamentoX', label: 'Equipamento' },
+    { key: 'obraX', label: 'Obra' },
+    { key: 'IM_inicioX', label: 'IM Início' },
+    { key: 'IM_finalX', label: 'IM Final' },
+    { key: 'total_abastecimento', label: 'Abastecimento' },
+    { key: 'manutencao', label: 'Manutenção' },
+    { key: 'operadorX', label: 'Operador' },
+    { key: 'encarregadoX', label: 'Criado por' },
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -126,19 +140,7 @@ export default function BoletinsPage() {
         </div>
       </div>
       <DataTable
-        columns={[
-          { key: 'created', label: 'Data criação' },
-          { key: 'data_boletim', label: 'Data' },
-          { key: 'codigo', label: 'Boletim' },
-          { key: 'equipamentoX', label: 'Equipamento' },
-          { key: 'obraX', label: 'Obra' },
-          { key: 'IM_inicioX', label: 'IM Início' },
-          { key: 'IM_finalX', label: 'IM Final' },
-          { key: 'total_abastecimento', label: 'Abastecimento' },
-          { key: 'manutencao', label: 'Manutenção' },
-          { key: 'operadorX', label: 'Operador' },
-          { key: 'encarregadoX', label: 'Criado por' },
-        ]}
+        columns={tableHeaders}
         rows={boletins}
         path="/boletim"
         placeholder="Nenhum boletim cadastrado."

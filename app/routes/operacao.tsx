@@ -98,6 +98,12 @@ export default function OperacaoPage() {
 
   const deletingOperacao = operacoes.find((op) => op?.id === selectedRow);
 
+  const tableHeaders = [
+    { key: 'created', label: 'Data de criação' },
+    { key: 'codigo', label: 'Código' },
+    { key: 'descricao', label: 'Descrição' },
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -127,11 +133,7 @@ export default function OperacaoPage() {
         </div>
       </div>
       <DataTable
-        columns={[
-          { key: 'created', label: 'Data de criação' },
-          { key: 'codigo', label: 'Código' },
-          { key: 'descricao', label: 'Descrição' },
-        ]}
+        columns={tableHeaders}
         rows={operacoes}
         path="/operacao"
         placeholder="Nenhuma Operação cadastrada"

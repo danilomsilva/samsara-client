@@ -100,6 +100,15 @@ export default function OperadorPage() {
     (operador) => operador?.id === selectedRow
   );
 
+  const tableHeaders = [
+    { key: 'created', label: 'Data de criação' },
+    { key: 'codigo', label: 'Código' },
+    { key: 'nome_completo', label: 'Nome completo' },
+    { key: 'atividade', label: 'Atividade' },
+    { key: 'obraX', label: 'Alocado à obra' },
+    { key: 'encarregadoX', label: 'Encarregado' },
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -129,14 +138,7 @@ export default function OperadorPage() {
         </div>
       </div>
       <DataTable
-        columns={[
-          { key: 'created', label: 'Data de criação' },
-          { key: 'codigo', label: 'Código' },
-          { key: 'nome_completo', label: 'Nome completo' },
-          { key: 'atividade', label: 'Atividade' },
-          { key: 'obraX', label: 'Alocado à obra' },
-          { key: 'encarregadoX', label: 'Encarregado' },
-        ]}
+        columns={tableHeaders}
         rows={operadores}
         path="/operador"
         placeholder="Nenhum operador cadastrado."

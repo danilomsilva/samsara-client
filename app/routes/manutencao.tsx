@@ -134,6 +134,16 @@ export default function ManutencaoPage() {
     (equip: Equipamento) => equip.id === filter
   );
 
+  const tableHeaders = [
+    { key: 'created', label: 'Data de criação' },
+    { key: 'boletim', label: 'Boletim' },
+    { key: 'equipamentoX', label: 'Equipamento' },
+    { key: 'IM_atual', label: 'Horím./Odôm.' },
+    { key: 'tipo_manutencao', label: 'Tipo de Manutenção' },
+    { key: 'feito_porX', label: 'Feito por' },
+    { key: 'encarregadoX', label: 'Encarregado' },
+  ];
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -171,15 +181,7 @@ export default function ManutencaoPage() {
         </div>
       </div>
       <DataTable
-        columns={[
-          { key: 'created', label: 'Data de criação' },
-          { key: 'boletim', label: 'Boletim' },
-          { key: 'equipamentoX', label: 'Equipamento' },
-          { key: 'IM_atual', label: 'Horím./Odôm.' },
-          { key: 'tipo_manutencao', label: 'Tipo de Manutenção' },
-          { key: 'feito_porX', label: 'Feito por' },
-          { key: 'encarregadoX', label: 'Encarregado' },
-        ]}
+        columns={tableHeaders}
         rows={formattedManutencoes}
         path="/manutencao"
         placeholder="Nenhuma manutenção cadastrada."
