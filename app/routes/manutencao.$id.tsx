@@ -74,7 +74,6 @@ export async function action({ params, request }: ActionArgs) {
     feito_por: z.string().min(1, CAMPO_OBRIGATORIO),
     equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
     IM_atual: z.string().min(1, CAMPO_OBRIGATORIO),
-    boletim: z.string().min(1, CAMPO_OBRIGATORIO),
     descricao: z.string().min(1, CAMPO_OBRIGATORIO),
   });
 
@@ -89,7 +88,6 @@ export async function action({ params, request }: ActionArgs) {
         feito_por: errors.feito_por?._errors[0],
         equipamento: errors.equipamento?._errors[0],
         IM_atual: errors.IM_atual?._errors[0],
-        boletim: errors.boletim?._errors[0],
         descricao: errors.descricao?._errors[0],
       },
     };
@@ -98,6 +96,7 @@ export async function action({ params, request }: ActionArgs) {
   if (formData._action === 'create') {
     const body: Partial<Manutencao> = {
       ...formData,
+      boletim: '-',
       data_manutencao: convertDateToISO(formData.data_manutencao as string),
       IM_atual: removeIMSuffix(formData.IM_atual as string),
     };

@@ -96,7 +96,8 @@ export default function DataTable({
                                   </Tooltip>
                                 </div>
                               ) : columnName === 'boletim' &&
-                                path === '/manutencao' ? (
+                                path === '/manutencao' &&
+                                row[columnName] !== '-' ? (
                                 <Link
                                   to={`/boletim/${row[columnName]}`}
                                   className="text-blue font-semibold cursor-pointer"
