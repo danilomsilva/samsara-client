@@ -1,7 +1,7 @@
 import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
-import { getObra } from './obra.server';
-import { getUsuario } from './usuario.server';
+import { type Obra, getObra } from './obra.server';
+import { type Usuario, getUsuario } from './usuario.server';
 
 export type GrupoEquipamento = {
   id?: string;
@@ -20,6 +20,7 @@ export type Equipamento = {
   created?: string;
   codigo?: string;
   numero_serie?: string;
+  obra?: Obra;
   obraX?: string;
   valor_locacao_mensal?: string;
   valor_locacao_diario?: string;
@@ -30,6 +31,7 @@ export type Equipamento = {
   grupo_equipamentoX?: string;
   ano?: string;
   combustivel?: string;
+  encarregado?: Usuario;
   encarregadoX?: string;
   instrumento_medicao?: 'Odômetro' | 'Horímetro';
   instrumento_medicao_inicio?: string;
@@ -71,7 +73,7 @@ export async function getGruposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -104,7 +106,7 @@ export async function getTiposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -141,7 +143,7 @@ export async function getEquipamentos(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -149,6 +151,7 @@ export async function getEquipamentos(
       id: item.id,
       created: item?.created && formatDateTime(item.created),
       codigo: item.codigo,
+      obra: item?.obra,
       obraX: item.obraX,
       valor_locacao: item.valor_locacao,
       tipo_locacao: item.tipo_locacao,
@@ -159,6 +162,7 @@ export async function getEquipamentos(
       numero_serie: item.numero_serie,
       ano: item.ano,
       combustivel: item.combustivel,
+      encarregado: item?.encarregado,
       encarregadoX: item.encarregadoX,
       instrumento_medicao: item.instrumento_medicao,
       instrumento_medicao_inicio: item.instrumento_medicao_inicio,
@@ -183,7 +187,7 @@ export async function getEquipamento(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -236,7 +240,7 @@ export async function createEquipamento(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
+            'Authorization': `Bearer ${userToken}`,
           },
           body: JSON.stringify(body),
         }
@@ -280,7 +284,7 @@ export async function updateEquipamento(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -303,7 +307,7 @@ export async function deleteEquipamento(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

@@ -48,10 +48,12 @@ import InputValue from '~/components/InputValue';
 import TwoLinesInfo from '~/components/TwoLinesInfo';
 import Checkbox from '~/components/Checkbox';
 import Textarea from '~/components/Textarea';
+import { type Obra } from '~/models/obra.server';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
   const loggedInUser: Usuario = await getUsuario(userToken, userId);
+  const loggedInUserObra: Obra['id'] = loggedInUser?.obra;
   const equipamentos = await getEquipamentos(userToken, 'created');
   const operadores = await getOperadores(userToken, 'created');
   const OSs = await getOSs(userToken, 'created');
@@ -60,6 +62,10 @@ export async function loader({ params, request }: LoaderArgs) {
   const newCode = genCodigo(boletins, 'BOL-');
 
   const sortedEquipamentos: Option[] = equipamentos
+    .filter(
+      (item: Equipamento) =>
+        item.obra === loggedInUserObra && item.encarregado === loggedInUser.id
+    )
     ?.map((item: Equipamento) => {
       const { id, codigo } = item;
       return {
@@ -72,6 +78,11 @@ export async function loader({ params, request }: LoaderArgs) {
     );
 
   const sortedOperadores: Option[] = operadores
+    .filter(
+      (item: Operador) =>
+        item?.encarregado?.id === loggedInUser.id &&
+        item?.obra?.id === loggedInUserObra
+    )
     ?.map((item: Operador) => {
       const { id, nome_completo } = item;
       return {

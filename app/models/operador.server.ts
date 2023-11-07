@@ -1,7 +1,7 @@
 import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
-import { getObra } from './obra.server';
-import { getUsuario } from './usuario.server';
+import { type Obra, getObra } from './obra.server';
+import { type Usuario, getUsuario } from './usuario.server';
 
 export type Operador = {
   id?: string;
@@ -17,6 +17,8 @@ export type Operador = {
       nome_completo: string;
     };
   };
+  encarregado?: Usuario;
+  obra?: Obra;
   obraX?: string;
   encarregadoX?: string;
 };
@@ -41,7 +43,7 @@ export async function getOperadores(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -51,7 +53,9 @@ export async function getOperadores(
       codigo: item.codigo,
       nome_completo: item.nome_completo,
       atividade: item.atividade,
+      obra: item?.expand?.obra,
       obraX: item?.obraX,
+      encarregado: item?.expand?.encarregado,
       encarregadoX: item?.encarregadoX,
     }));
     return transformedData;
@@ -68,7 +72,7 @@ export async function getOperador(userToken: User['token'], userId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -102,7 +106,7 @@ export async function createOperador(userToken: User['token'], body: Operador) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -142,7 +146,7 @@ export async function updateOperador(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -162,7 +166,7 @@ export async function deleteOperador(userToken: User['token'], userId: string) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

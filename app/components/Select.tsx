@@ -93,6 +93,10 @@ export default function Select({
               <div className="relative cursor-default select-none py-1 px-2">
                 Nenhum resultado!
               </div>
+            ) : filteredOptions.length === 0 ? (
+              <div className="relative cursor-default select-none py-1 px-2">
+                Nenhuma opção disponível!
+              </div>
             ) : (
               filteredOptions.map((option: Option) => {
                 return (
