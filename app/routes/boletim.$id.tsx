@@ -61,28 +61,35 @@ export async function loader({ params, request }: LoaderArgs) {
   const boletins = await getBoletins(userToken, 'created');
   const newCode = genCodigo(boletins, 'BOL-');
 
-  const sortedEquipamentos: Option[] = equipamentos
-    .filter(
-      (item: Equipamento) =>
-        item.obra === loggedInUserObra && item.encarregado === loggedInUser.id
-    )
-    ?.map((item: Equipamento) => {
+  const filteredEquipamentos =
+    loggedInUser.tipo_acesso === 'Encarregado'
+      ? equipamentos.filter(
+          (item: Equipamento) =>
+            item.obra === loggedInUserObra &&
+            item.encarregado === loggedInUser.id
+        )
+      : equipamentos;
+
+  const sortedEquipamentos: Option[] = filteredEquipamentos
+    .map((item: Equipamento) => {
       const { id, codigo } = item;
       return {
         name: id,
         displayName: codigo,
       };
     })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
+    .sort((a: Option, b: Option) => a.displayName.localeCompare(b.displayName));
 
-  const sortedOperadores: Option[] = operadores
-    .filter(
-      (item: Operador) =>
-        item?.encarregado?.id === loggedInUser.id &&
-        item?.obra?.id === loggedInUserObra
-    )
+  const filteredOperadores =
+    loggedInUser.tipo_acesso === 'Encarregado'
+      ? operadores.filter(
+          (item: Operador) =>
+            item?.encarregado?.id === loggedInUser.id &&
+            item?.obra?.id === loggedInUserObra
+        )
+      : operadores;
+
+  const sortedOperadores: Option[] = filteredOperadores
     ?.map((item: Operador) => {
       const { id, nome_completo } = item;
       return {
