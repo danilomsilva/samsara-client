@@ -2,6 +2,7 @@ import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
 import { getEquipamento } from './equipamento.server';
 import { getOperador } from './operador.server';
+import { type Boletim, getBoletins, updateBoletim } from './boletim.server';
 
 export type Manutencao = {
   id?: string;
@@ -24,6 +25,7 @@ export type Manutencao = {
   };
   equipamentoX?: string;
   encarregadoX?: string;
+  descricao?: string;
 };
 
 export async function getManutencoes(
@@ -149,6 +151,15 @@ export async function _updateManutencao(
     encarregadoX: operador.encarregadoX,
   };
   await updateManutencao(userToken, manutencao.id, editBody);
+  if (body.boletim) {
+    const boletins = await getBoletins(userToken, 'created');
+    const findBoletim = boletins?.find(
+      (item: Boletim) => item.codigo === body.boletim
+    )?.id;
+    await updateBoletim(userToken, findBoletim, {
+      descricao_manutencao: body?.descricao,
+    });
+  }
   return manutencao;
 }
 

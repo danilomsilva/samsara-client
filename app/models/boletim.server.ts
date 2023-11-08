@@ -1,9 +1,19 @@
 import type { User } from '~/session.server';
 import { formatDate, formatDateTime } from '~/utils/utils';
-import { getEquipamento } from './equipamento.server';
+import {
+  type Equipamento,
+  getEquipamento,
+  updateEquipamento,
+} from './equipamento.server';
 import { getUsuario } from './usuario.server';
 import { getOperador } from './operador.server';
 import { getObra } from './obra.server';
+import {
+  type Manutencao,
+  _createManutencao,
+  _updateManutencao,
+  getManutencoes,
+} from './manutencao.server';
 
 export type EquipamentoLog = {
   index: string | number;
@@ -20,6 +30,7 @@ export type EquipamentoLog = {
 export type Boletim = {
   created?: string;
   id?: string;
+  newCode?: string;
   codigo?: string;
   abastecimento_1?: string;
   abastecimento_2?: string;
@@ -40,7 +51,9 @@ export type Boletim = {
   obraX?: string;
   IM_inicioX?: string;
   IM_finalX?: string;
+  lastRowIMFinal?: string;
   total_abastecimento?: string;
+  descricao_manutencao?: string;
 };
 
 export async function getBoletins(
@@ -149,6 +162,18 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
     };
 
     await updateBoletim(userToken, boletim.id, editBody);
+    await updateEquipamento(userToken, boletim.equipamento, {
+      instrumento_medicao_atual: body?.lastRowIMFinal,
+    } as Equipamento);
+    await _createManutencao(userToken, {
+      boletim: `BOL-${body?.newCode}`,
+      tipo_manutencao: 'Simples',
+      data_manutencao: body?.data_boletim,
+      feito_por: body?.operador,
+      equipamento: body?.equipamento,
+      IM_atual: body?.lastRowIMFinal,
+      descricao: body?.descricao_manutencao,
+    });
     return boletim;
   }
 }
@@ -208,7 +233,24 @@ export async function _updateBoletim(
       } L`,
     };
 
-    await updateBoletim(userToken, boletim.id, editBody); //TODO: fix this error
+    await updateBoletim(userToken, boletim.id, editBody);
+    await updateEquipamento(userToken, boletim.equipamento, {
+      instrumento_medicao_atual: body?.lastRowIMFinal,
+    } as Equipamento);
+
+    const manutencoes = await getManutencoes(userToken, 'created');
+    const findManutencao = manutencoes.find(
+      (item: Manutencao) => item.boletim === boletim.codigo
+    );
+
+    await _updateManutencao(userToken, findManutencao.id, {
+      tipo_manutencao: 'Simples',
+      data_manutencao: body?.data_boletim,
+      feito_por: body?.operador,
+      equipamento: body?.equipamento,
+      IM_atual: body?.lastRowIMFinal,
+      descricao: body?.descricao_manutencao,
+    });
     return boletim;
   }
 }

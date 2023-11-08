@@ -205,6 +205,7 @@ export default function NewOperador() {
               label="Tipo de Manutenção:"
               options={TIPOS_MANUTENCAO}
               defaultValue={manutencao?.tipo_manutencao}
+              disabled={manutencao?.boletim}
             />
           </Row>
           <Row>
@@ -219,6 +220,7 @@ export default function NewOperador() {
                   : getCurrentDate()
               }
               error={actionData?.errors?.data_manutencao}
+              disabled={manutencao?.boletim}
             />
             <Select
               name="feito_por"
@@ -227,6 +229,7 @@ export default function NewOperador() {
               defaultValue={manutencao?.feito_por}
               placeholder="-"
               error={actionData?.errors?.feito_por}
+              disabled={manutencao?.boletim}
             />
           </Row>
           <Row>
@@ -238,6 +241,7 @@ export default function NewOperador() {
               placeholder="-"
               error={actionData?.errors?.equipamento}
               onChange={setSelectedEquipamento}
+              disabled={manutencao?.boletim}
             />
             <Input
               type="IM"
@@ -249,6 +253,7 @@ export default function NewOperador() {
               defaultValue={manutencao?.IM_atual}
               error={actionData?.errors?.IM_atual}
               suffix={selectedIMSuffix}
+              disabled={manutencao?.boletim}
             />
           </Row>
           <Row>
