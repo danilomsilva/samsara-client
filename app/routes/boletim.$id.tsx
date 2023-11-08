@@ -14,7 +14,11 @@ import Select from '~/components/Select';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
-import { getEquipamentos, type Equipamento } from '~/models/equipamento.server';
+import {
+  getEquipamentos,
+  type Equipamento,
+  updateEquipamento,
+} from '~/models/equipamento.server';
 import { type Usuario, getUsuario } from '~/models/usuario.server';
 import { CAMPO_OBRIGATORIO, type Option } from '~/utils/consts';
 import {
@@ -270,6 +274,14 @@ export async function action({ params, request }: ActionArgs) {
     if (boletim.data) {
       return json({ error: boletim.data });
     }
+
+    //IM_atual from equipamento will always be updated as the last value informed on boletim
+    await updateEquipamento(
+      userToken,
+      formData?.equipamento as string,
+      { instrumento_medicao_atual: formData?.IM_final } as Equipamento
+    );
+
     setToastMessage(session, 'Sucesso', 'Boletim adicionado!', 'success');
     return redirect('/boletim', {
       headers: {
@@ -566,10 +578,11 @@ export default function NewBoletim() {
                 className="!w-[280px]"
               />
             </Row>
-            <input type="hidden" name="rows" value={rows} />
-            <input type="hidden" name="obra" value={loggedInUser?.obra} />
-            <input type="hidden" name="encarregado" value={loggedInUser?.id} />
-            <input type="hidden" name="newCode" value={newCode} />
+            <input hidden name="rows" value={rows} />
+            <input hidden name="obra" value={loggedInUser?.obra} />
+            <input hidden name="encarregado" value={loggedInUser?.id} />
+            <input hidden name="newCode" value={newCode} />
+            <input hidden name="IM_final" value={IMFinal} />
             <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
               {Array.from(new Array(rows), (_, index) => {
                 const log: EquipamentoLog = boletim?.equipamento_logs?.find(
