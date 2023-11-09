@@ -728,6 +728,7 @@ export default function NewBoletim() {
                 label="Manutenção"
                 name="manutencao"
                 value={boletim?.manutencao}
+                disabled={boletim?.manutencao}
               />
               <Checkbox
                 label="Lubrificação"

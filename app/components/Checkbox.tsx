@@ -5,9 +5,16 @@ export type PropTypes = {
   label: string;
   onChange?: (value: boolean) => void;
   value?: boolean;
+  disabled?: boolean;
 };
 
-export default function Checkbox({ name, label, onChange, value }: PropTypes) {
+export default function Checkbox({
+  name,
+  label,
+  onChange,
+  value,
+  disabled,
+}: PropTypes) {
   const [isChecked, setIsChecked] = useState(value);
 
   const handleCheckboxChange = () => {
@@ -26,7 +33,11 @@ export default function Checkbox({ name, label, onChange, value }: PropTypes) {
         type="checkbox"
         checked={isChecked}
         onChange={handleCheckboxChange}
-        className="h-6 w-6 accent-blue hover:accent-grey cursor-pointer"
+        className={`${
+          disabled
+            ? 'accent-grey pointer-events-none hover:bg-grey'
+            : 'accent-blue hover:accent-grey cursor-pointer'
+        } h-6 w-6 `}
       />
     </div>
   );

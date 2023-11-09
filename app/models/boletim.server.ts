@@ -74,7 +74,7 @@ export async function getBoletins(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -119,7 +119,7 @@ export async function getBoletim(userToken: User['token'], boletimId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -186,7 +186,7 @@ export async function createBoletim(userToken: User['token'], body: Boletim) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -231,6 +231,7 @@ export async function _updateBoletim(
         Number(body?.abastecimento_1?.replace(' L', '')) +
           Number(body?.abastecimento_2?.replace(' L', '')) || '0'
       } L`,
+      manutencao: body.manutencao,
     };
 
     await updateBoletim(userToken, boletim.id, editBody);
@@ -242,15 +243,27 @@ export async function _updateBoletim(
     const findManutencao = manutencoes.find(
       (item: Manutencao) => item.boletim === boletim.codigo
     );
+    if (findManutencao) {
+      await _updateManutencao(userToken, findManutencao.id, {
+        tipo_manutencao: 'Simples',
+        data_manutencao: body?.data_boletim,
+        feito_por: body?.operador,
+        equipamento: body?.equipamento,
+        IM_atual: body?.lastRowIMFinal,
+        descricao: body?.descricao_manutencao,
+      });
+    } else {
+      await _createManutencao(userToken, {
+        boletim: boletim.codigo,
+        tipo_manutencao: 'Simples',
+        data_manutencao: body?.data_boletim,
+        feito_por: body?.operador,
+        equipamento: body?.equipamento,
+        IM_atual: body?.lastRowIMFinal,
+        descricao: body?.descricao_manutencao,
+      });
+    }
 
-    await _updateManutencao(userToken, findManutencao.id, {
-      tipo_manutencao: 'Simples',
-      data_manutencao: body?.data_boletim,
-      feito_por: body?.operador,
-      equipamento: body?.equipamento,
-      IM_atual: body?.lastRowIMFinal,
-      descricao: body?.descricao_manutencao,
-    });
     return boletim;
   }
 }
@@ -267,7 +280,7 @@ export async function updateBoletim(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -290,7 +303,7 @@ export async function deleteBoletim(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

@@ -2,7 +2,12 @@ import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
 import { getEquipamento } from './equipamento.server';
 import { getOperador } from './operador.server';
-import { type Boletim, getBoletins, updateBoletim } from './boletim.server';
+import {
+  type Boletim,
+  getBoletins,
+  updateBoletim,
+  _updateBoletim,
+} from './boletim.server';
 
 export type Manutencao = {
   id?: string;
@@ -49,7 +54,7 @@ export async function getManutencoes(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -81,7 +86,7 @@ export async function getManutencao(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -122,7 +127,7 @@ export async function createManutencao(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -175,7 +180,7 @@ export async function updateManutencao(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -189,16 +194,27 @@ export async function updateManutencao(
 
 export async function deleteManutencao(
   userToken: User['token'],
-  userId: string
+  manutencaoId: string
 ) {
   try {
+    const manutencao = await getManutencao(userToken, manutencaoId);
+    const boletins = await getBoletins(userToken, 'created');
+    const findBoletim = await boletins.find(
+      (item: Boletim) => item.codigo === manutencao.boletim
+    )?.id;
+
+    await _updateBoletim(userToken, findBoletim, {
+      manutencao: false,
+      descricao_manutencao: '',
+    });
+
     const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/manutencao/records/${userId}`,
+      `${process.env.BASE_API_URL}/collections/manutencao/records/${manutencaoId}`,
       {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

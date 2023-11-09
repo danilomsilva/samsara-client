@@ -32,7 +32,6 @@ export default function RadioOptions({
                   : option.name === 'Simples'
               }
               className="h-4 w-4 hover:cursor-pointer"
-              disabled={disabled}
             />
             <label htmlFor={name} className="ml-2 mb-px pointer-events-none">
               {option.displayName}
