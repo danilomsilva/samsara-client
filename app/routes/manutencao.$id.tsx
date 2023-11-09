@@ -211,7 +211,7 @@ export default function NewOperador() {
               label="Tipo de Manutenção:"
               options={TIPOS_MANUTENCAO}
               defaultValue={manutencao?.tipo_manutencao}
-              disabled={manutencao?.boletim !== '-'}
+              disabled={manutencao && manutencao?.boletim !== '-'}
             />
           </Row>
           <Row>
@@ -226,7 +226,7 @@ export default function NewOperador() {
                   : getCurrentDate()
               }
               error={actionData?.errors?.data_manutencao}
-              disabled={manutencao?.boletim !== '-'}
+              disabled={manutencao && manutencao?.boletim !== '-'}
             />
             <Select
               name="feito_por"
@@ -235,7 +235,7 @@ export default function NewOperador() {
               defaultValue={manutencao?.feito_por}
               placeholder="-"
               error={actionData?.errors?.feito_por}
-              disabled={manutencao?.boletim !== '-'}
+              disabled={manutencao && manutencao?.boletim !== '-'}
             />
           </Row>
           <Row>
@@ -247,7 +247,7 @@ export default function NewOperador() {
               placeholder="-"
               error={actionData?.errors?.equipamento}
               onChange={setSelectedEquipamento}
-              disabled={manutencao?.boletim !== '-'}
+              disabled={manutencao && manutencao?.boletim !== '-'}
             />
             <Input
               type="IM"
@@ -259,7 +259,7 @@ export default function NewOperador() {
               defaultValue={manutencao?.IM_atual}
               error={actionData?.errors?.IM_atual}
               suffix={selectedIMSuffix}
-              disabled={manutencao?.boletim !== '-'}
+              disabled={manutencao && manutencao?.boletim !== '-'}
             />
           </Row>
           <Row>
@@ -282,7 +282,7 @@ export default function NewOperador() {
               error={actionData?.errors?.descricao}
             />
           </Row>
-          {manutencao?.boletim !== '-' && (
+          {manutencao && manutencao?.boletim !== '-' && (
             <div className="flex items-center gap-1">
               <InfoIcon className="h-5 w-5 text-orange" />
               <p>
