@@ -5,6 +5,7 @@ export type PropTypes = {
   label: string;
   options: Option[];
   defaultValue?: string;
+  disabled?: boolean;
 };
 
 export default function RadioOptions({
@@ -12,6 +13,7 @@ export default function RadioOptions({
   label,
   options,
   defaultValue,
+  disabled,
 }: PropTypes) {
   return (
     <div className="flex flex-col text-sm gap-2 text-grey-dark ml-1 mb-4">
