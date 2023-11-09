@@ -165,15 +165,17 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
     await updateEquipamento(userToken, boletim.equipamento, {
       instrumento_medicao_atual: body?.lastRowIMFinal,
     } as Equipamento);
-    await _createManutencao(userToken, {
-      boletim: `BOL-${body?.newCode}`,
-      tipo_manutencao: 'Simples',
-      data_manutencao: body?.data_boletim,
-      feito_por: body?.operador,
-      equipamento: body?.equipamento,
-      IM_atual: body?.lastRowIMFinal,
-      descricao: body?.descricao_manutencao,
-    });
+    if (body?.manutencao) {
+      await _createManutencao(userToken, {
+        boletim: `BOL-${body?.newCode}`,
+        tipo_manutencao: 'Simples',
+        data_manutencao: body?.data_boletim,
+        feito_por: body?.operador,
+        equipamento: body?.equipamento,
+        IM_atual: body?.lastRowIMFinal,
+        descricao: body?.descricao_manutencao,
+      });
+    }
     return boletim;
   }
 }
@@ -252,7 +254,7 @@ export async function _updateBoletim(
         IM_atual: body?.lastRowIMFinal,
         descricao: body?.descricao_manutencao,
       });
-    } else {
+    } else if (body?.manutencao) {
       await _createManutencao(userToken, {
         boletim: boletim.codigo,
         tipo_manutencao: 'Simples',
