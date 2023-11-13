@@ -304,12 +304,12 @@ export default function NewBoletim() {
     loggedInUser,
     equipamentos,
     boletim,
+    operacoes,
     sortedOperacoes,
     sortedEquipamentos,
     sortedOperadores,
     OSs,
     sortedOSs,
-    operacoes,
     newCode,
   } = useLoaderData();
   const actionData = useActionData();
@@ -317,192 +317,172 @@ export default function NewBoletim() {
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
 
-  const [equipamento, setEquipamento] = useState<Equipamento>();
-  const [currentLog, setCurrentLog] = useState<Partial<EquipamentoLog>>();
-  const [firstHour, setFirstHour] = useState<string>();
-  const [lastHour, setLastHour] = useState<string>();
-  const [IMInicio, setIMInicio] = useState<string>();
-  const [IMFinal, setIMFinal] = useState<string>();
+  const [rows, setRows] = useState(boletim ? 0 : 1);
+  const [equipamento, setEquipamento] = useState<any>();
+  const [equipLogs, setEquipLogs] = useState<any>([]);
+  const [currentLog, setCurrentLog] = useState<any>({});
+  const [isFormValid, setIsFormValid] = useState<boolean>(false);
+  const [OS, setOS] = useState({});
+  const [OP, setOP] = useState({});
 
-  const [rows, setRows] = useState(
-    boletim ? boletim?.equipamento_logs?.length : 1
-  );
-  const [errors, setErrors] = useState<string[]>([]);
-
-  const isFormValid =
-    currentLog?.OS &&
-    currentLog?.OP &&
-    currentLog?.hora_inicio &&
-    currentLog?.hora_final &&
-    currentLog?.IM_inicio &&
-    currentLog?.IM_final &&
-    currentLog?.isHoraValid &&
-    currentLog?.isIMValid;
-
-  //USE EFFECTS
   useEffect(() => {
     if (boletim) {
-      //EQUIPAMENTO
-      const findEquipamento = equipamentos?.find(
-        (equip: Equipamento) => equip?.id === boletim?.equipamento
+      setRows(boletim.equipamento_logs.length);
+      const findEquip = equipamentos.find(
+        (item: Equipamento) => item.id === boletim.equipamento
       );
-      setEquipamento(findEquipamento);
-
-      //LOG
-      const firstLog = boletim?.equipamento_logs[0];
-      const lastLog =
-        boletim?.equipamento_logs[boletim?.equipamento_logs?.length - 1];
-      setCurrentLog({ ...lastLog, isHoraValid: true, isIMValid: true });
-
-      //HORA
-      setFirstHour(firstLog?.hora_inicio);
-      setLastHour(lastLog?.hora_final);
-      //IM
-      setIMInicio(firstLog?.IM_inicio);
-      setIMFinal(lastLog?.IM_final);
-    } else {
-      //CREATE - NEW FORM ONLY 1 ROW so INDEX 0
-      setCurrentLog({
-        ...currentLog,
-        isHoraValid: true,
-        isIMValid: true,
-        index: 0,
-      });
+      setEquipamento(findEquip);
+      setEquipLogs(boletim.equipamento_logs);
     }
   }, []);
 
   useEffect(() => {
-    if (actionData?.errors?.invalidInput) {
-      const parsedJSON = JSON?.parse(actionData?.errors?.invalidInput);
+    if (equipLogs.length > 0) {
+      setIsFormValid(
+        equipLogs.every((log) => {
+          // Check if all fields in the log are not empty
+          const allFieldsNotEmpty = Object.values(log).every(
+            (value) => value !== '' && value !== null && value !== undefined
+          );
 
-      // Create a copy of the current errors array and an update flag
-      let updatedErrors = [...errors];
-      let updated = false;
+          // Check if isRowValid is true
+          const isRowValidTrue = log.isRowValid === true;
 
-      for (let i = 0; i < rows; i++) {
-        const horaInicio = `hora_inicio_${i}`;
-        const horaFinal = `hora_final_${i}`;
-        const IMInicio = `IM_inicio_${i}`;
-        const IMFinal = `IM_final_${i}`;
-
-        if (!isTimeGreater(parsedJSON[horaInicio], parsedJSON[horaFinal])) {
-          // Check if horaFinal is in the errors array and add it if not
-          if (!updatedErrors.includes(horaFinal)) {
-            updatedErrors.push(horaFinal);
-            updated = true;
-          }
-        } else {
-          // Check if horaFinal is in the errors array and remove it if present
-          const index = updatedErrors.indexOf(horaFinal);
-          if (index !== -1) {
-            updatedErrors.splice(index, 1);
-            updated = true;
-          }
-        }
-
-        if (Number(parsedJSON[IMInicio]) > Number(parsedJSON[IMFinal])) {
-          // Check if IMFinal is in the errors array and add it if not
-          if (!updatedErrors.includes(IMFinal)) {
-            updatedErrors.push(IMFinal);
-            updated = true;
-          }
-        } else {
-          // Check if IMFinal is in the errors array and remove it if present
-          const index = updatedErrors.indexOf(IMFinal);
-          if (index !== -1) {
-            updatedErrors.splice(index, 1);
-            updated = true;
-          }
-        }
-      }
-
-      // Update the errors state only if changes were made
-      if (updated) {
-        setErrors(updatedErrors);
-      }
+          return allFieldsNotEmpty && isRowValidTrue;
+        })
+      );
+    } else {
+      setIsFormValid(false);
     }
-  }, [actionData, errors, rows]);
-
-  useEffect(() => {
-    if (currentLog?.index === 0) {
-      setFirstHour(currentLog?.hora_inicio);
-    }
-  }, [rows, currentLog?.hora_inicio]);
-
-  useEffect(() => {
-    if (rows - 1 === currentLog?.index) {
-      setLastHour(currentLog?.hora_final);
-    }
-  }, [rows, currentLog?.hora_final]);
-
-  useEffect(() => {
-    if (currentLog?.index === 0) {
-      setIMInicio(currentLog?.IM_inicio);
-    }
-  }, [rows, currentLog?.IM_inicio]);
-
-  useEffect(() => {
-    if (rows - 1 === currentLog?.index) {
-      setIMFinal(currentLog?.IM_final);
-    }
-  }, [rows, currentLog?.IM_final]);
+  }, [equipLogs]);
 
   const handleSelectEquipamento = (option: Option) => {
     const equip = equipamentos.find(
       (equip: Equipamento) => equip.id === option.name
     );
     setEquipamento(equip);
+    setEquipLogs((prevLogs: any) => {
+      const firstLog = prevLogs.length > 0 ? { ...prevLogs[0] } : { index: 0 };
+      firstLog.IM_inicio = equip?.instrumento_medicao_atual || '';
+      return [firstLog, ...prevLogs.slice(1)];
+    });
   };
 
   const handleChange = (
-    value: Option | string,
     name: string,
-    rowIndex?: number
+    value: Option | string,
+    index: number
   ) => {
-    const newValue =
-      typeof value !== 'string'
-        ? name === 'OS'
-          ? OSs?.find((OS: OS) => OS.id === value.name)
-          : name === 'OP'
-          ? operacoes?.find((operacao: Operacao) => operacao.id === value.name)
-          : value
-        : value;
+    if (name === 'OS') {
+      const findOS = OSs.find((item: OS) => item?.id === value?.name);
+      setOS(findOS);
+    }
+    if (name === 'OP') {
+      const findOP = operacoes.find(
+        (item: Operacao) => item?.id === value?.name
+      );
+      setOP(findOP);
+    }
+    const logToUpdate =
+      equipLogs.find((log) => log.index === index) || currentLog;
 
-    let newLog = {
-      ...currentLog,
-      index: rowIndex,
-      [name]: newValue,
-    };
+    logToUpdate[name] = value;
 
-    // Check if hora_final is greater than hora_inicio
-    if (newLog.hora_inicio && newLog.hora_final) {
-      newLog.isHoraValid = isTimeGreater(newLog.hora_inicio, newLog.hora_final);
+    if (name === 'hora_inicio' || name === 'hora_final') {
+      const { hora_inicio, hora_final } = logToUpdate;
+      logToUpdate.isHoraValid =
+        hora_inicio && hora_final && isTimeGreater(hora_inicio, hora_final);
     }
 
-    // Check if IM_final is greater than IM_inicio
-    if (newLog.IM_inicio && newLog.IM_final) {
-      newLog.isIMValid = Number(newLog.IM_inicio) < Number(newLog.IM_final);
+    if (name === 'IM_inicio' || name === 'IM_final') {
+      const { IM_inicio, IM_final } = logToUpdate;
+      logToUpdate.isIMValid =
+        IM_inicio && IM_final && Number(IM_inicio) <= Number(IM_final);
     }
 
-    setCurrentLog(newLog);
+    logToUpdate.isRowValid = logToUpdate.isHoraValid && logToUpdate.isIMValid;
+
+    setEquipLogs((prevLogs) => {
+      const updatedLogs = [...prevLogs];
+      const logIndex = updatedLogs.findIndex((log) => log.index === index);
+
+      if (logIndex !== -1) {
+        // Update the current row
+        updatedLogs[logIndex] = logToUpdate;
+
+        // Recompute validation flags for subsequent rows
+        for (let i = logIndex + 1; i < updatedLogs.length; i++) {
+          const currentLog = updatedLogs[i];
+          const previousLog = updatedLogs[i - 1];
+
+          currentLog.isHoraValid =
+            currentLog.hora_inicio &&
+            currentLog.hora_final &&
+            isTimeGreater(currentLog.hora_inicio, currentLog.hora_final);
+
+          // Update IM_inicio if previous row is valid
+          if (previousLog.isRowValid) {
+            currentLog.IM_inicio = previousLog.IM_final;
+            currentLog.hora_inicio = previousLog.hora_final;
+          }
+
+          currentLog.isIMValid =
+            currentLog.IM_inicio &&
+            currentLog.IM_final &&
+            Number(currentLog.IM_inicio) <= Number(currentLog.IM_final);
+
+          currentLog.isRowValid =
+            currentLog.isHoraValid && currentLog.isIMValid;
+        }
+      } else {
+        updatedLogs.push(logToUpdate);
+      }
+
+      return updatedLogs;
+    });
   };
 
   const handleAddRow = () => {
-    if (rows < 12) {
-      setCurrentLog({ isHoraValid: true, isIMValid: true, index: rows });
-      setRows(rows + 1);
+    if (rows < 13) {
+      let isFormValid = true;
+
+      for (let i = 0; i < equipLogs.length; i++) {
+        const log = equipLogs[i];
+        if (!log.isRowValid) {
+          isFormValid = false;
+          break;
+        }
+      }
+
+      if (isFormValid) {
+        const index = rows - 1;
+        const findLog = equipLogs.find((log) => log.index === index);
+
+        const newLog = {
+          hora_inicio: findLog?.hora_final,
+          IM_inicio: findLog?.IM_final,
+          index: rows,
+        };
+        setEquipLogs((prevLogs: any) => [...prevLogs, newLog]);
+        setRows(rows + 1);
+      }
+
+      setIsFormValid(false);
+      setOS({});
+      setOP({});
     }
   };
 
-  const handleClickField = (rowIndex: number) => {
-    setCurrentLog({
-      ...currentLog,
-      ...boletim?.equipamento_logs?.find(
-        (log: EquipamentoLog) => log.index === rowIndex
-      ),
-      isHoraValid: true,
-      isIMValid: true,
-    });
+  const handleClickedRow = (index: number) => {
+    const logToUpdate = equipLogs.find(
+      (log: EquipamentoLog) => log.index === index
+    );
+
+    if (logToUpdate) {
+      setCurrentLog(logToUpdate);
+    } else {
+      setCurrentLog({ index });
+    }
   };
 
   return (
@@ -557,17 +537,12 @@ export default function NewBoletim() {
                 className="!w-[280px]"
               />
             </Row>
-            <input hidden name="rows" value={rows} />
             <input hidden name="obra" value={loggedInUser?.obra} />
             <input hidden name="encarregado" value={loggedInUser?.id} />
             <input hidden name="newCode" value={newCode} />
-            <input hidden name="lastRowIMFinal" value={IMFinal} />
+            <input hidden name="rows" value={rows} />
             <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
               {Array.from(new Array(rows), (_, index) => {
-                const log: EquipamentoLog = boletim?.equipamento_logs?.find(
-                  (log: EquipamentoLog) => Number(log.index) === index
-                );
-
                 return (
                   <Row key={index}>
                     <Select
@@ -575,24 +550,26 @@ export default function NewBoletim() {
                       options={sortedOSs}
                       labelBold
                       label="O.S."
-                      defaultValue={log?.OS}
+                      defaultValue={equipLogs[index]?.OS}
                       placeholder="-"
                       error={actionData?.errors?.[`OS_${index}`]}
                       className="!w-[132px]"
                       noLabel={index !== 0}
-                      onChange={(value) => handleChange(value, 'OS')}
+                      onChange={(value) => handleChange('OS', value, index)}
+                      onClick={() => handleClickedRow(index)}
                     />
                     <Select
                       name={`operacao_${index}`}
                       options={sortedOperacoes}
                       label="Operação"
                       labelBold
-                      defaultValue={log?.OP}
+                      defaultValue={equipLogs[index]?.OP}
                       placeholder="-"
                       error={actionData?.errors?.[`operacao_${index}`]}
                       className="!w-[132px]"
                       noLabel={index !== 0}
-                      onChange={(value) => handleChange(value, 'OP')}
+                      onChange={(value) => handleChange('OP', value, index)}
+                      onClick={() => handleClickedRow(index)}
                     />
                     <InputValue
                       type="time"
@@ -600,13 +577,13 @@ export default function NewBoletim() {
                       label="Hora Início"
                       labelBold
                       className="!w-[132px]"
-                      value={log?.hora_inicio}
+                      value={equipLogs[index]?.hora_inicio}
                       error={actionData?.errors?.[`hora_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={(value) =>
-                        handleChange(value, 'hora_inicio', index)
+                        handleChange('hora_inicio', value, index)
                       }
-                      onClick={() => handleClickField(index)}
+                      onClick={() => handleClickedRow(index)}
                     />
                     <InputValue
                       type="time"
@@ -614,23 +591,17 @@ export default function NewBoletim() {
                       label="Hora Final"
                       labelBold
                       className="!w-[132px]"
-                      value={log?.hora_final}
-                      error={
-                        actionData?.errors?.[`hora_final_${index}`] ||
-                        errors.includes(`hora_final_${index}`)
-                          ? 'Hora Inválida!'
-                          : currentLog
-                          ? (currentLog?.index === index &&
-                              !currentLog?.isHoraValid &&
-                              'Hora inválida!') ||
-                            ''
-                          : ''
-                      }
+                      value={equipLogs[index]?.hora_final}
                       noLabel={index !== 0}
                       onChange={(value) =>
-                        handleChange(value, 'hora_final', index)
+                        handleChange('hora_final', value, index)
                       }
-                      onClick={() => handleClickField(index)}
+                      onClick={() => handleClickedRow(index)}
+                      error={
+                        equipLogs[index]?.isHoraValid === false
+                          ? 'Hora inválida!'
+                          : '' || actionData?.errors?.[`hora_final_${index}`]
+                      }
                     />
                     <InputValue
                       type="text"
@@ -642,13 +613,14 @@ export default function NewBoletim() {
                       } Início`}
                       labelBold
                       className="!w-[130px]"
-                      value={log?.IM_inicio}
+                      value={equipLogs[index]?.IM_inicio}
                       error={actionData?.errors?.[`IM_inicio_${index}`]}
                       noLabel={index !== 0}
                       onChange={(value) =>
-                        handleChange(value, 'IM_inicio', index)
+                        handleChange('IM_inicio', value, index)
                       }
-                      onClick={() => handleClickField(index)}
+                      onClick={() => handleClickedRow(index)}
+                      disabled
                     />
                     <InputValue
                       type="text"
@@ -660,29 +632,22 @@ export default function NewBoletim() {
                       } Final`}
                       labelBold
                       className="!w-[130px]"
-                      value={log?.IM_final}
-                      error={
-                        actionData?.errors?.[`IM_final_${index}`] ||
-                        errors?.includes(`IM_final_${index}`)
-                          ? 'IM Inválido!'
-                          : currentLog
-                          ? (currentLog?.index === index &&
-                              !currentLog?.isIMValid &&
-                              'IM inválido!') ||
-                            ''
-                          : ''
-                      }
+                      value={equipLogs[index]?.IM_final}
                       noLabel={index !== 0}
                       onChange={(value) =>
-                        handleChange(value, 'IM_final', index)
+                        handleChange('IM_final', value, index)
                       }
-                      onClick={() => handleClickField(index)}
+                      onClick={() => handleClickedRow(index)}
+                      error={
+                        equipLogs[index]?.isIMValid === false
+                          ? 'IM inválido!'
+                          : '' || actionData?.errors?.[`IM_final_${index}`]
+                      }
                     />
                   </Row>
                 );
               })}
-
-              <TwoLinesInfo OS={currentLog?.OS} OP={currentLog?.OP} />
+              <TwoLinesInfo OS={OS} OP={OP} />
 
               {rows < 12 && (
                 <div className="w-full flex justify-center mt-2 mb-4">
@@ -751,16 +716,16 @@ export default function NewBoletim() {
           </div>
         </div>
       }
-      footerSummary={
-        <FooterSummary
-          loggedInUser={loggedInUser}
-          equipamento={equipamento}
-          firstHour={firstHour}
-          lastHour={lastHour}
-          IMInicio={IMInicio}
-          IMFinal={IMFinal}
-        />
-      }
+      // footerSummary={
+      //   <FooterSummary
+      //     loggedInUser={loggedInUser}
+      //     equipamento={equipamento}
+      //     firstHour={firstHour}
+      //     lastHour={lastHour}
+      //     IMInicio={IMInicio}
+      //     IMFinal={IMFinal}
+      //   />
+      // }
       footerActions={
         <Button
           variant={boletim ? 'grey' : 'blue'}
