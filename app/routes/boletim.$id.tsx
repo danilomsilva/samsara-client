@@ -333,9 +333,19 @@ export default function NewBoletim() {
         (item: Equipamento) => item.id === boletim.equipamento
       );
       setEquipamento(findEquip);
-      setEquipLogs(boletim.equipamento_logs);
-
+      const newEquipLogsMap = boletim?.equipamento_logs?.map((item) => {
+        const isHoraValid = isTimeGreater(item.hora_inicio, item.hora_final);
+        const isIMValid = Number(item.IM_inicio) <= Number(item.IM_final);
+        return {
+          ...item,
+          isHoraValid: isHoraValid,
+          isIMValid: isIMValid,
+          isRowValid: isHoraValid && isIMValid,
+        };
+      });
+      setEquipLogs(newEquipLogsMap);
       setTimeout(() => {
+        setIsFormValid(true);
         setShowSpinner(false);
       }, 1000);
     } else {
@@ -345,21 +355,7 @@ export default function NewBoletim() {
 
   useEffect(() => {
     if (equipLogs.length > 0) {
-      setIsFormValid(
-        equipLogs.every((log) => {
-          // Check if all fields in the log are not empty
-          const allFieldsNotEmpty = Object.values(log).every(
-            (value) => value !== '' && value !== null && value !== undefined
-          );
-
-          // Check if isRowValid is true
-          const isRowValidTrue = log.isRowValid === true;
-
-          return allFieldsNotEmpty && isRowValidTrue;
-        })
-      );
-    } else {
-      setIsFormValid(false);
+      setIsFormValid(equipLogs.every((log) => log.isRowValid === true));
     }
   }, [equipLogs]);
 
@@ -455,7 +451,7 @@ export default function NewBoletim() {
 
       for (let i = 0; i < equipLogs.length; i++) {
         const log = equipLogs[i];
-        if (!log.isRowValid) {
+        if ('isRowValid' in currentLog && log.isRowValid === false) {
           isFormValid = false;
           break;
         }
