@@ -17,6 +17,7 @@ type PropTypes = {
   defaultValue?: string;
   onChange?: (option: Option) => void;
   disabled?: boolean;
+  onClick?: () => void;
 };
 
 export default function Select({
@@ -31,6 +32,7 @@ export default function Select({
   defaultValue,
   onChange,
   disabled,
+  onClick,
 }: PropTypes) {
   const [selected, setSelected] = useState<Option | null>(null);
   const [query, setQuery] = useState('');
@@ -53,7 +55,10 @@ export default function Select({
         );
 
   return (
-    <fieldset className={`${className} flex flex-col gap-1 w-full`}>
+    <fieldset
+      className={`${className} flex flex-col gap-1 w-full`}
+      onClick={onClick}
+    >
       {/* hidden input only way to send id to backend */}
       <input type="hidden" name={name} value={selected?.name} />
       <Combobox onChange={handleChange} name={name} disabled={disabled}>

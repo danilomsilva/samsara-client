@@ -256,6 +256,7 @@ export async function action({ params, request }: ActionArgs) {
       manutencao: formData?.manutencao === 'on' ? true : false,
       lubrificacao: formData?.lubrificacao === 'on' ? true : false,
       limpeza: formData?.limpeza === 'on' ? true : false,
+      lastRowIMFinal: equipamento_logs[equipamento_logs?.length - 1]?.IM_final,
     };
 
     const boletim = await _createBoletim(userToken, body as Boletim);
@@ -280,6 +281,7 @@ export async function action({ params, request }: ActionArgs) {
       manutencao: formData?.manutencao === 'on' ? true : false,
       lubrificacao: formData?.lubrificacao === 'on' ? true : false,
       limpeza: formData?.limpeza === 'on' ? true : false,
+      lastRowIMFinal: equipamento_logs[equipamento_logs?.length - 1]?.IM_final,
     };
 
     const boletim = await _updateBoletim(
@@ -306,12 +308,12 @@ export default function NewBoletim() {
     loggedInUser,
     equipamentos,
     boletim,
+    operacoes,
     sortedOperacoes,
     sortedEquipamentos,
     sortedOperadores,
     OSs,
     sortedOSs,
-    operacoes,
     newCode,
   } = useLoaderData();
   const actionData = useActionData();
@@ -319,192 +321,175 @@ export default function NewBoletim() {
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
 
-  const [equipamento, setEquipamento] = useState<Equipamento>();
-  const [currentLog, setCurrentLog] = useState<Partial<EquipamentoLog>>();
-  const [firstHour, setFirstHour] = useState<string>();
-  const [lastHour, setLastHour] = useState<string>();
-  const [IMInicio, setIMInicio] = useState<string>();
-  const [IMFinal, setIMFinal] = useState<string>();
+  const [rows, setRows] = useState(boletim ? 0 : 1);
+  const [equipamento, setEquipamento] = useState<any>();
+  const [equipLogs, setEquipLogs] = useState<any>([]);
+  const [currentLog, setCurrentLog] = useState<any>({});
+  const [isFormValid, setIsFormValid] = useState<boolean>(false);
+  const [OS, setOS] = useState({});
+  const [OP, setOP] = useState({});
+  const [showSpinner, setShowSpinner] = useState(true);
 
-  const [rows, setRows] = useState(
-    boletim ? boletim?.equipamento_logs?.length : 1
-  );
-  const [errors, setErrors] = useState<string[]>([]);
-
-  const isFormValid =
-    currentLog?.OS &&
-    currentLog?.OP &&
-    currentLog?.hora_inicio &&
-    currentLog?.hora_final &&
-    currentLog?.IM_inicio &&
-    currentLog?.IM_final &&
-    currentLog?.isHoraValid &&
-    currentLog?.isIMValid;
-
-  //USE EFFECTS
   useEffect(() => {
     if (boletim) {
-      //EQUIPAMENTO
-      const findEquipamento = equipamentos?.find(
-        (equip: Equipamento) => equip?.id === boletim?.equipamento
+      setRows(boletim.equipamento_logs.length);
+      const findEquip = equipamentos.find(
+        (item: Equipamento) => item.id === boletim.equipamento
       );
-      setEquipamento(findEquipamento);
-
-      //LOG
-      const firstLog = boletim?.equipamento_logs[0];
-      const lastLog =
-        boletim?.equipamento_logs[boletim?.equipamento_logs?.length - 1];
-      setCurrentLog({ ...lastLog, isHoraValid: true, isIMValid: true });
-
-      //HORA
-      setFirstHour(firstLog?.hora_inicio);
-      setLastHour(lastLog?.hora_final);
-      //IM
-      setIMInicio(firstLog?.IM_inicio);
-      setIMFinal(lastLog?.IM_final);
-    } else {
-      //CREATE - NEW FORM ONLY 1 ROW so INDEX 0
-      setCurrentLog({
-        ...currentLog,
-        isHoraValid: true,
-        isIMValid: true,
-        index: 0,
+      setEquipamento(findEquip);
+      const newEquipLogsMap = boletim?.equipamento_logs?.map((item) => {
+        const isHoraValid = isTimeGreater(item.hora_inicio, item.hora_final);
+        const isIMValid = Number(item.IM_inicio) <= Number(item.IM_final);
+        return {
+          ...item,
+          isHoraValid: isHoraValid,
+          isIMValid: isIMValid,
+          isRowValid: isHoraValid && isIMValid,
+        };
       });
+      setEquipLogs(newEquipLogsMap);
+      setTimeout(() => {
+        setIsFormValid(true);
+        setShowSpinner(false);
+      }, 1000);
+    } else {
+      setShowSpinner(false);
     }
   }, []);
 
   useEffect(() => {
-    if (actionData?.errors?.invalidInput) {
-      const parsedJSON = JSON?.parse(actionData?.errors?.invalidInput);
-
-      // Create a copy of the current errors array and an update flag
-      let updatedErrors = [...errors];
-      let updated = false;
-
-      for (let i = 0; i < rows; i++) {
-        const horaInicio = `hora_inicio_${i}`;
-        const horaFinal = `hora_final_${i}`;
-        const IMInicio = `IM_inicio_${i}`;
-        const IMFinal = `IM_final_${i}`;
-
-        if (!isTimeGreater(parsedJSON[horaInicio], parsedJSON[horaFinal])) {
-          // Check if horaFinal is in the errors array and add it if not
-          if (!updatedErrors.includes(horaFinal)) {
-            updatedErrors.push(horaFinal);
-            updated = true;
-          }
-        } else {
-          // Check if horaFinal is in the errors array and remove it if present
-          const index = updatedErrors.indexOf(horaFinal);
-          if (index !== -1) {
-            updatedErrors.splice(index, 1);
-            updated = true;
-          }
-        }
-
-        if (Number(parsedJSON[IMInicio]) > Number(parsedJSON[IMFinal])) {
-          // Check if IMFinal is in the errors array and add it if not
-          if (!updatedErrors.includes(IMFinal)) {
-            updatedErrors.push(IMFinal);
-            updated = true;
-          }
-        } else {
-          // Check if IMFinal is in the errors array and remove it if present
-          const index = updatedErrors.indexOf(IMFinal);
-          if (index !== -1) {
-            updatedErrors.splice(index, 1);
-            updated = true;
-          }
-        }
-      }
-
-      // Update the errors state only if changes were made
-      if (updated) {
-        setErrors(updatedErrors);
-      }
+    if (equipLogs.length > 0) {
+      setIsFormValid(equipLogs.every((log) => log.isRowValid === true));
     }
-  }, [actionData, errors, rows]);
-
-  useEffect(() => {
-    if (currentLog?.index === 0) {
-      setFirstHour(currentLog?.hora_inicio);
-    }
-  }, [rows, currentLog?.hora_inicio]);
-
-  useEffect(() => {
-    if (rows - 1 === currentLog?.index) {
-      setLastHour(currentLog?.hora_final);
-    }
-  }, [rows, currentLog?.hora_final]);
-
-  useEffect(() => {
-    if (currentLog?.index === 0) {
-      setIMInicio(currentLog?.IM_inicio);
-    }
-  }, [rows, currentLog?.IM_inicio]);
-
-  useEffect(() => {
-    if (rows - 1 === currentLog?.index) {
-      setIMFinal(currentLog?.IM_final);
-    }
-  }, [rows, currentLog?.IM_final]);
+  }, [equipLogs]);
 
   const handleSelectEquipamento = (option: Option) => {
     const equip = equipamentos.find(
       (equip: Equipamento) => equip.id === option.name
     );
     setEquipamento(equip);
+    setEquipLogs((prevLogs: any) => {
+      const firstLog = prevLogs.length > 0 ? { ...prevLogs[0] } : { index: 0 };
+      firstLog.IM_inicio = equip?.instrumento_medicao_atual || '';
+      return [firstLog, ...prevLogs.slice(1)];
+    });
   };
 
   const handleChange = (
-    value: Option | string,
     name: string,
-    rowIndex?: number
+    value: Option | string,
+    index: number
   ) => {
-    const newValue =
-      typeof value !== 'string'
-        ? name === 'OS'
-          ? OSs?.find((OS: OS) => OS.id === value.name)
-          : name === 'OP'
-          ? operacoes?.find((operacao: Operacao) => operacao.id === value.name)
-          : value
-        : value;
+    if (name === 'OS') {
+      const findOS = OSs.find((item: OS) => item?.id === value?.name);
+      setOS(findOS);
+    }
+    if (name === 'OP') {
+      const findOP = operacoes.find(
+        (item: Operacao) => item?.id === value?.name
+      );
+      setOP(findOP);
+    }
+    const logToUpdate =
+      equipLogs.find((log) => log.index === index) || currentLog;
 
-    let newLog = {
-      ...currentLog,
-      index: rowIndex,
-      [name]: newValue,
-    };
+    logToUpdate[name] = value;
 
-    // Check if hora_final is greater than hora_inicio
-    if (newLog.hora_inicio && newLog.hora_final) {
-      newLog.isHoraValid = isTimeGreater(newLog.hora_inicio, newLog.hora_final);
+    if (name === 'hora_inicio' || name === 'hora_final') {
+      const { hora_inicio, hora_final } = logToUpdate;
+      logToUpdate.isHoraValid =
+        hora_inicio && hora_final && isTimeGreater(hora_inicio, hora_final);
     }
 
-    // Check if IM_final is greater than IM_inicio
-    if (newLog.IM_inicio && newLog.IM_final) {
-      newLog.isIMValid = Number(newLog.IM_inicio) < Number(newLog.IM_final);
+    if (name === 'IM_inicio' || name === 'IM_final') {
+      const { IM_inicio, IM_final } = logToUpdate;
+      logToUpdate.isIMValid =
+        IM_inicio && IM_final && Number(IM_inicio) <= Number(IM_final);
     }
 
-    setCurrentLog(newLog);
+    logToUpdate.isRowValid = logToUpdate.isHoraValid && logToUpdate.isIMValid;
+
+    setEquipLogs((prevLogs) => {
+      const updatedLogs = [...prevLogs];
+      const logIndex = updatedLogs.findIndex((log) => log.index === index);
+
+      if (logIndex !== -1) {
+        // Update the current row
+        updatedLogs[logIndex] = logToUpdate;
+
+        // Recompute validation flags for subsequent rows
+        for (let i = logIndex + 1; i < updatedLogs.length; i++) {
+          const currentLog = updatedLogs[i];
+          const previousLog = updatedLogs[i - 1];
+
+          currentLog.isHoraValid =
+            currentLog.hora_inicio &&
+            currentLog.hora_final &&
+            isTimeGreater(currentLog.hora_inicio, currentLog.hora_final);
+
+          // Update IM_inicio if previous row is valid
+          if (previousLog.isRowValid) {
+            currentLog.IM_inicio = previousLog.IM_final;
+            currentLog.hora_inicio = previousLog.hora_final;
+          }
+
+          currentLog.isIMValid =
+            currentLog.IM_inicio &&
+            currentLog.IM_final &&
+            Number(currentLog.IM_inicio) <= Number(currentLog.IM_final);
+
+          currentLog.isRowValid =
+            currentLog.isHoraValid && currentLog.isIMValid;
+        }
+      } else {
+        updatedLogs.push(logToUpdate);
+      }
+
+      return updatedLogs;
+    });
   };
 
   const handleAddRow = () => {
-    if (rows < 12) {
-      setCurrentLog({ isHoraValid: true, isIMValid: true, index: rows });
-      setRows(rows + 1);
+    if (rows < 13) {
+      let isFormValid = true;
+
+      for (let i = 0; i < equipLogs.length; i++) {
+        const log = equipLogs[i];
+        if ('isRowValid' in currentLog && log.isRowValid === false) {
+          isFormValid = false;
+          break;
+        }
+      }
+
+      if (isFormValid) {
+        const index = rows - 1;
+        const findLog = equipLogs.find((log) => log.index === index);
+
+        const newLog = {
+          hora_inicio: findLog?.hora_final,
+          IM_inicio: findLog?.IM_final,
+          index: rows,
+        };
+        setEquipLogs((prevLogs: any) => [...prevLogs, newLog]);
+        setRows(rows + 1);
+      }
+
+      setIsFormValid(false);
+      setOS({});
+      setOP({});
     }
   };
 
-  const handleClickField = (rowIndex: number) => {
-    setCurrentLog({
-      ...currentLog,
-      ...boletim?.equipamento_logs?.find(
-        (log: EquipamentoLog) => log.index === rowIndex
-      ),
-      isHoraValid: true,
-      isIMValid: true,
-    });
+  const handleClickedRow = (index: number) => {
+    const logToUpdate = equipLogs.find(
+      (log: EquipamentoLog) => log.index === index
+    );
+
+    if (logToUpdate) {
+      setCurrentLog(logToUpdate);
+    } else {
+      setCurrentLog({ index });
+    }
   };
 
   return (
@@ -513,254 +498,247 @@ export default function NewBoletim() {
       title={`${boletim ? 'Editar' : 'Adicionar'} Boletim`}
       variant={boletim ? 'grey' : 'blue'}
       content={
-        <div className="flex">
-          <div className="pr-4 border-r-grey/40 border-r">
-            <Row>
-              <InputMask
-                mask="99/99/9999"
-                type="text"
-                name="data_boletim"
-                label="Data de início"
-                defaultValue={
-                  boletim
-                    ? convertISOToDate(boletim?.data_boletim)
-                    : getCurrentDate()
-                }
-                className="!w-[132px]"
-                error={actionData?.errors?.data_boletim}
-              />
-              <Select
-                name="equipamento"
-                options={sortedEquipamentos}
-                label="Equipamento"
-                defaultValue={boletim?.equipamento}
-                placeholder="-"
-                error={actionData?.errors?.equipamento}
-                onChange={handleSelectEquipamento}
-                className="!w-[132px]"
-              />
-              <InputValue
-                type="text"
-                name="tipo_equipamento"
-                label="Descrição do equipamento"
-                className="!w-[280px]"
-                value={equipamento?.tipo_equipamentoX}
-                disabled
-                tabIndex={-1}
-                error={actionData?.errors?.tipo_equipamento}
-              />
-              <Select
-                name="operador"
-                options={sortedOperadores}
-                label="Operador"
-                defaultValue={boletim?.operador}
-                placeholder="-"
-                error={actionData?.errors?.operador}
-                className="!w-[280px]"
-              />
-            </Row>
-            <input hidden name="rows" value={rows} />
-            <input hidden name="obra" value={loggedInUser?.obra} />
-            <input hidden name="encarregado" value={loggedInUser?.id} />
-            <input hidden name="newCode" value={newCode} />
-            <input hidden name="lastRowIMFinal" value={IMFinal} />
-            <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
-              {Array.from(new Array(rows), (_, index) => {
-                const log: EquipamentoLog = boletim?.equipamento_logs?.find(
-                  (log: EquipamentoLog) => Number(log.index) === index
-                );
+        showSpinner ? (
+          <div className="flex justify-center flex-col items-center gap-4 h-[500px]">
+            <SpinnerIcon className="!h-12 !w-12" />
+            <p>Carregando boletim...</p>
+          </div>
+        ) : (
+          <div className="flex">
+            <div className="pr-4 border-r-grey/40 border-r">
+              <Row>
+                <InputMask
+                  mask="99/99/9999"
+                  type="text"
+                  name="data_boletim"
+                  label="Data de início"
+                  defaultValue={
+                    boletim
+                      ? convertISOToDate(boletim?.data_boletim)
+                      : getCurrentDate()
+                  }
+                  className="!w-[132px]"
+                  error={actionData?.errors?.data_boletim}
+                />
+                <Select
+                  name="equipamento"
+                  options={sortedEquipamentos}
+                  label="Equipamento"
+                  defaultValue={boletim?.equipamento}
+                  placeholder="-"
+                  error={actionData?.errors?.equipamento}
+                  onChange={handleSelectEquipamento}
+                  className="!w-[132px]"
+                />
+                <InputValue
+                  type="text"
+                  name="tipo_equipamento"
+                  label="Descrição do equipamento"
+                  className="!w-[280px]"
+                  value={equipamento?.tipo_equipamentoX}
+                  disabled
+                  tabIndex={-1}
+                  error={actionData?.errors?.tipo_equipamento}
+                />
+                <Select
+                  name="operador"
+                  options={sortedOperadores}
+                  label="Operador"
+                  defaultValue={boletim?.operador}
+                  placeholder="-"
+                  error={actionData?.errors?.operador}
+                  className="!w-[280px]"
+                />
+              </Row>
+              <input hidden name="obra" value={loggedInUser?.obra} />
+              <input hidden name="encarregado" value={loggedInUser?.id} />
+              <input hidden name="newCode" value={newCode} />
+              <input hidden name="rows" value={rows} />
+              <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
+                {Array.from(new Array(rows), (_, index) => {
+                  return (
+                    <Row key={index}>
+                      <Select
+                        name={`OS_${index}`}
+                        options={sortedOSs}
+                        labelBold
+                        label="O.S."
+                        defaultValue={equipLogs[index]?.OS}
+                        placeholder="-"
+                        error={actionData?.errors?.[`OS_${index}`]}
+                        className="!w-[132px]"
+                        noLabel={index !== 0}
+                        onChange={(value) => handleChange('OS', value, index)}
+                        onClick={() => handleClickedRow(index)}
+                      />
+                      <Select
+                        name={`operacao_${index}`}
+                        options={sortedOperacoes}
+                        label="Operação"
+                        labelBold
+                        defaultValue={equipLogs[index]?.OP}
+                        placeholder="-"
+                        error={actionData?.errors?.[`operacao_${index}`]}
+                        className="!w-[132px]"
+                        noLabel={index !== 0}
+                        onChange={(value) => handleChange('OP', value, index)}
+                        onClick={() => handleClickedRow(index)}
+                      />
+                      <InputValue
+                        type="time"
+                        name={`hora_inicio_${index}`}
+                        label="Hora Início"
+                        labelBold
+                        className="!w-[132px]"
+                        value={equipLogs[index]?.hora_inicio}
+                        error={actionData?.errors?.[`hora_inicio_${index}`]}
+                        noLabel={index !== 0}
+                        onChange={(value) =>
+                          handleChange('hora_inicio', value, index)
+                        }
+                        onClick={() => handleClickedRow(index)}
+                        disabled={index !== 0}
+                      />
+                      <InputValue
+                        type="time"
+                        name={`hora_final_${index}`}
+                        label="Hora Final"
+                        labelBold
+                        className="!w-[132px]"
+                        value={equipLogs[index]?.hora_final}
+                        noLabel={index !== 0}
+                        onChange={(value) =>
+                          handleChange('hora_final', value, index)
+                        }
+                        onClick={() => handleClickedRow(index)}
+                        error={
+                          equipLogs[index]?.isHoraValid === false
+                            ? 'Hora inválida!'
+                            : '' || actionData?.errors?.[`hora_final_${index}`]
+                        }
+                      />
+                      <InputValue
+                        type="text"
+                        name={`IM_inicio_${index}`}
+                        label={`${
+                          equipamento?.instrumento_medicao
+                            ? equipamento?.instrumento_medicao
+                            : 'IM'
+                        } Início`}
+                        labelBold
+                        className="!w-[130px]"
+                        value={equipLogs[index]?.IM_inicio}
+                        error={actionData?.errors?.[`IM_inicio_${index}`]}
+                        noLabel={index !== 0}
+                        onChange={(value) =>
+                          handleChange('IM_inicio', value, index)
+                        }
+                        onClick={() => handleClickedRow(index)}
+                        disabled
+                      />
+                      <InputValue
+                        type="text"
+                        name={`IM_final_${index}`}
+                        label={`${
+                          equipamento?.instrumento_medicao
+                            ? equipamento?.instrumento_medicao
+                            : 'IM'
+                        } Final`}
+                        labelBold
+                        className="!w-[130px]"
+                        value={equipLogs[index]?.IM_final}
+                        noLabel={index !== 0}
+                        onChange={(value) =>
+                          handleChange('IM_final', value, index)
+                        }
+                        onClick={() => handleClickedRow(index)}
+                        error={
+                          equipLogs[index]?.isIMValid === false
+                            ? 'IM inválido!'
+                            : '' || actionData?.errors?.[`IM_final_${index}`]
+                        }
+                      />
+                    </Row>
+                  );
+                })}
+                <TwoLinesInfo OS={OS} OP={OP} />
 
-                return (
-                  <Row key={index}>
-                    <Select
-                      name={`OS_${index}`}
-                      options={sortedOSs}
-                      labelBold
-                      label="O.S."
-                      defaultValue={log?.OS}
-                      placeholder="-"
-                      error={actionData?.errors?.[`OS_${index}`]}
-                      className="!w-[132px]"
-                      noLabel={index !== 0}
-                      onChange={(value) => handleChange(value, 'OS')}
-                    />
-                    <Select
-                      name={`operacao_${index}`}
-                      options={sortedOperacoes}
-                      label="Operação"
-                      labelBold
-                      defaultValue={log?.OP}
-                      placeholder="-"
-                      error={actionData?.errors?.[`operacao_${index}`]}
-                      className="!w-[132px]"
-                      noLabel={index !== 0}
-                      onChange={(value) => handleChange(value, 'OP')}
-                    />
-                    <InputValue
-                      type="time"
-                      name={`hora_inicio_${index}`}
-                      label="Hora Início"
-                      labelBold
-                      className="!w-[132px]"
-                      value={log?.hora_inicio}
-                      error={actionData?.errors?.[`hora_inicio_${index}`]}
-                      noLabel={index !== 0}
-                      onChange={(value) =>
-                        handleChange(value, 'hora_inicio', index)
-                      }
-                      onClick={() => handleClickField(index)}
-                    />
-                    <InputValue
-                      type="time"
-                      name={`hora_final_${index}`}
-                      label="Hora Final"
-                      labelBold
-                      className="!w-[132px]"
-                      value={log?.hora_final}
-                      error={
-                        actionData?.errors?.[`hora_final_${index}`] ||
-                        errors.includes(`hora_final_${index}`)
-                          ? 'Hora Inválida!'
-                          : currentLog
-                          ? (currentLog?.index === index &&
-                              !currentLog?.isHoraValid &&
-                              'Hora inválida!') ||
-                            ''
-                          : ''
-                      }
-                      noLabel={index !== 0}
-                      onChange={(value) =>
-                        handleChange(value, 'hora_final', index)
-                      }
-                      onClick={() => handleClickField(index)}
-                    />
-                    <InputValue
-                      type="text"
-                      name={`IM_inicio_${index}`}
-                      label={`${
-                        equipamento?.instrumento_medicao
-                          ? equipamento?.instrumento_medicao
-                          : 'IM'
-                      } Início`}
-                      labelBold
-                      className="!w-[130px]"
-                      value={log?.IM_inicio}
-                      error={actionData?.errors?.[`IM_inicio_${index}`]}
-                      noLabel={index !== 0}
-                      onChange={(value) =>
-                        handleChange(value, 'IM_inicio', index)
-                      }
-                      onClick={() => handleClickField(index)}
-                    />
-                    <InputValue
-                      type="text"
-                      name={`IM_final_${index}`}
-                      label={`${
-                        equipamento?.instrumento_medicao
-                          ? equipamento?.instrumento_medicao
-                          : 'IM'
-                      } Final`}
-                      labelBold
-                      className="!w-[130px]"
-                      value={log?.IM_final}
-                      error={
-                        actionData?.errors?.[`IM_final_${index}`] ||
-                        errors?.includes(`IM_final_${index}`)
-                          ? 'IM Inválido!'
-                          : currentLog
-                          ? (currentLog?.index === index &&
-                              !currentLog?.isIMValid &&
-                              'IM inválido!') ||
-                            ''
-                          : ''
-                      }
-                      noLabel={index !== 0}
-                      onChange={(value) =>
-                        handleChange(value, 'IM_final', index)
-                      }
-                      onClick={() => handleClickField(index)}
-                    />
-                  </Row>
-                );
-              })}
-
-              <TwoLinesInfo OS={currentLog?.OS} OP={currentLog?.OP} />
-
-              {rows < 12 && (
-                <div className="w-full flex justify-center mt-2 mb-4">
-                  <div
-                    className={`${
-                      isFormValid
-                        ? 'hover:bg-white rounded-full cursor-pointer'
-                        : 'cursor-default pointer-events-none'
-                    }`}
-                    onClick={handleAddRow}
-                  >
-                    <PlusCircleIcon
+                {rows < 12 && (
+                  <div className="w-full flex justify-center mt-2 mb-4">
+                    <div
                       className={`${
-                        isFormValid ? 'text-blue' : 'text-grey'
-                      } h-8 w-8`}
-                    />
+                        isFormValid
+                          ? 'hover:bg-white rounded-full cursor-pointer'
+                          : 'cursor-default pointer-events-none'
+                      }`}
+                      onClick={handleAddRow}
+                    >
+                      <PlusCircleIcon
+                        className={`${
+                          isFormValid ? 'text-blue' : 'text-grey'
+                        } h-8 w-8`}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+            </div>
+            <div className="w-full pl-4">
+              <Row>
+                <InputValue
+                  type="IM"
+                  name="abastecimento_1"
+                  label="Abast. 1"
+                  value={boletim?.abastecimento_1}
+                  suffix=" L"
+                  className="!w-[114px]"
+                />
+                <InputValue
+                  type="IM"
+                  name="abastecimento_2"
+                  label="Abast. 2"
+                  value={boletim?.abastecimento_2}
+                  suffix=" L"
+                  className="!w-[114px]"
+                />
+              </Row>
+              <Row className="!gap-3">
+                <Checkbox
+                  label="Manutenção"
+                  name="manutencao"
+                  value={boletim?.manutencao}
+                  disabled={boletim?.manutencao}
+                />
+                <Checkbox
+                  label="Lubrificação"
+                  name="lubrificacao"
+                  value={boletim?.lubrificacao}
+                />
+                <Checkbox
+                  label="Limpeza"
+                  name="limpeza"
+                  value={boletim?.limpeza}
+                />
+              </Row>
+              <Row className="mt-2">
+                <Textarea
+                  name="descricao_manutencao"
+                  label="Descrição da Manutenção"
+                  defaultValue={boletim?.descricao_manutencao}
+                />
+              </Row>
             </div>
           </div>
-          <div className="w-full pl-4">
-            <Row>
-              <InputValue
-                type="IM"
-                name="abastecimento_1"
-                label="Abast. 1"
-                value={boletim?.abastecimento_1}
-                suffix=" L"
-                className="!w-[114px]"
-              />
-              <InputValue
-                type="IM"
-                name="abastecimento_2"
-                label="Abast. 2"
-                value={boletim?.abastecimento_2}
-                suffix=" L"
-                className="!w-[114px]"
-              />
-            </Row>
-            <Row className="!gap-3">
-              <Checkbox
-                label="Manutenção"
-                name="manutencao"
-                value={boletim?.manutencao}
-                disabled={boletim?.manutencao}
-              />
-              <Checkbox
-                label="Lubrificação"
-                name="lubrificacao"
-                value={boletim?.lubrificacao}
-              />
-              <Checkbox
-                label="Limpeza"
-                name="limpeza"
-                value={boletim?.limpeza}
-              />
-            </Row>
-            <Row className="mt-2">
-              <Textarea
-                name="descricao_manutencao"
-                label="Descrição da Manutenção"
-                defaultValue={boletim?.descricao_manutencao}
-              />
-            </Row>
-          </div>
-        </div>
+        )
       }
       footerSummary={
         <FooterSummary
           loggedInUser={loggedInUser}
           equipamento={equipamento}
-          firstHour={firstHour}
-          lastHour={lastHour}
-          IMInicio={IMInicio}
-          IMFinal={IMFinal}
+          firstHour={equipLogs[0]?.hora_inicio}
+          lastHour={equipLogs[equipLogs.length - 1]?.hora_final}
+          IMInicio={equipLogs[0]?.IM_inicio}
+          IMFinal={equipLogs[equipLogs.length - 1]?.IM_final}
         />
       }
       footerActions={
