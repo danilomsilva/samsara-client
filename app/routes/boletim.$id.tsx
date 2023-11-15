@@ -254,6 +254,7 @@ export async function action({ params, request }: ActionArgs) {
       manutencao: formData?.manutencao === 'on' ? true : false,
       lubrificacao: formData?.lubrificacao === 'on' ? true : false,
       limpeza: formData?.limpeza === 'on' ? true : false,
+      lastRowIMFinal: equipamento_logs[equipamento_logs?.length - 1]?.IM_final,
     };
 
     const boletim = await _createBoletim(userToken, body as Boletim);
@@ -278,6 +279,7 @@ export async function action({ params, request }: ActionArgs) {
       manutencao: formData?.manutencao === 'on' ? true : false,
       lubrificacao: formData?.lubrificacao === 'on' ? true : false,
       limpeza: formData?.limpeza === 'on' ? true : false,
+      lastRowIMFinal: equipamento_logs[equipamento_logs?.length - 1]?.IM_final,
     };
 
     const boletim = await _updateBoletim(
