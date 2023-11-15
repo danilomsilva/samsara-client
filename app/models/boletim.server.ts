@@ -1,5 +1,5 @@
 import type { User } from '~/session.server';
-import { formatDate, formatDateTime } from '~/utils/utils';
+import { formatDate, formatDateTime, removeIMSuffix } from '~/utils/utils';
 import {
   type Equipamento,
   getEquipamento,
@@ -161,10 +161,9 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
           Number(body?.abastecimento_2?.replace(' L', '')) || '0'
       } L`,
     };
-
     await updateBoletim(userToken, boletim.id, editBody);
     await updateEquipamento(userToken, boletim.equipamento, {
-      instrumento_medicao_atual: body?.lastRowIMFinal,
+      instrumento_medicao_atual: removeIMSuffix(body?.lastRowIMFinal as string),
     } as Equipamento);
     if (body?.manutencao) {
       await _createManutencao(userToken, {
@@ -173,7 +172,7 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
         data_manutencao: body?.data_boletim,
         feito_por: body?.operador,
         equipamento: body?.equipamento,
-        IM_atual: body?.lastRowIMFinal,
+        IM_atual: removeIMSuffix(body?.lastRowIMFinal as string),
         descricao: body?.descricao_manutencao,
       });
     }
@@ -239,7 +238,7 @@ export async function _updateBoletim(
 
     await updateBoletim(userToken, boletim.id, editBody);
     await updateEquipamento(userToken, boletim.equipamento, {
-      instrumento_medicao_atual: body?.lastRowIMFinal,
+      instrumento_medicao_atual: removeIMSuffix(body?.lastRowIMFinal as string),
     } as Equipamento);
 
     const manutencoes = await getManutencoes(userToken, 'created');
@@ -252,7 +251,7 @@ export async function _updateBoletim(
         data_manutencao: body?.data_boletim,
         feito_por: body?.operador,
         equipamento: body?.equipamento,
-        IM_atual: body?.lastRowIMFinal,
+        IM_atual: removeIMSuffix(body?.lastRowIMFinal as string),
         descricao: body?.descricao_manutencao,
       });
     } else if (body?.manutencao) {
@@ -262,7 +261,7 @@ export async function _updateBoletim(
         data_manutencao: body?.data_boletim,
         feito_por: body?.operador,
         equipamento: body?.equipamento,
-        IM_atual: body?.lastRowIMFinal,
+        IM_atual: removeIMSuffix(body?.lastRowIMFinal as string),
         descricao: body?.descricao_manutencao,
       });
     }

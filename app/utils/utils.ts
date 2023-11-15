@@ -104,7 +104,11 @@ export const normalizeString = (string: string) =>
     .toLowerCase();
 
 export const removeIMSuffix = (string: string) => {
-  return string?.replace(' h', '')?.replace(' km', '')?.replaceAll('.', '');
+  return string
+    ?.replace(' h', '')
+    ?.replace(' km', '')
+    ?.replaceAll('.', '')
+    .replaceAll(',', '.');
 };
 
 export const genCodigo = (array: any, prefixToOmit: string) => {

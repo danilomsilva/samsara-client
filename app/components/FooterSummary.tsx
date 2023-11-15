@@ -45,7 +45,9 @@ export default function FooterSummary({
             : 'IM'
         } Total`}
         value={
-          IMInicio && IMFinal ? String(Number(IMFinal) - Number(IMInicio)) : '-'
+          IMInicio && IMFinal
+            ? (Number(IMFinal) - Number(IMInicio)).toFixed(2)
+            : '-'
         }
       />
     </div>
