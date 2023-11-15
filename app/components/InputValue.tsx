@@ -53,7 +53,8 @@ export default function Input({
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
+    const newValue = e.target.value.replaceAll('.', '').replaceAll(',', '.');
+
     setInputValue(newValue);
     if (onChange) {
       onChange(newValue);
@@ -80,7 +81,7 @@ export default function Input({
           decimalSeparator=","
           allowNegative={false}
           fixedDecimalScale
-          decimalScale={0}
+          decimalScale={2}
           value={inputValue}
           suffix={suffix}
           readOnly={readOnly}

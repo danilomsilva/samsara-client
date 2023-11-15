@@ -34,12 +34,7 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import {
-  type Option,
-  COMBUSTIVEIS,
-  INSTRUMENTOS_MEDICAO,
-  CAMPO_OBRIGATORIO,
-} from '~/utils/consts';
+import { type Option, COMBUSTIVEIS, CAMPO_OBRIGATORIO } from '~/utils/consts';
 import {
   convertCurrencyStringToNumber,
   formatNumberWithDotDelimiter,
@@ -166,6 +161,7 @@ export async function action({ params, request }: ActionArgs) {
           +removeIMSuffix(formData.frequencia_revisao as string)
       ),
     };
+
     const equipamento = await _createEquipamento(userToken, body);
     if (equipamento.data) {
       setToastMessage(session, 'Erro', 'Código já está em uso!', 'error');

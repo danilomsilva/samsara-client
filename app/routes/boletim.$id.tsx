@@ -29,6 +29,7 @@ import {
   genCodigo,
   getCurrentDate,
   isTimeGreater,
+  removeIMSuffix,
 } from '~/utils/utils';
 import { useEffect, useState } from 'react';
 import { type Operador, getOperadores } from '~/models/operador.server';
@@ -241,6 +242,7 @@ export async function action({ params, request }: ActionArgs) {
         tipo_equipamento: errors.tipo_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
         invalidInput: errors?._errors[0],
+        descricao_manutencao: errors?._errors[0],
       },
     };
   }
@@ -338,12 +340,17 @@ export default function NewBoletim() {
       );
       setEquipamento(findEquip);
       const newEquipLogsMap = boletim?.equipamento_logs?.map((item) => {
+        const IM_inicio = removeIMSuffix(item.IM_inicio);
+        const IM_final = removeIMSuffix(item.IM_final);
         const isHoraValid = isTimeGreater(item.hora_inicio, item.hora_final);
-        const isIMValid = Number(item.IM_inicio) <= Number(item.IM_final);
+        const isIMValid = Number(IM_inicio) <= Number(IM_final);
+
         return {
           ...item,
-          isHoraValid: isHoraValid,
-          isIMValid: isIMValid,
+          IM_inicio,
+          IM_final,
+          isHoraValid,
+          isIMValid,
           isRowValid: isHoraValid && isIMValid,
         };
       });
@@ -403,8 +410,7 @@ export default function NewBoletim() {
 
     if (name === 'IM_inicio' || name === 'IM_final') {
       const { IM_inicio, IM_final } = logToUpdate;
-      logToUpdate.isIMValid =
-        IM_inicio && IM_final && Number(IM_inicio) <= Number(IM_final);
+      logToUpdate.isIMValid = Number(IM_inicio) <= Number(IM_final);
     }
 
     logToUpdate.isRowValid = logToUpdate.isHoraValid && logToUpdate.isIMValid;
@@ -618,7 +624,7 @@ export default function NewBoletim() {
                         }
                       />
                       <InputValue
-                        type="text"
+                        type="IM"
                         name={`IM_inicio_${index}`}
                         label={`${
                           equipamento?.instrumento_medicao
@@ -637,7 +643,7 @@ export default function NewBoletim() {
                         disabled
                       />
                       <InputValue
-                        type="text"
+                        type="IM"
                         name={`IM_final_${index}`}
                         label={`${
                           equipamento?.instrumento_medicao
@@ -725,6 +731,7 @@ export default function NewBoletim() {
                   name="descricao_manutencao"
                   label="Descrição da Manutenção"
                   defaultValue={boletim?.descricao_manutencao}
+                  error={actionData?.errors?.descricao_manutencao}
                 />
               </Row>
             </div>

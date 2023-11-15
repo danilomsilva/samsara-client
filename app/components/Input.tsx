@@ -69,7 +69,7 @@ export default function Input({
           decimalSeparator=","
           allowNegative={false}
           fixedDecimalScale
-          decimalScale={0}
+          decimalScale={2}
           defaultValue={defaultValue}
           suffix={suffix}
           readOnly={readOnly}
