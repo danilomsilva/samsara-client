@@ -240,6 +240,7 @@ export async function action({ params, request }: ActionArgs) {
         tipo_equipamento: errors.tipo_equipamento?._errors[0],
         operador: errors.operador?._errors[0],
         invalidInput: errors?._errors[0],
+        descricao_manutencao: errors?._errors[0],
       },
     };
   }
@@ -728,6 +729,7 @@ export default function NewBoletim() {
                   name="descricao_manutencao"
                   label="Descrição da Manutenção"
                   defaultValue={boletim?.descricao_manutencao}
+                  error={actionData?.errors?.descricao_manutencao}
                 />
               </Row>
             </div>

@@ -19,6 +19,7 @@ export default function FooterSummary({
   IMInicio,
   IMFinal,
 }: PropTypes) {
+  const suffix = equipamento?.instrumento_medicao === 'Odômetro' ? 'km' : 'h';
   return (
     <div className="flex gap-10 -mt-1">
       <PairLabelValue label="Obra" value={loggedInUser?.obraX ?? ''} />
@@ -36,7 +37,7 @@ export default function FooterSummary({
             ? equipamento?.instrumento_medicao
             : 'IM'
         } `}
-        value={`${IMInicio ?? '-'} / ${IMFinal ?? '-'}`}
+        value={`${IMInicio ?? '-'} / ${IMFinal ?? '-'} ${suffix}`}
       />
       <PairLabelValue
         label={`${
@@ -46,7 +47,7 @@ export default function FooterSummary({
         } Total`}
         value={
           IMInicio && IMFinal
-            ? (Number(IMFinal) - Number(IMInicio)).toFixed(2)
+            ? `${(Number(IMFinal) - Number(IMInicio)).toFixed(2)} ${suffix}`
             : '-'
         }
       />

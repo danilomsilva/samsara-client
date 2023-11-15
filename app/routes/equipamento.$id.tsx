@@ -83,8 +83,6 @@ export async function action({ params, request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  console.log('------------', formData);
-
   const genericSchema = {
     grupo_equipamento: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     tipo_equipamento: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
