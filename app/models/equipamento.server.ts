@@ -39,6 +39,7 @@ export type Equipamento = {
   frequencia_revisao?: string;
   proxima_revisao?: string;
   revisao_IM_inicio?: string;
+  revisao_status?: string;
   expand?: {
     obra: {
       nome: string;
@@ -147,6 +148,7 @@ export async function getEquipamentos(
       },
     });
     const data = await response.json();
+
     const transformedData = data.items.map((item: Equipamento) => ({
       id: item.id,
       created: item?.created && formatDateTime(item.created),
@@ -169,6 +171,7 @@ export async function getEquipamentos(
       instrumento_medicao_atual: item.instrumento_medicao_atual,
       frequencia_revisao: item.frequencia_revisao,
       proxima_revisao: item.proxima_revisao,
+      revisao_status: Number(item.revisao_status).toFixed(2),
     }));
     return transformedData;
   } catch (error) {
@@ -212,9 +215,25 @@ export async function _createEquipamento(
       equipamento.encarregado
     );
 
+    // REVISAO CALCULATIONS
+    const differencePercentage =
+      ((Number(equipamento?.proxima_revisao) -
+        Number(equipamento.instrumento_medicao_atual)) /
+        Number(equipamento?.proxima_revisao)) *
+      100;
+
+    // Determine the color based on the percentage
+    // const colorToRender =
+    //   differencePercentage < 20
+    //     ? 'red'
+    //     : differencePercentage >= 20 && differencePercentage < 40
+    //     ? 'orange'
+    //     : 'green';
+
     const editBody = {
       obraX: nome,
       encarregadoX: nome_completo,
+      revisao_status: differencePercentage,
     };
 
     await updateEquipamento(userToken, equipamento.id, editBody);

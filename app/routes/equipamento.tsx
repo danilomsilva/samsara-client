@@ -106,6 +106,7 @@ export default function EquipamentoPage() {
   const formattedEquipamentos: Equipamento[] = equipamentos.map((item) => {
     const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
     const suffix = isHorimetro ? ' h' : ' Km';
+
     return {
       ...item,
       combustivel: item.combustivel?.replaceAll('_', ' '),
@@ -141,6 +142,7 @@ export default function EquipamentoPage() {
     { key: 'instrumento_medicao_atual', label: 'IM Atual' },
     { key: 'frequencia_revisao', label: 'Revisão' },
     { key: 'proxima_revisao', label: 'Próx. Revisão' },
+    { key: 'revisao_status', label: 'Revisão' },
   ];
 
   return (
