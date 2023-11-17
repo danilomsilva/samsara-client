@@ -13,7 +13,7 @@ import {
   useNavigate,
   useSearchParams,
 } from '@remix-run/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
@@ -36,6 +36,7 @@ import {
 } from '~/session.server';
 import { formatNumberWithDotDelimiter } from '~/utils/utils';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
+import CogIcon from '~/components/icons/CogIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -45,6 +46,7 @@ export const meta: V2_MetaFunction = () => {
 export async function loader({ request }: LoaderArgs) {
   const { userToken, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
+  const filter = searchParams.get('filter');
   const sortParam = searchParams.get('sort');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
@@ -52,9 +54,19 @@ export async function loader({ request }: LoaderArgs) {
 
   //encarregado do not have access to table manutencao
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const manutencoes = await getManutencoes(userToken, sortingBy);
-    const equipamentos = await getEquipamentos(userToken, 'created');
-    return json({ manutencoes, equipamentos });
+    if (filter === 'revisao') {
+      const allManutencoes = await getManutencoes(userToken, sortingBy);
+      const manutencoes = allManutencoes.filter(
+        (item: Manutencao) => item.tipo_manutencao === 'Revisão'
+      );
+
+      const equipamentos = await getEquipamentos(userToken, 'created');
+      return json({ manutencoes, equipamentos });
+    } else {
+      const manutencoes = await getManutencoes(userToken, sortingBy);
+      const equipamentos = await getEquipamentos(userToken, 'created');
+      return json({ manutencoes, equipamentos });
+    }
   } else {
     throw json('Acesso proibido', { status: 403 });
   }
@@ -106,9 +118,14 @@ export default function ManutencaoPage() {
   }: { manutencoes: Manutencao[]; equipamentos: Equipamento[] } =
     useLoaderData();
   const navigate = useNavigate();
-  const { selectedRow } = useSelectRow() as UseSelectedRow;
+  const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
   const [searchParams] = useSearchParams();
+  const param = searchParams.get('param');
   const filter = searchParams.get('filter');
+
+  useEffect(() => {
+    setSelectedRow('');
+  }, [param, filter, setSelectedRow]);
 
   const handleCloseModal = () => {
     navigate('/manutencao');
@@ -128,10 +145,10 @@ export default function ManutencaoPage() {
         )} ${suffix}`,
       };
     })
-    .filter((manutecao) => !filter || manutecao.equipamento === filter);
+    .filter((manutecao) => !param || manutecao.equipamento === param);
 
   const equipamento = equipamentos?.find(
-    (equip: Equipamento) => equip.id === filter
+    (equip: Equipamento) => equip.id === param
   );
 
   const tableHeaders = [
@@ -148,15 +165,26 @@ export default function ManutencaoPage() {
     <>
       <div className="flex justify-between items-end">
         <div className="flex gap-2">
-          {filter && <Link to="/equipamento">Lista de Equipamentos</Link>}
-          {filter && '/'}
+          {param && <Link to="/equipamento">Lista de Equipamentos</Link>}
+          {param && '/'}
           <h1 className="font-semibold">
-            {filter
+            {param
               ? `Histórico de Manutenções (${equipamento?.codigo} - ${equipamento?.tipo_equipamentoX})`
               : 'Lista de Manutenções'}
           </h1>
         </div>
         <div className="flex gap-4">
+          <LinkButton
+            to={`${
+              filter === 'revisao'
+                ? '/manutencao'
+                : '/manutencao?filter=revisao'
+            }`}
+            variant="grey"
+            icon={<CogIcon />}
+          >
+            {filter === 'revisao' ? 'Lista Completa' : 'Apenas Revisões'}
+          </LinkButton>
           {selectedRow ? (
             <>
               <LinkButton

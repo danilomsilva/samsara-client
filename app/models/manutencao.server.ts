@@ -1,6 +1,6 @@
 import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
-import { getEquipamento } from './equipamento.server';
+import { _updateEquipamento, getEquipamento } from './equipamento.server';
 import { getOperador } from './operador.server';
 import {
   type Boletim,
@@ -54,7 +54,7 @@ export async function getManutencoes(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -86,7 +86,7 @@ export async function getManutencao(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -113,6 +113,19 @@ export async function _createManutencao(
     encarregadoX: operador.encarregadoX,
   };
   await updateManutencao(userToken, manutencao.id, editBody);
+  //will update equipamento to reset IM and revisao calcs
+  if (body?.tipo_manutencao === 'Revisão') {
+    const equipBody = {
+      ...equipamento,
+      proxima_revisao:
+        equipamento.instrumento_medicao_atual + equipamento.frequencia_revisao,
+      revisao_status:
+        Number(equipamento?.proxima_revisao) -
+        (Number(equipamento?.instrumento_medicao_atual) * 100) /
+          Number(equipamento?.frequencia_revisao),
+    };
+    await _updateEquipamento(userToken, equipamento.id, equipBody);
+  }
   return manutencao;
 }
 
@@ -127,7 +140,7 @@ export async function createManutencao(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -180,7 +193,7 @@ export async function updateManutencao(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -214,7 +227,7 @@ export async function deleteManutencao(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

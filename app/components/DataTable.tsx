@@ -74,6 +74,15 @@ export default function DataTable({
                     onClick={() => setSelectedRow(row.id)}
                   >
                     {columnNames.map((columnName, i) => {
+                      const revisaoStatusColor =
+                        columnName === 'revisao_status' && row[columnName] < 20
+                          ? 'red'
+                          : row[columnName] >= 20 &&
+                            row[columnName] &&
+                            row[columnName] < 40
+                          ? 'orange'
+                          : 'green';
+
                       if (
                         columnName !== 'id' &&
                         row.hasOwnProperty(columnName)
@@ -95,6 +104,14 @@ export default function DataTable({
                                     <InfoIcon className="h-7 w-7 text-orange" />
                                   </Tooltip>
                                 </div>
+                              ) : path === '/equipamento' &&
+                                columnName === 'revisao_status' ? (
+                                <Link
+                                  to={`/manutencao/new?equip=${row.codigo}`}
+                                  className={`bg-${revisaoStatusColor} w-fit rounded-lg px-2 py-1 text-white font-semibold items-center justify-center mr-1 whitespace-nowrap`}
+                                >
+                                  {row[columnName]} %
+                                </Link>
                               ) : columnName === 'boletim' &&
                                 path === '/manutencao' &&
                                 row[columnName] !== '-' ? (

@@ -39,6 +39,7 @@ export type Equipamento = {
   frequencia_revisao?: string;
   proxima_revisao?: string;
   revisao_IM_inicio?: string;
+  revisao_status?: number;
   expand?: {
     obra: {
       nome: string;
@@ -147,6 +148,7 @@ export async function getEquipamentos(
       },
     });
     const data = await response.json();
+
     const transformedData = data.items.map((item: Equipamento) => ({
       id: item.id,
       created: item?.created && formatDateTime(item.created),
@@ -169,7 +171,9 @@ export async function getEquipamentos(
       instrumento_medicao_atual: item.instrumento_medicao_atual,
       frequencia_revisao: item.frequencia_revisao,
       proxima_revisao: item.proxima_revisao,
+      revisao_status: Number(item.revisao_status).toFixed(2),
     }));
+
     return transformedData;
   } catch (error) {
     throw new Error('An error occured while getting equipamentos');
@@ -212,9 +216,18 @@ export async function _createEquipamento(
       equipamento.encarregado
     );
 
+    // REVISAO CALCULATIONS
+
+    const differencePercentage =
+      ((Number(equipamento?.proxima_revisao) -
+        Number(equipamento?.instrumento_medicao_atual)) *
+        100) /
+      Number(equipamento?.frequencia_revisao);
+
     const editBody = {
       obraX: nome,
       encarregadoX: nome_completo,
+      revisao_status: Number(differencePercentage).toFixed(2),
     };
 
     await updateEquipamento(userToken, equipamento.id, editBody);
@@ -264,11 +277,32 @@ export async function _updateEquipamento(
     userToken,
     equipamento.encarregado
   );
-  const editBody = {
-    obraX: nome,
-    encarregadoX: nome_completo,
-  };
-  await updateEquipamento(userToken, equipamento.id, editBody);
+
+  const differencePercentage =
+    ((Number(equipamento?.proxima_revisao) -
+      Number(body?.instrumento_medicao_atual)) *
+      100) /
+    Number(body?.frequencia_revisao);
+
+  if (equipamento?.frequencia_revisao === Number(body?.frequencia_revisao)) {
+    const editBody = {
+      obraX: nome,
+      encarregadoX: nome_completo,
+      revisao_status: differencePercentage.toFixed(2),
+    };
+    await updateEquipamento(userToken, equipamento.id, editBody);
+  } else {
+    const editBody = {
+      obraX: nome,
+      encarregadoX: nome_completo,
+      proxima_revisao:
+        Number(body?.frequencia_revisao) +
+        Number(body?.instrumento_medicao_atual),
+      revisao_status: differencePercentage.toFixed(2),
+    };
+    await updateEquipamento(userToken, equipamento.id, editBody);
+  }
+
   return equipamento;
 }
 

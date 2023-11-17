@@ -225,8 +225,11 @@ export async function action({ params, request }: ActionArgs) {
         frequencia_revisao: removeIMSuffix(
           formData.frequencia_revisao as string
         ),
-        proxima_revisao: equipamento.proxima_revisao,
+        proxima_revisao: String(
+          Number(removeIMSuffix(formData?.proxima_revisao as string))
+        ),
       };
+
       await _updateEquipamento(
         userToken,
         params.id as string,
@@ -464,6 +467,7 @@ export default function NewEquipamento() {
                 defaultValue={equipamento?.proxima_revisao}
                 error={actionData?.errors?.proxima_revisao}
                 suffix={selectedIMSuffix}
+                disabled
               />
             )}
           </Row>
