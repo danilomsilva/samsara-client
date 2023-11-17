@@ -219,9 +219,10 @@ export async function _createEquipamento(
     // REVISAO CALCULATIONS
 
     const differencePercentage =
-      Number(equipamento?.proxima_revisao) -
-      (Number(equipamento?.instrumento_medicao_atual) * 100) /
-        Number(equipamento?.frequencia_revisao);
+      ((Number(equipamento?.proxima_revisao) -
+        Number(equipamento?.instrumento_medicao_atual)) *
+        100) /
+      Number(equipamento?.frequencia_revisao);
 
     const editBody = {
       obraX: nome,
@@ -279,17 +280,29 @@ export async function _updateEquipamento(
 
   const differencePercentage =
     ((Number(equipamento?.proxima_revisao) -
-      Number(equipamento?.instrumento_medicao_atual)) *
+      Number(body?.instrumento_medicao_atual)) *
       100) /
-    Number(equipamento?.frequencia_revisao);
+    Number(body?.frequencia_revisao);
 
-  const editBody = {
-    obraX: nome,
-    encarregadoX: nome_completo,
-    revisao_status: differencePercentage.toFixed(2),
-  };
+  if (equipamento?.frequencia_revisao === Number(body?.frequencia_revisao)) {
+    const editBody = {
+      obraX: nome,
+      encarregadoX: nome_completo,
+      revisao_status: differencePercentage.toFixed(2),
+    };
+    await updateEquipamento(userToken, equipamento.id, editBody);
+  } else {
+    const editBody = {
+      obraX: nome,
+      encarregadoX: nome_completo,
+      proxima_revisao:
+        Number(body?.frequencia_revisao) +
+        Number(body?.instrumento_medicao_atual),
+      revisao_status: differencePercentage.toFixed(2),
+    };
+    await updateEquipamento(userToken, equipamento.id, editBody);
+  }
 
-  await updateEquipamento(userToken, equipamento.id, editBody);
   return equipamento;
 }
 

@@ -467,6 +467,7 @@ export default function NewEquipamento() {
                 defaultValue={equipamento?.proxima_revisao}
                 error={actionData?.errors?.proxima_revisao}
                 suffix={selectedIMSuffix}
+                disabled
               />
             )}
           </Row>

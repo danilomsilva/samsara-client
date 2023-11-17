@@ -161,9 +161,15 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
           Number(body?.abastecimento_2?.replace(' L', '')) || '0'
       } L`,
     };
+
     await updateBoletim(userToken, boletim.id, editBody);
     await updateEquipamento(userToken, boletim.equipamento, {
       instrumento_medicao_atual: removeIMSuffix(body?.lastRowIMFinal as string),
+      revisao_status:
+        ((Number(equipamento?.proxima_revisao) -
+          Number(removeIMSuffix(body?.lastRowIMFinal as string))) *
+          100) /
+        Number(equipamento?.frequencia_revisao),
     } as Equipamento);
     if (body?.manutencao) {
       await _createManutencao(userToken, {
@@ -239,6 +245,11 @@ export async function _updateBoletim(
     await updateBoletim(userToken, boletim.id, editBody);
     await updateEquipamento(userToken, boletim.equipamento, {
       instrumento_medicao_atual: removeIMSuffix(body?.lastRowIMFinal as string),
+      revisao_status:
+        ((Number(equipamento?.proxima_revisao) -
+          Number(removeIMSuffix(body?.lastRowIMFinal as string))) *
+          100) /
+        Number(equipamento?.frequencia_revisao),
     } as Equipamento);
 
     const manutencoes = await getManutencoes(userToken, 'created');

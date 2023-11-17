@@ -13,7 +13,7 @@ import {
   useNavigate,
   useSearchParams,
 } from '@remix-run/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
@@ -118,10 +118,14 @@ export default function ManutencaoPage() {
   }: { manutencoes: Manutencao[]; equipamentos: Equipamento[] } =
     useLoaderData();
   const navigate = useNavigate();
-  const { selectedRow } = useSelectRow() as UseSelectedRow;
+  const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
   const [searchParams] = useSearchParams();
   const param = searchParams.get('param');
   const filter = searchParams.get('filter');
+
+  useEffect(() => {
+    setSelectedRow('');
+  }, [param, filter, setSelectedRow]);
 
   const handleCloseModal = () => {
     navigate('/manutencao');
