@@ -95,6 +95,9 @@ export default function DataTable({
                                     <InfoIcon className="h-7 w-7 text-orange" />
                                   </Tooltip>
                                 </div>
+                              ) : path === '/equipamento' &&
+                                columnName === 'revisao_status' ? (
+                                row[columnName]
                               ) : columnName === 'boletim' &&
                                 path === '/manutencao' &&
                                 row[columnName] !== '-' ? (

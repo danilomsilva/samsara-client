@@ -74,7 +74,7 @@ export async function getGruposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -107,7 +107,7 @@ export async function getTiposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -144,7 +144,7 @@ export async function getEquipamentos(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -190,7 +190,7 @@ export async function getEquipamento(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -222,14 +222,6 @@ export async function _createEquipamento(
         Number(equipamento?.proxima_revisao)) *
       100;
 
-    // Determine the color based on the percentage
-    // const colorToRender =
-    //   differencePercentage < 20
-    //     ? 'red'
-    //     : differencePercentage >= 20 && differencePercentage < 40
-    //     ? 'orange'
-    //     : 'green';
-
     const editBody = {
       obraX: nome,
       encarregadoX: nome_completo,
@@ -259,7 +251,7 @@ export async function createEquipamento(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
+            'Authorization': `Bearer ${userToken}`,
           },
           body: JSON.stringify(body),
         }
@@ -283,10 +275,13 @@ export async function _updateEquipamento(
     userToken,
     equipamento.encarregado
   );
+
   const editBody = {
     obraX: nome,
     encarregadoX: nome_completo,
+    // revisao_status: differencePercentage,
   };
+
   await updateEquipamento(userToken, equipamento.id, editBody);
   return equipamento;
 }
@@ -303,7 +298,7 @@ export async function updateEquipamento(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -326,7 +321,7 @@ export async function deleteEquipamento(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

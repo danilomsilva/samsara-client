@@ -129,6 +129,7 @@ export default function EquipamentoPage() {
       } ${suffix}`,
     };
   });
+  console.log(formattedEquipamentos);
 
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
