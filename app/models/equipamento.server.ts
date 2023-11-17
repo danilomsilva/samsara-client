@@ -39,7 +39,7 @@ export type Equipamento = {
   frequencia_revisao?: string;
   proxima_revisao?: string;
   revisao_IM_inicio?: string;
-  revisao_status?: string;
+  revisao_status?: number;
   expand?: {
     obra: {
       nome: string;
@@ -74,7 +74,7 @@ export async function getGruposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -107,7 +107,7 @@ export async function getTiposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -144,7 +144,7 @@ export async function getEquipamentos(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -173,6 +173,7 @@ export async function getEquipamentos(
       proxima_revisao: item.proxima_revisao,
       revisao_status: Number(item.revisao_status).toFixed(2),
     }));
+
     return transformedData;
   } catch (error) {
     throw new Error('An error occured while getting equipamentos');
@@ -190,7 +191,7 @@ export async function getEquipamento(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -216,16 +217,16 @@ export async function _createEquipamento(
     );
 
     // REVISAO CALCULATIONS
+
     const differencePercentage =
-      ((Number(equipamento?.proxima_revisao) -
-        Number(equipamento.instrumento_medicao_atual)) /
-        Number(equipamento?.proxima_revisao)) *
-      100;
+      Number(equipamento?.proxima_revisao) -
+      (Number(equipamento?.instrumento_medicao_atual) * 100) /
+        Number(equipamento?.frequencia_revisao);
 
     const editBody = {
       obraX: nome,
       encarregadoX: nome_completo,
-      revisao_status: differencePercentage,
+      revisao_status: Number(differencePercentage).toFixed(2),
     };
 
     await updateEquipamento(userToken, equipamento.id, editBody);
@@ -251,7 +252,7 @@ export async function createEquipamento(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`,
+            Authorization: `Bearer ${userToken}`,
           },
           body: JSON.stringify(body),
         }
@@ -276,10 +277,16 @@ export async function _updateEquipamento(
     equipamento.encarregado
   );
 
+  const differencePercentage =
+    ((Number(equipamento?.proxima_revisao) -
+      Number(equipamento?.instrumento_medicao_atual)) *
+      100) /
+    Number(equipamento?.frequencia_revisao);
+
   const editBody = {
     obraX: nome,
     encarregadoX: nome_completo,
-    // revisao_status: differencePercentage,
+    revisao_status: differencePercentage.toFixed(2),
   };
 
   await updateEquipamento(userToken, equipamento.id, editBody);
@@ -298,7 +305,7 @@ export async function updateEquipamento(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -321,7 +328,7 @@ export async function deleteEquipamento(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
