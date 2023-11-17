@@ -295,7 +295,7 @@ export async function action({ params, request }: ActionArgs) {
     if (boletim.data) {
       return json({ error: boletim.data });
     }
-    setToastMessage(session, 'Sucesso', 'Boletim adicionado!', 'success');
+    setToastMessage(session, 'Sucesso', 'Boletim editado!', 'success');
     return redirect('/boletim', {
       headers: {
         'Set-Cookie': await commitSession(session),
