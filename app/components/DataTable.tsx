@@ -107,7 +107,7 @@ export default function DataTable({
                               ) : path === '/equipamento' &&
                                 columnName === 'revisao_status' ? (
                                 <Link
-                                  to={`/manutencao/new/equip=${row.codigo}`}
+                                  to={`/manutencao/new?equip=${row.codigo}`}
                                   className={`bg-${revisaoStatusColor} w-fit rounded-lg px-2 py-1 text-white font-semibold items-center justify-center mr-1 whitespace-nowrap`}
                                 >
                                   {row[columnName]} %

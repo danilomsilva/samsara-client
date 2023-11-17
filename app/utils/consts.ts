@@ -31,4 +31,8 @@ export const TIPOS_MANUTENCAO: Option[] = [
   { name: 'Completa', displayName: 'Completa' },
 ];
 
+export const TIPOS_REVISAO: Option[] = [
+  { name: 'Revisão', displayName: 'Revisão' },
+];
+
 export const CAMPO_OBRIGATORIO = { message: 'Campo obrigatório' };

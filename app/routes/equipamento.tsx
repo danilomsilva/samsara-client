@@ -154,7 +154,7 @@ export default function EquipamentoPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`/manutencao?filter=${selectedRow}`}
+                to={`/manutencao?param=${selectedRow}`}
                 variant="blue"
                 icon={<ListIcon />}
               >

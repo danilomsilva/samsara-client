@@ -9,6 +9,7 @@ import {
   useActionData,
   useLoaderData,
   useNavigation,
+  useSearchParams,
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
@@ -42,6 +43,7 @@ import {
   type Option,
   CAMPO_OBRIGATORIO,
   TIPOS_MANUTENCAO,
+  TIPOS_REVISAO,
 } from '~/utils/consts';
 import {
   convertDateToISO,
@@ -54,10 +56,26 @@ import {
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
+  const { searchParams } = new URL(request.url);
+  const equipCodigo = searchParams.get('equip');
 
   if (params.id === 'new') {
     const operadores = await getOperadores(userToken, 'created');
     const equipamentos = await getEquipamentos(userToken, 'created');
+    if (equipCodigo) {
+      const findEquip = equipamentos.find(
+        (item: Equipamento) => item.codigo === equipCodigo
+      );
+      return json({
+        operadores,
+        equipamentos,
+        equipamento: {
+          name: findEquip?.id,
+          displayName: `${findEquip?.codigo} - ${findEquip?.tipo_equipamentoX}`,
+          IM_atual: findEquip?.instrumento_medicao_atual,
+        },
+      });
+    }
     return json({ operadores, equipamentos });
   } else {
     const operadores = await getOperadores(userToken, 'created');
@@ -141,14 +159,22 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewOperador() {
-  const { manutencao, operadores, equipamentos } = useLoaderData();
+  const {
+    manutencao,
+    operadores,
+    equipamentos,
+    equipamento: paramEquipamento,
+  } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
+  const [searchParams] = useSearchParams();
+  const equip = searchParams.get('equip');
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
   const [selectedEquipamento, setSelectedEquipamento] = useState<Option | null>(
     null
   );
+
   const [equipamento, setEquipamento] = useState<Equipamento>(
     manutencao?.expand?.equipamento
   );
@@ -201,18 +227,30 @@ export default function NewOperador() {
 
   return (
     <Modal
-      title={`${manutencao ? 'Editar' : 'Adicionar'} Manutenção`}
+      title={`${manutencao ? 'Editar' : 'Adicionar'} ${
+        equip ? 'Revisão' : 'Manutenção'
+      }`}
       variant={manutencao ? 'grey' : 'blue'}
       content={
         <>
           <Row>
-            <RadioOptions
-              name="tipo_manutencao"
-              label="Tipo de Manutenção:"
-              options={TIPOS_MANUTENCAO}
-              defaultValue={manutencao?.tipo_manutencao}
-              disabled={manutencao && manutencao?.boletim !== '-'}
-            />
+            {equip ? (
+              <RadioOptions
+                name="tipo_manutencao"
+                label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
+                options={TIPOS_REVISAO}
+                defaultValue="Revisão"
+                disabled={manutencao && manutencao?.boletim !== '-'}
+              />
+            ) : (
+              <RadioOptions
+                name="tipo_manutencao"
+                label="Tipo de Manutenção:"
+                options={TIPOS_MANUTENCAO}
+                defaultValue={manutencao?.tipo_manutencao}
+                disabled={manutencao && manutencao?.boletim !== '-'}
+              />
+            )}
           </Row>
           <Row>
             <InputMask
@@ -243,11 +281,17 @@ export default function NewOperador() {
               name="equipamento"
               options={sortedEquipamentos}
               label="Código do Equipamento"
-              defaultValue={manutencao?.equipamento}
+              defaultValue={
+                paramEquipamento
+                  ? paramEquipamento.name
+                  : manutencao?.equipamento
+              }
               placeholder="-"
               error={actionData?.errors?.equipamento}
               onChange={setSelectedEquipamento}
-              disabled={manutencao && manutencao?.boletim !== '-'}
+              disabled={
+                (manutencao && manutencao?.boletim !== '-') || paramEquipamento
+              }
             />
             <Input
               type="IM"
@@ -256,10 +300,16 @@ export default function NewOperador() {
                 equipamento ? equipamento?.instrumento_medicao : 'Horím./Odôm.'
               }`}
               className="!w-[130px]"
-              defaultValue={manutencao?.IM_atual}
+              defaultValue={
+                paramEquipamento
+                  ? paramEquipamento?.IM_atual
+                  : manutencao?.IM_atual
+              }
               error={actionData?.errors?.IM_atual}
               suffix={selectedIMSuffix}
-              disabled={manutencao && manutencao?.boletim !== '-'}
+              disabled={
+                (manutencao && manutencao?.boletim !== '-') || paramEquipamento
+              }
             />
           </Row>
           <Row>
