@@ -69,6 +69,7 @@ export async function getManutencoes(
       equipamento: item?.equipamento,
       equipamentoX: item.equipamentoX,
       encarregadoX: item.encarregadoX,
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

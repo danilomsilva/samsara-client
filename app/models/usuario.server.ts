@@ -58,6 +58,7 @@ export async function getUsuarios(
       email: item.email,
       tipo_acesso: item.tipo_acesso,
       obraX: item.obraX,
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

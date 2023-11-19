@@ -58,6 +58,7 @@ export async function getOperadores(
       obraX: item?.obraX,
       encarregado: item?.expand?.encarregado,
       encarregadoX: item?.encarregadoX,
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

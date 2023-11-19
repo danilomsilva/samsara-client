@@ -17,8 +17,8 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
 import {
   type Operador,
-  deleteOperador,
   getOperadores,
+  updateOperador,
 } from '~/models/operador.server';
 import {
   commitSession,
@@ -55,27 +55,11 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  if (formData?._action === 'delete') {
-    try {
-      const operador = await deleteOperador(
-        userToken,
-        formData.userId as string
-      );
-      if (operador.message && operador.message.includes('required relation')) {
-        setToastMessage(
-          session,
-          'Erro',
-          'Operador está vinculado à algum outro campo e não pode ser removido.',
-          'error'
-        );
-        return redirect('/operador', {
-          headers: {
-            'Set-Cookie': await commitSession(session),
-          },
-        });
-      }
-    } catch (error) {}
-    setToastMessage(session, 'Sucesso', 'Operador removido!', 'success');
+  if (formData?._action === 'desativar') {
+    await updateOperador(userToken, formData.operadorId as string, {
+      inativo: true,
+    });
+    setToastMessage(session, 'Sucesso', 'Operador desativado!', 'success');
     return redirect('/operador', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -96,7 +80,7 @@ export default function OperadorPage() {
     setModalOpen(false);
   };
 
-  const deletingOperador = operadores.find(
+  const selectedOperador = operadores.find(
     (operador) => operador?.id === selectedRow
   );
 
@@ -124,7 +108,7 @@ export default function OperadorPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Remover"
+                text="Desativar"
                 variant="red"
                 icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
@@ -148,18 +132,22 @@ export default function OperadorPage() {
       {/* delete modal */}
       {isModalOpen && (
         <Modal
-          title="Remover Operador"
+          title="Desativar Operador"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir o operador ${deletingOperador?.nome_completo} ?`}
+          content={`Deseja desativar o operador ${selectedOperador?.nome_completo} ?`}
           footerActions={
             <Form method="post">
-              <input type="hidden" name="userId" value={selectedRow || ''} />
+              <input
+                type="hidden"
+                name="operadorId"
+                value={selectedRow || ''}
+              />
               <Button
                 name="_action"
-                value="delete"
+                value="desativar"
                 variant="red"
-                text="Remover"
+                text="Desativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

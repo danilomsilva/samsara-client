@@ -5,13 +5,7 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -24,7 +18,7 @@ import Add from '~/components/icons/PlusCircleIcon';
 import {
   type Usuario,
   getUsuarios,
-  deleteUsuario,
+  updateUsuario,
 } from '~/models/usuario.server';
 import {
   commitSession,
@@ -61,24 +55,11 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  if (formData?._action === 'delete') {
-    try {
-      const usuario = await deleteUsuario(userToken, formData.userId as string);
-      if (usuario.message && usuario.message.includes('required relation')) {
-        setToastMessage(
-          session,
-          'Erro',
-          'Usuário está vinculado à algum outro campo e não pode ser removido.',
-          'error'
-        );
-        return redirect('/usuario', {
-          headers: {
-            'Set-Cookie': await commitSession(session),
-          },
-        });
-      }
-    } catch (error) {}
-    setToastMessage(session, 'Sucesso', 'Usuário removido!', 'success');
+  if (formData?._action === 'desativar') {
+    await updateUsuario(userToken, formData.userId as string, {
+      inativo: true,
+    });
+    setToastMessage(session, 'Sucesso', 'Usuário desativado!', 'success');
     return redirect('/usuario', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -99,7 +80,7 @@ export default function UsuarioPage() {
     setModalOpen(false);
   };
 
-  const deletingUsuario = usuarios.find(
+  const selectedUsuario = usuarios.find(
     (usuario) => usuario?.id === selectedRow
   );
 
@@ -133,7 +114,7 @@ export default function UsuarioPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Remover"
+                text="Desativar"
                 variant="red"
                 icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
@@ -157,18 +138,18 @@ export default function UsuarioPage() {
       {/* delete modal */}
       {isModalOpen && (
         <Modal
-          title="Remover Usuário"
+          title="Desativar Usuário"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir o usuário ${deletingUsuario?.nome_completo} ?`}
+          content={`Deseja desativar o usuário ${selectedUsuario?.nome_completo} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="userId" value={selectedRow || ''} />
               <Button
                 name="_action"
-                value="delete"
+                value="desativar"
                 variant="red"
-                text="Remover"
+                text="Desativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

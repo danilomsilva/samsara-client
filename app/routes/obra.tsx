@@ -76,7 +76,7 @@ export default function ObrasPage() {
     setModalOpen(false);
   };
 
-  const deactivatingObra = obras.find((obra) => obra?.id === selectedRow);
+  const selectedObra = obras.find((obra) => obra?.id === selectedRow);
 
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
@@ -134,7 +134,7 @@ export default function ObrasPage() {
           title="Desativar Obra"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja desativar a obra ${deactivatingObra?.nome} ?`}
+          content={`Deseja desativar a obra ${selectedObra?.nome} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="obraId" value={selectedRow || ''} />

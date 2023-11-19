@@ -36,6 +36,7 @@ export async function getOperacoes(
       created: item?.created && formatDateTime(item.created),
       codigo: item.codigo,
       descricao: item.descricao,
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

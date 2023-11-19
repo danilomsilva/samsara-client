@@ -104,6 +104,7 @@ export async function getBoletins(
         manutencao: item?.manutencao,
         lubrificacao: item?.lubrificacao,
         limpeza: item?.limpeza,
+        inativo: item?.inativo,
       };
     });
 
