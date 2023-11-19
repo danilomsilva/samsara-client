@@ -54,6 +54,7 @@ export type Equipamento = {
       grupo_nome: string;
     };
   };
+  inativo?: boolean;
 };
 export async function getGruposEquipamento(
   userToken: User['token'],

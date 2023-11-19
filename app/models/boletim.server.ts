@@ -55,6 +55,7 @@ export type Boletim = {
   lastRowIMFinal?: string;
   total_abastecimento?: string;
   descricao_manutencao?: string;
+  inativo?: boolean;
 };
 
 export async function getBoletins(

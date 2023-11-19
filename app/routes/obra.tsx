@@ -15,7 +15,7 @@ import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import { type Obra, deleteObra, getObras } from '~/models/obra.server';
+import { type Obra, getObras, updateObra } from '~/models/obra.server';
 import {
   commitSession,
   getSession,
@@ -52,24 +52,9 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  if (formData?._action === 'delete') {
-    try {
-      const obra = await deleteObra(userToken, formData.obraId as string);
-      if (obra.message && obra.message.includes('required relation')) {
-        setToastMessage(
-          session,
-          'Erro',
-          'Obra está vinculado à algum outro campo e não pode ser removido.',
-          'error'
-        );
-        return redirect('/obra', {
-          headers: {
-            'Set-Cookie': await commitSession(session),
-          },
-        });
-      }
-    } catch (error) {}
-    setToastMessage(session, 'Sucesso', 'Obra removida!', 'success');
+  if (formData?._action === 'desativar') {
+    await updateObra(userToken, formData.obraId as string, { inativo: true });
+    setToastMessage(session, 'Sucesso', 'Obra desativada!', 'success');
     return redirect('/obra', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -91,7 +76,7 @@ export default function ObrasPage() {
     setModalOpen(false);
   };
 
-  const deletingObra = obras.find((obra) => obra?.id === selectedRow);
+  const deactivatingObra = obras.find((obra) => obra?.id === selectedRow);
 
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
@@ -116,7 +101,7 @@ export default function ObrasPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Remover"
+                text="Desativar"
                 variant="red"
                 icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
@@ -146,18 +131,18 @@ export default function ObrasPage() {
       {/* delete modal */}
       {isModalOpen && (
         <Modal
-          title="Remover Obra"
+          title="Desativar Obra"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir a obra ${deletingObra?.nome} ?`}
+          content={`Deseja desativar a obra ${deactivatingObra?.nome} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="obraId" value={selectedRow || ''} />
               <Button
                 name="_action"
-                value="delete"
+                value="desativar"
                 variant="red"
-                text="Remover"
+                text="Desativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

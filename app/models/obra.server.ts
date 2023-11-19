@@ -8,6 +8,7 @@ export type Obra = {
   data_inicio?: string;
   id?: string;
   nome?: string;
+  inativo?: boolean;
 };
 
 export async function getObras(
@@ -40,6 +41,7 @@ export async function getObras(
       data_inicio: item?.data_inicio && formatDate(item.data_inicio),
       data_final_previsto:
         item?.data_final_previsto && formatDate(item.data_final_previsto),
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

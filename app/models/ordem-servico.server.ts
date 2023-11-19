@@ -6,6 +6,7 @@ export type OS = {
   created?: string;
   codigo?: string;
   descricao?: string;
+  inativo?: boolean;
 };
 
 export async function getOSs(

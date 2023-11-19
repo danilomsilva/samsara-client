@@ -22,6 +22,7 @@ export type Usuario = {
   };
   obra?: any;
   obraX?: string;
+  inativo?: boolean;
 };
 
 // if valid will retrieve jwt token and user data

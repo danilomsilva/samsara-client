@@ -6,6 +6,7 @@ export type Operacao = {
   created?: string;
   codigo?: string;
   descricao?: string;
+  inativo?: boolean;
 };
 
 export async function getOperacoes(
