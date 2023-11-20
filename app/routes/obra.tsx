@@ -24,6 +24,7 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import DropdownMenu from '~/components/DropdownMenu';
+import FilterOptions from '~/components/FilterOptions';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -34,13 +35,15 @@ export async function loader({ request }: LoaderArgs) {
   const { userToken, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
+  const filter = searchParams.get('filter');
+
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
   //encarregado do not have access to table Obras
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const obras = await getObras(userToken, sortingBy);
+    const obras = await getObras(userToken, sortingBy, filter as string);
     return json({ obras });
   } else {
     throw json('Acesso proibido', { status: 403 });
@@ -91,6 +94,12 @@ export default function ObrasPage() {
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Obras</h1>
         <div className="flex gap-4">
+          <FilterOptions />
+          <DropdownMenu
+            tableHeaders={tableHeaders}
+            data={obras}
+            filename="obras"
+          />
           {selectedRow ? (
             <>
               <LinkButton
@@ -112,11 +121,6 @@ export default function ObrasPage() {
               Adicionar
             </LinkButton>
           )}
-          <DropdownMenu
-            tableHeaders={tableHeaders}
-            data={obras}
-            filename="obras"
-          />
         </div>
       </div>
       <DataTable
