@@ -94,7 +94,7 @@ export default function ObrasPage() {
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Obras</h1>
         <div className="flex gap-4">
-          <FilterOptions />
+          <FilterOptions obras={obras} />
           <DropdownMenu
             tableHeaders={tableHeaders}
             data={obras}

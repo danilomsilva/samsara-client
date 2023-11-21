@@ -1,11 +1,21 @@
 import { useEffect, useState } from 'react';
 import ChevronDownIcon from './icons/ChrevronDownIcon';
 import CheckIcon from './icons/CheckIcon';
-import Button from './Button';
 import { Link, useLocation, useSearchParams } from '@remix-run/react';
+import DatePicker, { registerLocale } from 'react-datepicker';
+import ptBR from 'date-fns/locale/pt-BR';
+import { type Obra } from '~/models/obra.server';
+import CalendarIcon from './icons/CalendarIcon';
+registerLocale('pt-br', ptBR);
 
-export default function FilterOptions() {
+type PropTypes = {
+  obras: Obra[];
+};
+
+export default function FilterOptions({ obras }: PropTypes) {
   const [open, setOpen] = useState(false);
+  const [periodoInicio, setPeriodoInicio] = useState();
+  const [periodoFinal, setPeriodoFinal] = useState(new Date());
   const [searchParams] = useSearchParams();
   const filter = searchParams.get('filter');
   const isFilterInativo = filter === '(inativo=false)';
@@ -25,6 +35,10 @@ export default function FilterOptions() {
     return `${location.pathname}?${newSearchParams.toString()}`;
   };
 
+  const handlePeriodoEndChange = (e) => {
+    setPeriodoFinal(e);
+  };
+
   return (
     <div className="flex flex-col relative">
       <div
@@ -38,7 +52,7 @@ export default function FilterOptions() {
         <div className="absolute top-12 left-0 z-50 bg-orange shadow-lg rounded-lg pb-2">
           <Link
             to={handleSetOnlyActiveItems()}
-            className="h-10 border-b border-grey/50 px-3 py-2 hover:bg-grey/10 cursor-pointer flex justify-between items-center"
+            className="h-10 border-b border-white px-3 py-2 hover:bg-grey/10 cursor-pointer flex justify-between items-center"
           >
             <p className="uppercase text-xs font-semibold text-white">
               Apenas itens ativos
@@ -47,19 +61,29 @@ export default function FilterOptions() {
               <CheckIcon className="h-6 w-6 text-white" />
             )}
           </Link>
-          <div className="px-3 py-2 flex flex-col gap-2 border-b border-grey/50">
+          <div className="px-3 py-2 flex flex-col gap-2 border-b border-white">
             <p className="uppercase text-xs font-semibold text-white">
               Período:
             </p>
             <div className="flex gap-2">
-              <input
-                type="date"
-                className="h-10 border border-orange rounded-lg px-3 py-2 text-xs"
-              />
-              <input
-                type="date"
-                className="h-10 border border-orange rounded-lg px-3 py-2 text-xs"
-              />
+              <div className="relative">
+                <DatePicker
+                  locale="pt-br"
+                  selected={new Date()}
+                  onChange={handlePeriodoEndChange}
+                  className="h-10 border border-orange rounded-lg px-3 py-2 text-xs"
+                />
+                <CalendarIcon className="absolute right-2 h-5 w-5 top-2" />
+              </div>
+              <div className="relative">
+                <DatePicker
+                  locale="pt-br"
+                  selected={new Date()}
+                  onChange={handlePeriodoEndChange}
+                  className="h-10 border border-orange rounded-lg px-3 py-2 text-xs"
+                />
+                <CalendarIcon className="absolute right-2 h-5 w-5 top-2" />
+              </div>
             </div>
           </div>
           {/* <div className="flex justify-end pr-3 pt-2">
