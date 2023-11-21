@@ -42,6 +42,13 @@ export const convertISOToDate = (iso: string) => {
   return `${date[2]}/${date[1]}/${date[0]}`;
 };
 
+export const convertToReverseDate = (date: string) => {
+  if (!date) return;
+  const originalDate = new Date(date);
+  const formattedDate = format(originalDate, 'yyyy-MM-dd');
+  return formattedDate;
+};
+
 export const isDateBefore = (date1: string, date2: string): boolean => {
   const parsedDate1 = parse(date1, 'dd/MM/yyyy', new Date());
   const parsedDate2 = parse(date2, 'dd/MM/yyyy', new Date());
@@ -57,6 +64,12 @@ export const getTomorrowDate = () => {
   const today = new Date();
   const tomorrow = add(today, { days: 1 });
   return format(tomorrow, 'dd/MM/yyyy');
+};
+
+export const checkDateValid = (date: string) => {
+  if (!date) return;
+  const parsedDate = parse(date, 'MM/dd/yyyy', new Date());
+  return isValid(parsedDate);
 };
 
 // CURRENCY

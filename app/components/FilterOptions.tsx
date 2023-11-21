@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react';
 import ChevronDownIcon from './icons/ChrevronDownIcon';
 import CheckIcon from './icons/CheckIcon';
 import { Link, useLocation, useSearchParams } from '@remix-run/react';
-import DatePicker, { registerLocale } from 'react-datepicker';
-import ptBR from 'date-fns/locale/pt-BR';
 import { type Obra } from '~/models/obra.server';
 import CalendarIcon from './icons/CalendarIcon';
-registerLocale('pt-br', ptBR);
+import InputMaskValue from './InputMaskValue';
+import { checkDateValid } from '~/utils/utils';
 
 type PropTypes = {
   obras: Obra[];
@@ -14,16 +13,30 @@ type PropTypes = {
 
 export default function FilterOptions({ obras }: PropTypes) {
   const [open, setOpen] = useState(false);
-  const [periodoInicio, setPeriodoInicio] = useState();
-  const [periodoFinal, setPeriodoFinal] = useState(new Date());
+  const [startDate, setStartDate] = useState();
+  const [endDate, setEndDate] = useState();
+  const [error, setError] = useState({
+    startDate: false,
+    endDate: false,
+    isGreater: false,
+  });
   const [searchParams] = useSearchParams();
   const filter = searchParams.get('filter');
   const isFilterInativo = filter === '(inativo=false)';
   const location = useLocation();
 
+  console.log(error);
+
   useEffect(() => {
     setOpen(false);
   }, [filter]);
+
+  useEffect(() => {
+    setError({
+      ...error,
+      startDate: !checkDateValid(startDate) ? false : true,
+    });
+  }, [startDate, endDate]);
 
   const handleSetOnlyActiveItems = () => {
     const newSearchParams = new URLSearchParams(searchParams);
@@ -35,8 +48,27 @@ export default function FilterOptions({ obras }: PropTypes) {
     return `${location.pathname}?${newSearchParams.toString()}`;
   };
 
-  const handlePeriodoEndChange = (e) => {
-    setPeriodoFinal(e);
+  // const handleFiltrar = () => {
+  //   const newSearchParams = new URLSearchParams(searchParams);
+  //   if (startDate && endDate) {
+  //     newSearchParams.set(
+  //       'filter',
+  //       `(data_inicio>='${convertToReverseDate(
+  //         startDate
+  //       )}' && data_inicio<='${convertToReverseDate(endDate)}')`
+  //     );
+  //     return `${location.pathname}?${newSearchParams.toString()}`;
+  //   } else {
+  //     return '';
+  //   }
+  // };
+
+  const handleChangeStartDate = (e: any) => {
+    setStartDate(e?.target?.value);
+  };
+
+  const handleChangeEndDate = (e: any) => {
+    setEndDate(e?.target?.value);
   };
 
   return (
@@ -49,7 +81,7 @@ export default function FilterOptions({ obras }: PropTypes) {
         <ChevronDownIcon className="h-4 w-4 text-orange" />
       </div>
       {open && (
-        <div className="absolute top-12 left-0 z-50 bg-orange shadow-lg rounded-lg pb-2">
+        <div className="absolute top-12 left-0 z-50 bg-orange shadow-lg rounded-lg pb-2 w-72">
           <Link
             to={handleSetOnlyActiveItems()}
             className="h-10 border-b border-white px-3 py-2 hover:bg-grey/10 cursor-pointer flex justify-between items-center"
@@ -67,32 +99,39 @@ export default function FilterOptions({ obras }: PropTypes) {
             </p>
             <div className="flex gap-2">
               <div className="relative">
-                <DatePicker
-                  locale="pt-br"
-                  selected={new Date()}
-                  onChange={handlePeriodoEndChange}
-                  className="h-10 border border-orange rounded-lg px-3 py-2 text-xs"
+                <InputMaskValue
+                  mask="99/99/9999"
+                  type="text"
+                  name="startDate"
+                  label="De:"
+                  value={startDate}
+                  onChange={handleChangeStartDate}
+                  className="!w-32"
+                  error={error.startDate ? 'Data inválida!' : ''}
                 />
-                <CalendarIcon className="absolute right-2 h-5 w-5 top-2" />
+                <CalendarIcon className="w-5 h-5 absolute right-2 top-8" />
               </div>
-              <div className="relative">
-                <DatePicker
-                  locale="pt-br"
-                  selected={new Date()}
-                  onChange={handlePeriodoEndChange}
-                  className="h-10 border border-orange rounded-lg px-3 py-2 text-xs"
-                />
-                <CalendarIcon className="absolute right-2 h-5 w-5 top-2" />
+              <div>
+                <div className="relative">
+                  <InputMaskValue
+                    mask="99/99/9999"
+                    type="text"
+                    name="endDate"
+                    label="De:"
+                    value={endDate}
+                    onChange={handleChangeEndDate}
+                    className="!w-32"
+                  />
+                  <CalendarIcon className="w-5 h-5 absolute right-2 top-8" />
+                </div>
               </div>
             </div>
           </div>
-          {/* <div className="flex justify-end pr-3 pt-2">
-            <Button
-              text="Filtrar"
-              variant="blue"
-              icon={<CheckIcon className="h-5 w-5" />}
-            />
-          </div> */}
+          <div className="flex justify-end pr-3 pt-2">
+            {/* <LinkButton to={handleFiltrar()} variant="blue">
+              Filtrar
+            </LinkButton> */}
+          </div>
         </div>
       )}
     </div>
