@@ -37,7 +37,7 @@ export default function InputMaskValue({
         type={type}
         className={`${
           disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
-        } rounded-lg p-2 px-4 focus:outline-blue`}
+        } rounded-lg p-2 px-4 focus:outline-blue border border-orange`}
         value={value}
         autoFocus={autoFocus}
         autoComplete="off"

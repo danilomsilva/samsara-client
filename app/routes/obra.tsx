@@ -5,7 +5,13 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -71,6 +77,8 @@ export default function ObrasPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const { obras }: { obras: Obra[] } = useLoaderData();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get('filter');
 
   const navigate = useNavigate();
 
@@ -128,7 +136,11 @@ export default function ObrasPage() {
         columns={tableHeaders}
         rows={obras}
         path="/obra"
-        placeholder="Nenhuma obra cadastrada."
+        placeholder={
+          filter
+            ? 'Nenhuma obra iniciada no período selecionado!'
+            : 'Nenhuma obra cadastrada.'
+        }
       />
       <Outlet />
 

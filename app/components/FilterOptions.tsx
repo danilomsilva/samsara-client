@@ -1,11 +1,22 @@
 import { useEffect, useState } from 'react';
 import ChevronDownIcon from './icons/ChrevronDownIcon';
 import CheckIcon from './icons/CheckIcon';
-import { Link, useLocation, useSearchParams } from '@remix-run/react';
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
 import { type Obra } from '~/models/obra.server';
 import CalendarIcon from './icons/CalendarIcon';
 import InputMaskValue from './InputMaskValue';
-import { checkDateValid } from '~/utils/utils';
+import {
+  checkDateValid,
+  convertToReverseDate,
+  isDateGreater,
+} from '~/utils/utils';
+import Button from './Button';
+import XIcon from './icons/XIcon';
 
 type PropTypes = {
   obras: Obra[];
@@ -24,18 +35,20 @@ export default function FilterOptions({ obras }: PropTypes) {
   const filter = searchParams.get('filter');
   const isFilterInativo = filter === '(inativo=false)';
   const location = useLocation();
-
-  console.log(error);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setOpen(false);
   }, [filter]);
 
   useEffect(() => {
-    setError({
-      ...error,
-      startDate: !checkDateValid(startDate) ? false : true,
-    });
+    if (startDate && endDate) {
+      setError({
+        isGreater: !isDateGreater(startDate, endDate),
+        startDate: !checkDateValid(startDate),
+        endDate: !checkDateValid(endDate),
+      });
+    }
   }, [startDate, endDate]);
 
   const handleSetOnlyActiveItems = () => {
@@ -48,20 +61,24 @@ export default function FilterOptions({ obras }: PropTypes) {
     return `${location.pathname}?${newSearchParams.toString()}`;
   };
 
-  // const handleFiltrar = () => {
-  //   const newSearchParams = new URLSearchParams(searchParams);
-  //   if (startDate && endDate) {
-  //     newSearchParams.set(
-  //       'filter',
-  //       `(data_inicio>='${convertToReverseDate(
-  //         startDate
-  //       )}' && data_inicio<='${convertToReverseDate(endDate)}')`
-  //     );
-  //     return `${location.pathname}?${newSearchParams.toString()}`;
-  //   } else {
-  //     return '';
-  //   }
-  // };
+  const handleNavigate = () => {
+    if (startDate && endDate) {
+      const newSearchParams = new URLSearchParams(searchParams);
+      newSearchParams.set(
+        'filter',
+        `(data_inicio>='${convertToReverseDate(
+          startDate
+        )}' && data_inicio<='${convertToReverseDate(endDate)}' && ${filter})` //TODO: improve!!
+      );
+      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+    }
+  };
+
+  const handleLimpar = () => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    newSearchParams.delete('filter');
+    navigate(`${location.pathname}?${newSearchParams.toString()}`);
+  };
 
   const handleChangeStartDate = (e: any) => {
     setStartDate(e?.target?.value);
@@ -81,22 +98,20 @@ export default function FilterOptions({ obras }: PropTypes) {
         <ChevronDownIcon className="h-4 w-4 text-orange" />
       </div>
       {open && (
-        <div className="absolute top-12 left-0 z-50 bg-orange shadow-lg rounded-lg pb-2 w-72">
+        <div className="absolute top-12 left-0 z-50 bg-white shadow-lg rounded-lg pb-2 w-72">
           <Link
             to={handleSetOnlyActiveItems()}
-            className="h-10 border-b border-white px-3 py-2 hover:bg-grey/10 cursor-pointer flex justify-between items-center"
+            className="h-10 border-b border-grey px-3 py-2 hover:bg-grey/10 cursor-pointer flex justify-between items-center"
           >
-            <p className="uppercase text-xs font-semibold text-white">
+            <p className="uppercase text-xs font-semibold">
               Apenas itens ativos
             </p>
-            {filter === '(inativo=false)' && (
-              <CheckIcon className="h-6 w-6 text-white" />
+            {filter?.includes('inativo') && (
+              <CheckIcon className="h-5 w-5 text-orange" />
             )}
           </Link>
           <div className="px-3 py-2 flex flex-col gap-2 border-b border-white">
-            <p className="uppercase text-xs font-semibold text-white">
-              Período:
-            </p>
+            <p className="uppercase text-xs font-semibold">Período:</p>
             <div className="flex gap-2">
               <div className="relative">
                 <InputMaskValue
@@ -117,20 +132,32 @@ export default function FilterOptions({ obras }: PropTypes) {
                     mask="99/99/9999"
                     type="text"
                     name="endDate"
-                    label="De:"
+                    label="Até:"
                     value={endDate}
                     onChange={handleChangeEndDate}
                     className="!w-32"
+                    error={error.endDate ? 'Data inválida!' : ''}
                   />
+
                   <CalendarIcon className="w-5 h-5 absolute right-2 top-8" />
                 </div>
               </div>
             </div>
           </div>
-          <div className="flex justify-end pr-3 pt-2">
-            {/* <LinkButton to={handleFiltrar()} variant="blue">
-              Filtrar
-            </LinkButton> */}
+          <div className="flex justify-between px-3 pt-2">
+            <Button
+              variant="blue"
+              text="Limpar"
+              icon={<XIcon className="h-5 w-5 text-white" />}
+              onClick={handleLimpar}
+            />
+            <Button
+              variant="blue"
+              text="Filtrar"
+              icon={<CalendarIcon className="h-5 w-5 text-white" />}
+              disabled={error.isGreater}
+              onClick={handleNavigate}
+            />
           </div>
         </div>
       )}

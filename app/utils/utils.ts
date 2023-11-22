@@ -6,6 +6,7 @@ import {
   isBefore,
   isEqual,
   isValid,
+  isWithinInterval,
   parse,
   parseISO,
 } from 'date-fns';
@@ -67,9 +68,17 @@ export const getTomorrowDate = () => {
 };
 
 export const checkDateValid = (date: string) => {
-  if (!date) return;
-  const parsedDate = parse(date, 'MM/dd/yyyy', new Date());
-  return isValid(parsedDate);
+  if (!date || date?.includes('_')) return true;
+  const parsedDate = parse(date, 'dd/MM/yyyy', new Date());
+
+  if (!isValid(parsedDate)) {
+    return false;
+  }
+
+  const startDate = new Date(2000, 0, 1); // January 1, 2000
+  const endDate = new Date(2030, 11, 31); // December 31, 2030
+
+  return isWithinInterval(parsedDate, { start: startDate, end: endDate });
 };
 
 // CURRENCY
@@ -140,6 +149,18 @@ export function isTimeGreater(time_1: string, time_2: string): boolean {
   if (
     isAfter(parsedTime_2, parsedTime_1) ||
     isEqual(parsedTime_2, parsedTime_1)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+export function isDateGreater(date_1: string, date_2: string): boolean {
+  const parsedDate_1 = parse(date_1, 'dd/MM/yyyy', new Date());
+  const parsedDate_2 = parse(date_2, 'dd/MM/yyyy', new Date());
+  if (
+    isAfter(parsedDate_2, parsedDate_1) ||
+    isEqual(parsedDate_2, parsedDate_1)
   ) {
     return true;
   }
