@@ -107,7 +107,7 @@ export default function ObrasPage() {
             <DropdownMenu
               tableHeaders={tableHeaders}
               data={obras}
-              filename="obras"
+              filename="obra"
             />
           </div>
         )}

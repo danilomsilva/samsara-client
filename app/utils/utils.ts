@@ -1,3 +1,4 @@
+import 'jspdf-autotable';
 import {
   add,
   format,
@@ -11,7 +12,6 @@ import {
   parseISO,
 } from 'date-fns';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 //codigo
 export const generateCodigo = (prefix: string, array: unknown) => {
@@ -165,11 +165,11 @@ export function isDateGreater(date_1: string, date_2: string): boolean {
 }
 
 //PDF functions
-export const exportPDF = (title: string, tableId: string) => {
+export const exportPDF = (title: string, tableName: string) => {
   const doc = new jsPDF({ orientation: 'landscape' });
   doc.text(title, 15, 10);
   doc.autoTable({
-    html: `#table-${tableId}`,
+    html: `#table-${tableName}`,
   });
-  doc.save(`${tableId}_${getCurrentDate()}`);
+  doc.save(`${tableName}_${getCurrentDate()}`);
 };
