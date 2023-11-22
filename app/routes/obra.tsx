@@ -101,13 +101,17 @@ export default function ObrasPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Obras</h1>
+        {!selectedRow && (
+          <div className="flex gap-2">
+            <FilterOptions obras={obras} />
+            <DropdownMenu
+              tableHeaders={tableHeaders}
+              data={obras}
+              filename="obras"
+            />
+          </div>
+        )}
         <div className="flex gap-4">
-          <FilterOptions obras={obras} />
-          <DropdownMenu
-            tableHeaders={tableHeaders}
-            data={obras}
-            filename="obras"
-          />
           {selectedRow ? (
             <>
               <LinkButton

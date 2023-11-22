@@ -10,7 +10,6 @@ type PropTypes = {
   value?: string;
   autoFocus?: boolean;
   error?: string;
-  mask: string;
   onChange?: (e: Event) => void;
 };
 
@@ -23,7 +22,6 @@ export default function InputMaskValue({
   value,
   autoFocus,
   error,
-  mask,
   onChange,
 }: PropTypes) {
   return (
@@ -32,7 +30,7 @@ export default function InputMaskValue({
         {label}
       </label>
       <ReactInputMask
-        mask={mask}
+        mask="99/99/9999"
         name={name}
         type={type}
         className={`${
@@ -42,6 +40,7 @@ export default function InputMaskValue({
         autoFocus={autoFocus}
         autoComplete="off"
         onChange={onChange}
+        placeholder={'__/__/____'}
       />
       {error && <ErrorMessage error={error} />}
     </div>

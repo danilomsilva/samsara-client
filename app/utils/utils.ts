@@ -158,10 +158,7 @@ export function isTimeGreater(time_1: string, time_2: string): boolean {
 export function isDateGreater(date_1: string, date_2: string): boolean {
   const parsedDate_1 = parse(date_1, 'dd/MM/yyyy', new Date());
   const parsedDate_2 = parse(date_2, 'dd/MM/yyyy', new Date());
-  if (
-    isAfter(parsedDate_2, parsedDate_1) ||
-    isEqual(parsedDate_2, parsedDate_1)
-  ) {
+  if (isAfter(parsedDate_2, parsedDate_1)) {
     return true;
   }
   return false;
