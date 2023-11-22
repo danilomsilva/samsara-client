@@ -31,6 +31,7 @@ import {
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import DropdownMenu from '~/components/DropdownMenu';
 import FilterOptions from '~/components/FilterOptions';
+import Textarea from '~/components/Textarea';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -62,7 +63,10 @@ export async function action({ request }: ActionArgs) {
   const formData = Object.fromEntries(await request.formData());
 
   if (formData?._action === 'desativar') {
-    await updateObra(userToken, formData.obraId as string, { inativo: true });
+    await updateObra(userToken, formData.obraId as string, {
+      inativo: true,
+      motivo: formData?.motivo as string,
+    });
     setToastMessage(session, 'Sucesso', 'Obra desativada!', 'success');
     return redirect('/obra', {
       headers: {
@@ -74,6 +78,7 @@ export async function action({ request }: ActionArgs) {
   if (formData?._action === 'ativar') {
     await updateObra(userToken, formData.obraId as string, {
       inativo: false,
+      motivo: '',
     });
     setToastMessage(session, 'Sucesso', 'Obra ativada!', 'success');
     return redirect('/obra', {
@@ -88,6 +93,7 @@ export async function action({ request }: ActionArgs) {
 export default function ObrasPage() {
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
+  const [motivo, setMotivo] = useState('');
   const { obras }: { obras: Obra[] } = useLoaderData();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const [searchParams] = useSearchParams();
@@ -103,6 +109,10 @@ export default function ObrasPage() {
   const handleCloseModalAtivar = () => {
     navigate('/obra');
     setModalAtivarOpen(false);
+  };
+
+  const handleChangeMotivo = (value: string) => {
+    setMotivo(value);
   };
 
   const selectedObra = obras.find((obra) => obra?.id === selectedRow);
@@ -178,10 +188,20 @@ export default function ObrasPage() {
           title="Desativar Obra"
           handleCloseModal={handleCloseModalDesativar}
           variant="red"
-          content={`Deseja desativar a obra ${selectedObra?.nome} ?`}
+          content={
+            <>
+              <p className="pl-1">{`Deseja desativar a obra ${selectedObra?.nome} ?`}</p>
+              <Textarea
+                name="motivo-text-area"
+                label="Motivo:"
+                onChange={handleChangeMotivo}
+              />
+            </>
+          }
           footerActions={
-            <Form method="post">
+            <Form method="put">
               <input type="hidden" name="obraId" value={selectedRow || ''} />
+              <input type="hidden" name="motivo" value={motivo} />
               <Button
                 name="_action"
                 value="desativar"
