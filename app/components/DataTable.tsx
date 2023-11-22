@@ -68,11 +68,9 @@ export default function DataTable({
                 return (
                   <tr
                     key={i}
-                    className={`${
-                      row.inativo && 'text-grey/30 pointer-events-none'
-                    } ${
+                    className={`${row.inativo && 'text-grey/30'} ${
                       selectedRow === row.id && 'bg-blue/20 text-blue'
-                    } h-10 border-t-grey-light border-t hover:bg-blue/20`}
+                    } h-10 border-t-grey-light border-t hover:bg-blue/20 relative`}
                     onClick={() => setSelectedRow(row.id)}
                   >
                     {columnNames.map((columnName, i) => {
@@ -140,6 +138,21 @@ export default function DataTable({
                         );
                       }
                     })}
+                    {row.motivo && (
+                      <div className="absolute right-2 top-2">
+                        <Tooltip
+                          contentClassName="z-50 -ml-60 w-72"
+                          content={
+                            <>
+                              <p>Motivo da desativação:</p>
+                              <p>{row.motivo}</p>
+                            </>
+                          }
+                        >
+                          <InfoIcon className="h-6 w-6 text-orange" />
+                        </Tooltip>
+                      </div>
+                    )}
                   </tr>
                 );
               })}

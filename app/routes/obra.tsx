@@ -31,6 +31,7 @@ import {
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import DropdownMenu from '~/components/DropdownMenu';
 import FilterOptions from '~/components/FilterOptions';
+import Textarea from '~/components/Textarea';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -62,8 +63,24 @@ export async function action({ request }: ActionArgs) {
   const formData = Object.fromEntries(await request.formData());
 
   if (formData?._action === 'desativar') {
-    await updateObra(userToken, formData.obraId as string, { inativo: true });
+    await updateObra(userToken, formData.obraId as string, {
+      inativo: true,
+      motivo: formData?.motivo as string,
+    });
     setToastMessage(session, 'Sucesso', 'Obra desativada!', 'success');
+    return redirect('/obra', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  if (formData?._action === 'ativar') {
+    await updateObra(userToken, formData.obraId as string, {
+      inativo: false,
+      motivo: '',
+    });
+    setToastMessage(session, 'Sucesso', 'Obra ativada!', 'success');
     return redirect('/obra', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -74,7 +91,9 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function ObrasPage() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
+  const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
+  const [motivo, setMotivo] = useState('');
   const { obras }: { obras: Obra[] } = useLoaderData();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const [searchParams] = useSearchParams();
@@ -82,9 +101,18 @@ export default function ObrasPage() {
 
   const navigate = useNavigate();
 
-  const handleCloseModal = () => {
+  const handleCloseModalDesativar = () => {
     navigate('/obra');
-    setModalOpen(false);
+    setModalDesativarOpen(false);
+  };
+
+  const handleCloseModalAtivar = () => {
+    navigate('/obra');
+    setModalAtivarOpen(false);
+  };
+
+  const handleChangeMotivo = (value: string) => {
+    setMotivo(value);
   };
 
   const selectedObra = obras.find((obra) => obra?.id === selectedRow);
@@ -122,10 +150,16 @@ export default function ObrasPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Desativar"
-                variant="red"
+                text={
+                  selectedObra && selectedObra.inativo ? 'Ativar' : 'Desativar'
+                }
+                variant={selectedObra && selectedObra.inativo ? 'blue' : 'red'}
                 icon={<MinusCircleIcon />}
-                onClick={() => setModalOpen(true)}
+                onClick={
+                  selectedObra && selectedObra.inativo
+                    ? () => setModalAtivarOpen(true)
+                    : () => setModalDesativarOpen(true)
+                }
               />
             </>
           ) : (
@@ -148,21 +182,52 @@ export default function ObrasPage() {
       />
       <Outlet />
 
-      {/* delete modal */}
-      {isModalOpen && (
+      {/* desativar modal */}
+      {isModalDesativarOpen && (
         <Modal
           title="Desativar Obra"
-          handleCloseModal={handleCloseModal}
+          handleCloseModal={handleCloseModalDesativar}
           variant="red"
-          content={`Deseja desativar a obra ${selectedObra?.nome} ?`}
+          content={
+            <>
+              <p className="pl-1">{`Deseja desativar a obra ${selectedObra?.nome} ?`}</p>
+              <Textarea
+                name="motivo-text-area"
+                label="Motivo:"
+                onChange={handleChangeMotivo}
+              />
+            </>
+          }
           footerActions={
-            <Form method="post">
+            <Form method="put">
               <input type="hidden" name="obraId" value={selectedRow || ''} />
+              <input type="hidden" name="motivo" value={motivo} />
               <Button
                 name="_action"
                 value="desativar"
                 variant="red"
                 text="Desativar"
+                icon={<MinusCircleIcon />}
+              />
+            </Form>
+          }
+        />
+      )}
+      {/* ativar modal */}
+      {isModalAtivarOpen && (
+        <Modal
+          title="Ativar Obra"
+          handleCloseModal={handleCloseModalAtivar}
+          variant="red"
+          content={`Deseja ativar a obra ${selectedObra?.nome} ?`}
+          footerActions={
+            <Form method="post">
+              <input type="hidden" name="obraId" value={selectedRow || ''} />
+              <Button
+                name="_action"
+                value="ativar"
+                variant="red"
+                text="Ativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>
