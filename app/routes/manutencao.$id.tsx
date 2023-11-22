@@ -199,9 +199,11 @@ export default function NewOperador() {
         )
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEquipamento]);
 
   const sortedOperadores: Option[] = operadores
+    ?.filter((item: Equipamento) => !item?.inativo)
     ?.map((item: Operador) => {
       const { id, nome_completo } = item;
       return {
@@ -214,6 +216,7 @@ export default function NewOperador() {
     );
 
   const sortedEquipamentos: Option[] = equipamentos
+    ?.filter((item: Equipamento) => !item?.inativo)
     ?.map((item: Equipamento) => {
       const { id, codigo, tipo_equipamentoX } = item;
       return {

@@ -31,6 +31,7 @@ export type Manutencao = {
   equipamentoX?: string;
   encarregadoX?: string;
   descricao?: string;
+  inativo?: boolean;
 };
 
 export async function getManutencoes(
@@ -68,6 +69,7 @@ export async function getManutencoes(
       equipamento: item?.equipamento,
       equipamentoX: item.equipamentoX,
       encarregadoX: item.encarregadoX,
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

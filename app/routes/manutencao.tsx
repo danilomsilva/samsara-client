@@ -25,8 +25,8 @@ import Add from '~/components/icons/PlusCircleIcon';
 import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
 import {
   type Manutencao,
-  deleteManutencao,
   getManutencoes,
+  updateManutencao,
 } from '~/models/manutencao.server';
 import {
   commitSession,
@@ -77,30 +77,11 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  if (formData?._action === 'delete') {
-    try {
-      const manutencao = await deleteManutencao(
-        userToken,
-        formData.manutencaoId as string
-      );
-      if (
-        manutencao.message &&
-        manutencao.message.includes('required relation')
-      ) {
-        setToastMessage(
-          session,
-          'Erro',
-          'Manutenção está vinculada à algum outro campo e não pode ser removida.',
-          'error'
-        );
-        return redirect('/manutencao', {
-          headers: {
-            'Set-Cookie': await commitSession(session),
-          },
-        });
-      }
-    } catch (error) {}
-    setToastMessage(session, 'Sucesso', 'Manutenção removida!', 'success');
+  if (formData?._action === 'desativar') {
+    await updateManutencao(userToken, formData.manutencaoId as string, {
+      inativo: true,
+    });
+    setToastMessage(session, 'Sucesso', 'Manutenção desativada!', 'success');
     return redirect('/manutencao', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -195,7 +176,7 @@ export default function ManutencaoPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Remover"
+                text="Desativar"
                 variant="red"
                 icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
@@ -219,10 +200,10 @@ export default function ManutencaoPage() {
       {/* delete modal */}
       {isModalOpen && (
         <Modal
-          title="Remover Manutenção"
+          title="Desativar Manutenção"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir manutenção ?`} //TODO: improve!
+          content={`Deseja desativar esta manutenção ?`}
           footerActions={
             <Form method="post">
               <input
@@ -232,9 +213,9 @@ export default function ManutencaoPage() {
               />
               <Button
                 name="_action"
-                value="delete"
+                value="desativar"
                 variant="red"
-                text="Remover"
+                text="Desativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

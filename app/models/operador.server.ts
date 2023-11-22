@@ -21,6 +21,7 @@ export type Operador = {
   obra?: Obra;
   obraX?: string;
   encarregadoX?: string;
+  inativo?: boolean;
 };
 
 export async function getOperadores(
@@ -43,7 +44,7 @@ export async function getOperadores(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -57,6 +58,7 @@ export async function getOperadores(
       obraX: item?.obraX,
       encarregado: item?.expand?.encarregado,
       encarregadoX: item?.encarregadoX,
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {
@@ -72,7 +74,7 @@ export async function getOperador(userToken: User['token'], userId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -106,7 +108,7 @@ export async function createOperador(userToken: User['token'], body: Operador) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -146,7 +148,7 @@ export async function updateOperador(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -166,7 +168,7 @@ export async function deleteOperador(userToken: User['token'], userId: string) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

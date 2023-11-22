@@ -17,8 +17,8 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
 import {
   type Boletim,
-  deleteBoletim,
   getBoletins,
+  updateBoletim,
 } from '~/models/boletim.server';
 import {
   commitSession,
@@ -54,24 +54,11 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  if (formData?._action === 'delete') {
-    try {
-      const boletim = await deleteBoletim(userToken, formData.obraId as string);
-      if (boletim.message && boletim.message.includes('required relation')) {
-        setToastMessage(
-          session,
-          'Erro',
-          'Boletim está vinculado à algum outro campo e não pode ser removido.',
-          'error'
-        );
-        return redirect('/boletim', {
-          headers: {
-            'Set-Cookie': await commitSession(session),
-          },
-        });
-      }
-    } catch (error) {}
-    setToastMessage(session, 'Sucesso', 'Boletim removido!', 'success');
+  if (formData?._action === 'desativar') {
+    await updateBoletim(userToken, formData.boletimId as string, {
+      inativo: true,
+    });
+    setToastMessage(session, 'Sucesso', 'Boletim desativado!', 'success');
     return redirect('/boletim', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -93,7 +80,7 @@ export default function BoletinsPage() {
     setModalOpen(false);
   };
 
-  const deletingBoletim = boletins.find(
+  const selectedBoletim = boletins.find(
     (boletim) => boletim?.id === selectedRow
   );
 
@@ -126,7 +113,7 @@ export default function BoletinsPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Remover"
+                text="Desativar"
                 variant="red"
                 icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
@@ -150,18 +137,18 @@ export default function BoletinsPage() {
       {/* delete modal */}
       {isModalOpen && (
         <Modal
-          title="Remover Boletim"
+          title="Desativar Boletim"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir o boletim ${deletingBoletim?.codigo} ?`}
+          content={`Deseja desativar o boletim ${selectedBoletim?.codigo} ?`}
           footerActions={
             <Form method="post">
-              <input type="hidden" name="obraId" value={selectedRow || ''} />
+              <input type="hidden" name="boletimId" value={selectedRow || ''} />
               <Button
                 name="_action"
-                value="delete"
+                value="desativar"
                 variant="red"
-                text="Remover"
+                text="Desativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

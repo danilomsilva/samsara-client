@@ -1,3 +1,4 @@
+import 'jspdf-autotable';
 import {
   add,
   format,
@@ -6,11 +7,11 @@ import {
   isBefore,
   isEqual,
   isValid,
+  isWithinInterval,
   parse,
   parseISO,
 } from 'date-fns';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
 
 //codigo
 export const generateCodigo = (prefix: string, array: unknown) => {
@@ -42,6 +43,13 @@ export const convertISOToDate = (iso: string) => {
   return `${date[2]}/${date[1]}/${date[0]}`;
 };
 
+export const convertToReverseDate = (date: string) => {
+  if (!date) return;
+  const originalDate = new Date(date);
+  const formattedDate = format(originalDate, 'yyyy-MM-dd');
+  return formattedDate;
+};
+
 export const isDateBefore = (date1: string, date2: string): boolean => {
   const parsedDate1 = parse(date1, 'dd/MM/yyyy', new Date());
   const parsedDate2 = parse(date2, 'dd/MM/yyyy', new Date());
@@ -57,6 +65,20 @@ export const getTomorrowDate = () => {
   const today = new Date();
   const tomorrow = add(today, { days: 1 });
   return format(tomorrow, 'dd/MM/yyyy');
+};
+
+export const checkDateValid = (date: string) => {
+  if (!date || date?.includes('_')) return true;
+  const parsedDate = parse(date, 'dd/MM/yyyy', new Date());
+
+  if (!isValid(parsedDate)) {
+    return false;
+  }
+
+  const startDate = new Date(2000, 0, 1); // January 1, 2000
+  const endDate = new Date(2030, 11, 31); // December 31, 2030
+
+  return isWithinInterval(parsedDate, { start: startDate, end: endDate });
 };
 
 // CURRENCY
@@ -133,12 +155,21 @@ export function isTimeGreater(time_1: string, time_2: string): boolean {
   return false;
 }
 
+export function isDateGreater(date_1: string, date_2: string): boolean {
+  const parsedDate_1 = parse(date_1, 'dd/MM/yyyy', new Date());
+  const parsedDate_2 = parse(date_2, 'dd/MM/yyyy', new Date());
+  if (isAfter(parsedDate_2, parsedDate_1)) {
+    return true;
+  }
+  return false;
+}
+
 //PDF functions
-export const exportPDF = (title: string, tableId: string) => {
+export const exportPDF = (title: string, tableName: string) => {
   const doc = new jsPDF({ orientation: 'landscape' });
   doc.text(title, 15, 10);
   doc.autoTable({
-    html: `#table-${tableId}`,
+    html: `#table-${tableName}`,
   });
-  doc.save(`${tableId}_${getCurrentDate()}`);
+  doc.save(`${tableName}_${getCurrentDate()}`);
 };

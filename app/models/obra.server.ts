@@ -8,20 +8,25 @@ export type Obra = {
   data_inicio?: string;
   id?: string;
   nome?: string;
+  inativo?: boolean;
 };
 
 export async function getObras(
   userToken: User['token'],
-  sortingBy: string | null
+  sortingBy: string | null,
+  filter: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/obra/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
+  // if (perPage) queryParams.set('perPage', perPage ?? '100');
+
+  queryParams.set('filter', filter ?? '');
+  // (data_inicio>='1999-01-02' && data_inicio<='2005-01-02')
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
@@ -40,6 +45,7 @@ export async function getObras(
       data_inicio: item?.data_inicio && formatDate(item.data_inicio),
       data_final_previsto:
         item?.data_final_previsto && formatDate(item.data_final_previsto),
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

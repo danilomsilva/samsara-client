@@ -22,6 +22,7 @@ export type Usuario = {
   };
   obra?: any;
   obraX?: string;
+  inativo?: boolean;
 };
 
 // if valid will retrieve jwt token and user data
@@ -57,6 +58,7 @@ export async function getUsuarios(
       email: item.email,
       tipo_acesso: item.tipo_acesso,
       obraX: item.obraX,
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

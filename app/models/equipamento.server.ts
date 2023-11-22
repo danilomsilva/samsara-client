@@ -54,6 +54,7 @@ export type Equipamento = {
       grupo_nome: string;
     };
   };
+  inativo?: boolean;
 };
 export async function getGruposEquipamento(
   userToken: User['token'],
@@ -172,6 +173,7 @@ export async function getEquipamentos(
       frequencia_revisao: item.frequencia_revisao,
       proxima_revisao: item.proxima_revisao,
       revisao_status: Number(item.revisao_status).toFixed(2),
+      inativo: item?.inativo,
     }));
 
     return transformedData;

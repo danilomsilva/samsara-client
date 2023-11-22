@@ -74,7 +74,8 @@ export async function loader({ params, request }: LoaderArgs) {
       : equipamentos;
 
   const sortedEquipamentos: Option[] = filteredEquipamentos
-    .map((item: Equipamento) => {
+    ?.filter((item: Equipamento) => !item?.inativo)
+    ?.map((item: Equipamento) => {
       const { id, codigo } = item;
       return {
         name: id,
@@ -93,6 +94,7 @@ export async function loader({ params, request }: LoaderArgs) {
       : operadores;
 
   const sortedOperadores: Option[] = filteredOperadores
+    ?.filter((item: Equipamento) => !item?.inativo)
     ?.map((item: Operador) => {
       const { id, nome_completo } = item;
       return {

@@ -56,7 +56,9 @@ export async function loader({ params, request }: LoaderArgs) {
   const obras: Obra[] = await getObras(userToken, 'created');
   const usuarios: Usuario[] = await getUsuarios(userToken, 'created');
   const encarregados = usuarios
-    .filter((usuario) => usuario.tipo_acesso === 'Encarregado')
+    .filter(
+      (usuario) => usuario.tipo_acesso === 'Encarregado' && !usuario?.inativo
+    )
     .map((usuario) => ({
       name: usuario?.id,
       displayName: usuario?.nome_completo,
@@ -309,6 +311,7 @@ export default function NewEquipamento() {
   }, [codigoPrefix, equipNumero]);
 
   const sortedObras: Option[] = obras
+    ?.filter((item: Obra) => !item?.inativo)
     ?.map((item: Obra) => {
       const { id, nome } = item;
       return {

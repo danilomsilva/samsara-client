@@ -45,6 +45,10 @@ export const links: LinksFunction = () => [
     type: 'image/png',
     href: '/assets/logo.png',
   },
+  {
+    rel: 'stylesheet',
+    href: 'https://cdnjs.cloudflare.com/ajax/libs/react-datepicker/2.14.1/react-datepicker.min.css',
+  },
 ];
 
 export default function App() {

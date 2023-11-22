@@ -5,7 +5,13 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -15,7 +21,7 @@ import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import { type Obra, deleteObra, getObras } from '~/models/obra.server';
+import { type Obra, getObras, updateObra } from '~/models/obra.server';
 import {
   commitSession,
   getSession,
@@ -24,6 +30,7 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import DropdownMenu from '~/components/DropdownMenu';
+import FilterOptions from '~/components/FilterOptions';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -34,13 +41,15 @@ export async function loader({ request }: LoaderArgs) {
   const { userToken, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
+  const filter = searchParams.get('filter');
+
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
   //encarregado do not have access to table Obras
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const obras = await getObras(userToken, sortingBy);
+    const obras = await getObras(userToken, sortingBy, filter as string);
     return json({ obras });
   } else {
     throw json('Acesso proibido', { status: 403 });
@@ -52,24 +61,9 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  if (formData?._action === 'delete') {
-    try {
-      const obra = await deleteObra(userToken, formData.obraId as string);
-      if (obra.message && obra.message.includes('required relation')) {
-        setToastMessage(
-          session,
-          'Erro',
-          'Obra está vinculado à algum outro campo e não pode ser removido.',
-          'error'
-        );
-        return redirect('/obra', {
-          headers: {
-            'Set-Cookie': await commitSession(session),
-          },
-        });
-      }
-    } catch (error) {}
-    setToastMessage(session, 'Sucesso', 'Obra removida!', 'success');
+  if (formData?._action === 'desativar') {
+    await updateObra(userToken, formData.obraId as string, { inativo: true });
+    setToastMessage(session, 'Sucesso', 'Obra desativada!', 'success');
     return redirect('/obra', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -83,6 +77,8 @@ export default function ObrasPage() {
   const [isModalOpen, setModalOpen] = useState(false);
   const { obras }: { obras: Obra[] } = useLoaderData();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get('filter');
 
   const navigate = useNavigate();
 
@@ -91,7 +87,7 @@ export default function ObrasPage() {
     setModalOpen(false);
   };
 
-  const deletingObra = obras.find((obra) => obra?.id === selectedRow);
+  const selectedObra = obras.find((obra) => obra?.id === selectedRow);
 
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
@@ -105,6 +101,16 @@ export default function ObrasPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Obras</h1>
+        {!selectedRow && (
+          <div className="flex gap-2">
+            <FilterOptions obras={obras} />
+            <DropdownMenu
+              tableHeaders={tableHeaders}
+              data={obras}
+              filename="obra"
+            />
+          </div>
+        )}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -116,7 +122,7 @@ export default function ObrasPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Remover"
+                text="Desativar"
                 variant="red"
                 icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
@@ -127,11 +133,6 @@ export default function ObrasPage() {
               Adicionar
             </LinkButton>
           )}
-          <DropdownMenu
-            tableHeaders={tableHeaders}
-            data={obras}
-            filename="obras"
-          />
         </div>
       </div>
       <DataTable
@@ -139,25 +140,29 @@ export default function ObrasPage() {
         columns={tableHeaders}
         rows={obras}
         path="/obra"
-        placeholder="Nenhuma obra cadastrada."
+        placeholder={
+          filter
+            ? 'Nenhuma obra iniciada no período selecionado!'
+            : 'Nenhuma obra cadastrada.'
+        }
       />
       <Outlet />
 
       {/* delete modal */}
       {isModalOpen && (
         <Modal
-          title="Remover Obra"
+          title="Desativar Obra"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir a obra ${deletingObra?.nome} ?`}
+          content={`Deseja desativar a obra ${selectedObra?.nome} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="obraId" value={selectedRow || ''} />
               <Button
                 name="_action"
-                value="delete"
+                value="desativar"
                 variant="red"
-                text="Remover"
+                text="Desativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

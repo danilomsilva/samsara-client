@@ -94,7 +94,7 @@ export default function OSPage() {
     setModalOpen(false);
   };
 
-  const deletingOS = OSs.find((os) => os?.id === selectedRow);
+  const selectedOS = OSs.find((os) => os?.id === selectedRow);
 
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
@@ -145,7 +145,7 @@ export default function OSPage() {
           title="Remover Ordem de Serviço"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir a ${deletingOS?.codigo} - ${deletingOS?.descricao} ?`}
+          content={`Deseja excluir a ${selectedOS?.codigo} - ${selectedOS?.descricao} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="userId" value={selectedRow || ''} />

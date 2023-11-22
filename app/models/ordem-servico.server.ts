@@ -6,6 +6,7 @@ export type OS = {
   created?: string;
   codigo?: string;
   descricao?: string;
+  inativo?: boolean;
 };
 
 export async function getOSs(
@@ -35,6 +36,7 @@ export async function getOSs(
       created: item?.created && formatDateTime(item.created),
       codigo: item.codigo,
       descricao: item.descricao,
+      inativo: item?.inativo,
     }));
     return transformedData;
   } catch (error) {

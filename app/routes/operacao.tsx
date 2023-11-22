@@ -96,7 +96,7 @@ export default function OperacaoPage() {
     setModalOpen(false);
   };
 
-  const deletingOperacao = operacoes.find((op) => op?.id === selectedRow);
+  const selectedOperacao = operacoes.find((op) => op?.id === selectedRow);
 
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
@@ -146,7 +146,7 @@ export default function OperacaoPage() {
           title="Remover Operação"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir a ${deletingOperacao?.codigo} - ${deletingOperacao?.descricao} ?`}
+          content={`Deseja excluir a ${selectedOperacao?.codigo} - ${selectedOperacao?.descricao} ?`}
           footerActions={
             <Form method="post">
               <input type="hidden" name="userId" value={selectedRow || ''} />

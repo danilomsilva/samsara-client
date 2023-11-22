@@ -129,6 +129,7 @@ export default function NewUsuario() {
     'The email is invalid or already in use.';
 
   const sortedObras: Option[] = obras
+    ?.filter((item: Obra) => !item?.inativo)
     ?.map((item: Obra) => {
       const { id, nome } = item;
       return {

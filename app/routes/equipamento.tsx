@@ -18,8 +18,8 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
 import {
   type Equipamento,
-  deleteEquipamento,
   getEquipamentos,
+  updateEquipamento,
 } from '~/models/equipamento.server';
 import {
   commitSession,
@@ -57,30 +57,11 @@ export async function action({ request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  if (formData?._action === 'delete') {
-    try {
-      const equipamento = await deleteEquipamento(
-        userToken,
-        formData.userId as string
-      );
-      if (
-        equipamento.message &&
-        equipamento.message.includes('required relation')
-      ) {
-        setToastMessage(
-          session,
-          'Erro',
-          'Equipamento está vinculado à algum outro campo e não pode ser removido.',
-          'error'
-        );
-        return redirect('/equipamento', {
-          headers: {
-            'Set-Cookie': await commitSession(session),
-          },
-        });
-      }
-    } catch (error) {}
-    setToastMessage(session, 'Sucesso', 'Equipamento removido!', 'success');
+  if (formData?._action === 'desativar') {
+    await updateEquipamento(userToken, formData.equipamentoId as string, {
+      inativo: true,
+    });
+    setToastMessage(session, 'Sucesso', 'Equipamento desativado!', 'success');
     return redirect('/equipamento', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -101,7 +82,7 @@ export default function EquipamentoPage() {
     setModalOpen(false);
   };
 
-  const deletingEquipamento = equipamentos.find((eq) => eq?.id === selectedRow);
+  const selectedEquipamento = equipamentos.find((eq) => eq?.id === selectedRow);
 
   const formattedEquipamentos: Equipamento[] = equipamentos.map((item) => {
     const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
@@ -110,7 +91,7 @@ export default function EquipamentoPage() {
     return {
       ...item,
       combustivel: item.combustivel?.replaceAll('_', ' '),
-      valor_locacao: formatCurrency(Number(item.valor_locacao)),
+      valor_locacao: formatCurrency(Number(item.valor_locacao)), //TODO: possibly wrong!!
       instrumento_medicao_inicio: `${
         item.instrumento_medicao_inicio &&
         formatNumberWithDotDelimiter(Number(item.instrumento_medicao_inicio))
@@ -167,7 +148,7 @@ export default function EquipamentoPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Remover"
+                text="Desativar"
                 variant="red"
                 icon={<MinusCircleIcon />}
                 onClick={() => setModalOpen(true)}
@@ -191,18 +172,22 @@ export default function EquipamentoPage() {
       {/* delete modal */}
       {isModalOpen && (
         <Modal
-          title="Remover Equipamento"
+          title="Desativar Equipamento"
           handleCloseModal={handleCloseModal}
           variant="red"
-          content={`Deseja excluir o equipamento ${deletingEquipamento?.codigo} ?`}
+          content={`Deseja desativar o equipamento ${selectedEquipamento?.codigo} ?`}
           footerActions={
             <Form method="post">
-              <input type="hidden" name="userId" value={selectedRow || ''} />
+              <input
+                type="hidden"
+                name="equipamentoId"
+                value={selectedRow || ''}
+              />
               <Button
                 name="_action"
-                value="delete"
+                value="desativar"
                 variant="red"
-                text="Remover"
+                text="Desativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>
