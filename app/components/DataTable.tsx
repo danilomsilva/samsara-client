@@ -68,9 +68,7 @@ export default function DataTable({
                 return (
                   <tr
                     key={i}
-                    className={`${
-                      row.inativo && 'text-grey/30 pointer-events-none'
-                    } ${
+                    className={`${row.inativo && 'text-grey/30'} ${
                       selectedRow === row.id && 'bg-blue/20 text-blue'
                     } h-10 border-t-grey-light border-t hover:bg-blue/20`}
                     onClick={() => setSelectedRow(row.id)}

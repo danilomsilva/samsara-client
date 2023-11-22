@@ -70,11 +70,24 @@ export async function action({ request }: ActionArgs) {
       },
     });
   }
+
+  if (formData?._action === 'ativar') {
+    await updateObra(userToken, formData.obraId as string, {
+      inativo: false,
+    });
+    setToastMessage(session, 'Sucesso', 'Obra ativada!', 'success');
+    return redirect('/obra', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
   return json({});
 }
 
 export default function ObrasPage() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
+  const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const { obras }: { obras: Obra[] } = useLoaderData();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const [searchParams] = useSearchParams();
@@ -82,9 +95,14 @@ export default function ObrasPage() {
 
   const navigate = useNavigate();
 
-  const handleCloseModal = () => {
+  const handleCloseModalDesativar = () => {
     navigate('/obra');
-    setModalOpen(false);
+    setModalDesativarOpen(false);
+  };
+
+  const handleCloseModalAtivar = () => {
+    navigate('/obra');
+    setModalAtivarOpen(false);
   };
 
   const selectedObra = obras.find((obra) => obra?.id === selectedRow);
@@ -122,10 +140,16 @@ export default function ObrasPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Desativar"
-                variant="red"
+                text={
+                  selectedObra && selectedObra.inativo ? 'Ativar' : 'Desativar'
+                }
+                variant={selectedObra && selectedObra.inativo ? 'blue' : 'red'}
                 icon={<MinusCircleIcon />}
-                onClick={() => setModalOpen(true)}
+                onClick={
+                  selectedObra && selectedObra.inativo
+                    ? () => setModalAtivarOpen(true)
+                    : () => setModalDesativarOpen(true)
+                }
               />
             </>
           ) : (
@@ -148,11 +172,11 @@ export default function ObrasPage() {
       />
       <Outlet />
 
-      {/* delete modal */}
-      {isModalOpen && (
+      {/* desativar modal */}
+      {isModalDesativarOpen && (
         <Modal
           title="Desativar Obra"
-          handleCloseModal={handleCloseModal}
+          handleCloseModal={handleCloseModalDesativar}
           variant="red"
           content={`Deseja desativar a obra ${selectedObra?.nome} ?`}
           footerActions={
@@ -163,6 +187,27 @@ export default function ObrasPage() {
                 value="desativar"
                 variant="red"
                 text="Desativar"
+                icon={<MinusCircleIcon />}
+              />
+            </Form>
+          }
+        />
+      )}
+      {/* ativar modal */}
+      {isModalAtivarOpen && (
+        <Modal
+          title="Ativar Obra"
+          handleCloseModal={handleCloseModalAtivar}
+          variant="red"
+          content={`Deseja ativar a obra ${selectedObra?.nome} ?`}
+          footerActions={
+            <Form method="post">
+              <input type="hidden" name="obraId" value={selectedRow || ''} />
+              <Button
+                name="_action"
+                value="ativar"
+                variant="red"
+                text="Ativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>
