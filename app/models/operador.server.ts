@@ -27,7 +27,8 @@ export type Operador = {
 
 export async function getOperadores(
   userToken: User['token'],
-  sortingBy: string | null
+  sortingBy: string | null,
+  filter: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/operador/records`;
 
@@ -35,17 +36,19 @@ export async function getOperadores(
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra,encarregado');
+  // if (perPage) queryParams.set('perPage', perPage ?? '100'); //TODO: implement perPage
+
+  queryParams.set('filter', filter ?? '');
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -60,6 +63,7 @@ export async function getOperadores(
       encarregado: item?.expand?.encarregado,
       encarregadoX: item?.encarregadoX,
       inativo: item?.inativo,
+      motivo: item?.motivo,
     }));
     return transformedData;
   } catch (error) {
@@ -75,7 +79,7 @@ export async function getOperador(userToken: User['token'], userId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -109,7 +113,7 @@ export async function createOperador(userToken: User['token'], body: Operador) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -149,7 +153,7 @@ export async function updateOperador(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -169,7 +173,7 @@ export async function deleteOperador(userToken: User['token'], userId: string) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

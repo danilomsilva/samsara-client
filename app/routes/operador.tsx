@@ -5,13 +5,22 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
+import DropdownMenu from '~/components/DropdownMenu';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
+import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
+import Textarea from '~/components/Textarea';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -37,13 +46,18 @@ export async function loader({ request }: LoaderArgs) {
   const { userToken, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
+  const filter = searchParams.get('filter');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
   //encarregado do not have access to table operadores
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const operadores = await getOperadores(userToken, sortingBy);
+    const operadores = await getOperadores(
+      userToken,
+      sortingBy,
+      filter as string
+    );
     return json({ operadores });
   } else {
     throw json('Acesso proibido', { status: 403 });
@@ -58,8 +72,21 @@ export async function action({ request }: ActionArgs) {
   if (formData?._action === 'desativar') {
     await updateOperador(userToken, formData.operadorId as string, {
       inativo: true,
+      motivo: formData?.motivo as string,
     });
     setToastMessage(session, 'Sucesso', 'Operador desativado!', 'success');
+    return redirect('/operador', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+  if (formData?._action === 'ativar') {
+    await updateOperador(userToken, formData.operadorId as string, {
+      inativo: false,
+      motivo: '',
+    });
+    setToastMessage(session, 'Sucesso', 'Operador ativado!', 'success');
     return redirect('/operador', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -70,14 +97,27 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function OperadorPage() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
+  const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
+  const [motivo, setMotivo] = useState('');
   const { operadores }: { operadores: Operador[] } = useLoaderData();
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get('filter');
   const navigate = useNavigate();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
 
-  const handleCloseModal = () => {
+  const handleCloseModalDesativar = () => {
     navigate('/operador');
-    setModalOpen(false);
+    setModalDesativarOpen(false);
+  };
+
+  const handleCloseModalAtivar = () => {
+    navigate('/operador');
+    setModalAtivarOpen(false);
+  };
+
+  const handleChangeMotivo = (value: string) => {
+    setMotivo(value);
   };
 
   const selectedOperador = operadores.find(
@@ -97,6 +137,16 @@ export default function OperadorPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Operadores</h1>
+        {!selectedRow && (
+          <div className="flex gap-2">
+            <FilterOptions />
+            <DropdownMenu
+              tableHeaders={tableHeaders}
+              data={operadores}
+              filename="equipamento"
+            />
+          </div>
+        )}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -108,10 +158,14 @@ export default function OperadorPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Desativar"
-                variant="red"
+                text={selectedOperador?.inativo ? 'Ativar' : 'Desativar'}
+                variant={selectedOperador?.inativo ? 'blue' : 'red'}
                 icon={<MinusCircleIcon />}
-                onClick={() => setModalOpen(true)}
+                onClick={
+                  selectedOperador?.inativo
+                    ? () => setModalAtivarOpen(true)
+                    : () => setModalDesativarOpen(true)
+                }
               />
             </>
           ) : (
@@ -122,20 +176,60 @@ export default function OperadorPage() {
         </div>
       </div>
       <DataTable
+        id="table-operador"
         columns={tableHeaders}
         rows={operadores}
         path="/operador"
-        placeholder="Nenhum operador cadastrado."
+        placeholder={
+          filter
+            ? 'Nenhum operador cadastrado no período selecionado!'
+            : 'Nenhum operador cadastrado.'
+        }
       />
       <Outlet />
 
       {/* delete modal */}
-      {isModalOpen && (
+      {isModalDesativarOpen && (
         <Modal
           title="Desativar Operador"
-          handleCloseModal={handleCloseModal}
+          handleCloseModal={handleCloseModalDesativar}
           variant="red"
-          content={`Deseja desativar o operador ${selectedOperador?.nome_completo} ?`}
+          content={
+            <>
+              <p className="pl-1">{`Deseja desativar o operador ${selectedOperador?.nome_completo} ?`}</p>
+              <Textarea
+                name="motivo-text-area"
+                label="Motivo:"
+                onChange={handleChangeMotivo}
+              />
+            </>
+          }
+          footerActions={
+            <Form method="post">
+              <input
+                type="hidden"
+                name="operadorId"
+                value={selectedRow || ''}
+              />
+              <input type="hidden" name="motivo" value={motivo} />
+              <Button
+                name="_action"
+                value="desativar"
+                variant="red"
+                text="Desativar"
+                icon={<MinusCircleIcon />}
+              />
+            </Form>
+          }
+        />
+      )}
+      {/* ativar modal */}
+      {isModalAtivarOpen && (
+        <Modal
+          title="Ativar Operador"
+          handleCloseModal={handleCloseModalAtivar}
+          variant="red"
+          content={`Deseja ativar o operador ${selectedOperador?.nome_completo} ?`}
           footerActions={
             <Form method="post">
               <input
@@ -145,9 +239,9 @@ export default function OperadorPage() {
               />
               <Button
                 name="_action"
-                value="desativar"
+                value="ativar"
                 variant="red"
-                text="Desativar"
+                text="Ativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>
