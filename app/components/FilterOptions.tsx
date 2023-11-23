@@ -7,7 +7,6 @@ import {
   useNavigate,
   useSearchParams,
 } from '@remix-run/react';
-import { type Obra } from '~/models/obra.server';
 import CalendarIcon from './icons/CalendarIcon';
 import InputMaskValue from './InputMaskValue';
 import {
@@ -18,11 +17,7 @@ import {
 import Button from './Button';
 import XIcon from './icons/XIcon';
 
-type PropTypes = {
-  obras: Obra[];
-};
-
-export default function FilterOptions({ obras }: PropTypes) {
+export default function FilterOptions() {
   const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
@@ -67,17 +62,17 @@ export default function FilterOptions({ obras }: PropTypes) {
       if (filter?.includes('inativo')) {
         newSearchParams.set(
           'filter',
-          `(inativo=false&&data_inicio>='${convertToReverseDate(
+          `(inativo=false&&created>='${convertToReverseDate(
             startDate
-          )}' && data_inicio<='${convertToReverseDate(endDate)}')`
+          )}' && created<='${convertToReverseDate(endDate)}')`
         );
         navigate(`${location.pathname}?${newSearchParams.toString()}`);
       } else {
         newSearchParams.set(
           'filter',
-          `(data_inicio>='${convertToReverseDate(
+          `(created>='${convertToReverseDate(
             startDate
-          )}' && data_inicio<='${convertToReverseDate(endDate)}')`
+          )}' && created<='${convertToReverseDate(endDate)}')`
         );
         navigate(`${location.pathname}?${newSearchParams.toString()}`);
       }

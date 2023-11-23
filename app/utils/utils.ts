@@ -44,8 +44,8 @@ export const convertISOToDate = (iso: string) => {
 };
 
 export const convertToReverseDate = (date: string) => {
-  if (!date) return;
-  const originalDate = new Date(date);
+  const parts = date.split('/');
+  const originalDate = new Date(`${parts[2]}-${parts[1]}-${parts[0]}`);
   const formattedDate = format(originalDate, 'yyyy-MM-dd');
   return formattedDate;
 };

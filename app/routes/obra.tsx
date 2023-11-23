@@ -98,7 +98,6 @@ export default function ObrasPage() {
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const [searchParams] = useSearchParams();
   const filter = searchParams.get('filter');
-
   const navigate = useNavigate();
 
   const handleCloseModalDesativar = () => {
