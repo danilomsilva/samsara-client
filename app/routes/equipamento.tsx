@@ -111,7 +111,7 @@ export async function action({ request }: ActionArgs) {
   }
   if (formData?._action === 'ativar') {
     await updateEquipamento(userToken, formData.equipamentoId as string, {
-      inativo: true,
+      inativo: false,
       motivo: '',
     });
     setToastMessage(session, 'Sucesso', 'Equipamento ativado!', 'success');
