@@ -22,11 +22,13 @@ export type Operador = {
   obraX?: string;
   encarregadoX?: string;
   inativo?: boolean;
+  motivo?: string;
 };
 
 export async function getOperadores(
   userToken: User['token'],
-  sortingBy: string | null
+  sortingBy: string | null,
+  filter: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/operador/records`;
 
@@ -34,10 +36,12 @@ export async function getOperadores(
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra,encarregado');
+  // if (perPage) queryParams.set('perPage', perPage ?? '100'); //TODO: implement perPage
+
+  queryParams.set('filter', filter ?? '');
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
@@ -59,6 +63,7 @@ export async function getOperadores(
       encarregado: item?.expand?.encarregado,
       encarregadoX: item?.encarregadoX,
       inativo: item?.inativo,
+      motivo: item?.motivo,
     }));
     return transformedData;
   } catch (error) {

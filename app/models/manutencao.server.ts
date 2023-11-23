@@ -32,11 +32,13 @@ export type Manutencao = {
   encarregadoX?: string;
   descricao?: string;
   inativo?: boolean;
+  motivo?: string;
 };
 
 export async function getManutencoes(
   userToken: User['token'],
-  sortingBy: string | null
+  sortingBy: string | null,
+  filter: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/manutencao/records`;
 
@@ -45,10 +47,12 @@ export async function getManutencoes(
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'encarregado,equipamento');
 
+  // if (perPage) queryParams.set('perPage', perPage ?? '100'); //TODO: implement perPage
+
+  queryParams.set('filter', filter ?? '');
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
@@ -70,6 +74,7 @@ export async function getManutencoes(
       equipamentoX: item.equipamentoX,
       encarregadoX: item.encarregadoX,
       inativo: item?.inativo,
+      motivo: item?.motivo,
     }));
     return transformedData;
   } catch (error) {
@@ -172,7 +177,7 @@ export async function _updateManutencao(
   };
   await updateManutencao(userToken, manutencao.id, editBody);
   if (body.boletim) {
-    const boletins = await getBoletins(userToken, 'created');
+    const boletins = await getBoletins(userToken, 'created', '');
     const findBoletim = boletins?.find(
       (item: Boletim) => item.codigo === body.boletim
     )?.id;
@@ -213,7 +218,7 @@ export async function deleteManutencao(
 ) {
   try {
     const manutencao = await getManutencao(userToken, manutencaoId);
-    const boletins = await getBoletins(userToken, 'created');
+    const boletins = await getBoletins(userToken, 'created', '');
     const findBoletim = await boletins.find(
       (item: Boletim) => item.codigo === manutencao.boletim
     )?.id;

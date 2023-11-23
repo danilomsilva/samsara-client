@@ -55,6 +55,7 @@ export type Equipamento = {
     };
   };
   inativo?: boolean;
+  motivo?: string;
 };
 export async function getGruposEquipamento(
   userToken: User['token'],
@@ -125,7 +126,8 @@ export async function getTiposEquipamento(
 
 export async function getEquipamentos(
   userToken: User['token'],
-  sortingBy: string | null
+  sortingBy: string | null,
+  filter: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/equipamento/records`;
 
@@ -135,10 +137,11 @@ export async function getEquipamentos(
     'expand',
     'obra,encarregado,tipo_equipamento,grupo_equipamento'
   );
+  // if (perPage) queryParams.set('perPage', perPage ?? '100'); //TODO: implement perPage
+  queryParams.set('filter', filter ?? '');
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
@@ -174,6 +177,7 @@ export async function getEquipamentos(
       proxima_revisao: item.proxima_revisao,
       revisao_status: Number(item.revisao_status).toFixed(2),
       inativo: item?.inativo,
+      motivo: item?.motivo,
     }));
 
     return transformedData;
@@ -241,7 +245,7 @@ export async function createEquipamento(
   userToken: User['token'],
   body: Equipamento
 ) {
-  const equipamentos = await getEquipamentos(userToken, 'created');
+  const equipamentos = await getEquipamentos(userToken, 'created', '');
   const existingCodigo = equipamentos.some(
     (equip: Equipamento) => equip.codigo === body.codigo
   );

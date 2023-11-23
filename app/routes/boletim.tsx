@@ -5,13 +5,22 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
+import DropdownMenu from '~/components/DropdownMenu';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
+import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
+import Textarea from '~/components/Textarea';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -36,13 +45,14 @@ export const meta: V2_MetaFunction = () => {
 export async function loader({ request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
+  const filter = searchParams.get('filter');
   const sortParam = searchParams.get('sort');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
   if (userToken) {
-    const boletins = await getBoletins(userToken, sortingBy);
+    const boletins = await getBoletins(userToken, sortingBy, filter as string);
     return json({ boletins });
   } else {
     throw json('Acesso proibido', { status: 403 });
@@ -57,8 +67,22 @@ export async function action({ request }: ActionArgs) {
   if (formData?._action === 'desativar') {
     await updateBoletim(userToken, formData.boletimId as string, {
       inativo: true,
+      motivo: formData?.motivo as string,
     });
     setToastMessage(session, 'Sucesso', 'Boletim desativado!', 'success');
+    return redirect('/boletim', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  if (formData?._action === 'ativar') {
+    await updateBoletim(userToken, formData.boletimId as string, {
+      inativo: false,
+      motivo: '',
+    });
+    setToastMessage(session, 'Sucesso', 'Boletim ativado!', 'success');
     return redirect('/boletim', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -69,15 +93,27 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function BoletinsPage() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
+  const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
+  const [motivo, setMotivo] = useState('');
   const { boletins }: { boletins: Boletim[] } = useLoaderData();
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get('filter');
   const { selectedRow } = useSelectRow() as UseSelectedRow;
-
   const navigate = useNavigate();
 
-  const handleCloseModal = () => {
+  const handleCloseModalDesativar = () => {
     navigate('/boletim');
-    setModalOpen(false);
+    setModalDesativarOpen(false);
+  };
+
+  const handleCloseModalAtivar = () => {
+    navigate('/boletim');
+    setModalAtivarOpen(false);
+  };
+
+  const handleChangeMotivo = (value: string) => {
+    setMotivo(value);
   };
 
   const selectedBoletim = boletins.find(
@@ -102,6 +138,16 @@ export default function BoletinsPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Boletins</h1>
+        {!selectedRow && (
+          <div className="flex gap-2">
+            <FilterOptions />
+            <DropdownMenu
+              tableHeaders={tableHeaders}
+              data={boletins}
+              filename="boletim"
+            />
+          </div>
+        )}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -113,10 +159,14 @@ export default function BoletinsPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Desativar"
-                variant="red"
+                text={selectedBoletim?.inativo ? 'Ativar' : 'Desativar'}
+                variant={selectedBoletim?.inativo ? 'blue' : 'red'}
                 icon={<MinusCircleIcon />}
-                onClick={() => setModalOpen(true)}
+                onClick={
+                  selectedBoletim?.inativo
+                    ? () => setModalAtivarOpen(true)
+                    : () => setModalDesativarOpen(true)
+                }
               />
             </>
           ) : (
@@ -127,28 +177,64 @@ export default function BoletinsPage() {
         </div>
       </div>
       <DataTable
+        id="table-boletim"
         columns={tableHeaders}
         rows={boletins}
         path="/boletim"
-        placeholder="Nenhum boletim cadastrado."
+        placeholder={
+          filter
+            ? 'Nenhum boletim iniciado no período selecionado!'
+            : 'Nenhum boletim cadastrado.'
+        }
       />
       <Outlet />
 
-      {/* delete modal */}
-      {isModalOpen && (
+      {/* desativar modal */}
+      {isModalDesativarOpen && (
         <Modal
           title="Desativar Boletim"
-          handleCloseModal={handleCloseModal}
+          handleCloseModal={handleCloseModalDesativar}
           variant="red"
-          content={`Deseja desativar o boletim ${selectedBoletim?.codigo} ?`}
+          content={
+            <>
+              <p className="pl-1">{`Deseja desativar o boletim ${selectedBoletim?.codigo}?`}</p>
+              <Textarea
+                name="motivo-text-area"
+                label="Motivo:"
+                onChange={handleChangeMotivo}
+              />
+            </>
+          }
           footerActions={
             <Form method="post">
               <input type="hidden" name="boletimId" value={selectedRow || ''} />
+              <input type="hidden" name="motivo" value={motivo} />
               <Button
                 name="_action"
                 value="desativar"
                 variant="red"
                 text="Desativar"
+                icon={<MinusCircleIcon />}
+              />
+            </Form>
+          }
+        />
+      )}
+      {/* ativar modal */}
+      {isModalAtivarOpen && (
+        <Modal
+          title="Ativar Boletim"
+          handleCloseModal={handleCloseModalAtivar}
+          variant="red"
+          content={`Deseja ativar o boletim ${selectedBoletim?.codigo} ?`}
+          footerActions={
+            <Form method="post">
+              <input type="hidden" name="boletimId" value={selectedRow || ''} />
+              <Button
+                name="_action"
+                value="ativar"
+                variant="red"
+                text="Ativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

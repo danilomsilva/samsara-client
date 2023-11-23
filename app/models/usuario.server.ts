@@ -23,12 +23,14 @@ export type Usuario = {
   obra?: any;
   obraX?: string;
   inativo?: boolean;
+  motivo?: string;
 };
 
 // if valid will retrieve jwt token and user data
 export async function getUsuarios(
   userToken: User['token'],
-  sortingBy: string | null
+  sortingBy: string | null,
+  filter: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/usuario/records`;
 
@@ -36,10 +38,10 @@ export async function getUsuarios(
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra');
+  queryParams.set('filter', filter ?? '');
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
@@ -59,6 +61,7 @@ export async function getUsuarios(
       tipo_acesso: item.tipo_acesso,
       obraX: item.obraX,
       inativo: item?.inativo,
+      motivo: item?.motivo,
     }));
     return transformedData;
   } catch (error) {

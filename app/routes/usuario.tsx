@@ -5,13 +5,22 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
+import DropdownMenu from '~/components/DropdownMenu';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
+import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
+import Textarea from '~/components/Textarea';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -37,13 +46,14 @@ export async function loader({ request }: LoaderArgs) {
   const { userToken, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
+  const filter = searchParams.get('filter');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
   //encarregado do not have access to table usuarios
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const usuarios = await getUsuarios(userToken, sortingBy);
+    const usuarios = await getUsuarios(userToken, sortingBy, filter as string);
     return json({ usuarios });
   } else {
     throw json('Acesso proibido', { status: 403 });
@@ -58,8 +68,22 @@ export async function action({ request }: ActionArgs) {
   if (formData?._action === 'desativar') {
     await updateUsuario(userToken, formData.userId as string, {
       inativo: true,
+      motivo: formData?.motivo as string,
     });
     setToastMessage(session, 'Sucesso', 'Usuário desativado!', 'success');
+    return redirect('/usuario', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  if (formData?._action === 'ativar') {
+    await updateUsuario(userToken, formData.userId as string, {
+      inativo: false,
+      motivo: '',
+    });
+    setToastMessage(session, 'Sucesso', 'Usuário ativado!', 'success');
     return redirect('/usuario', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -70,14 +94,27 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function UsuarioPage() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
+  const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
+  const [motivo, setMotivo] = useState('');
   const { usuarios }: { usuarios: Usuario[] } = useLoaderData();
+  const [searchParams] = useSearchParams();
+  const filter = searchParams.get('filter');
   const navigate = useNavigate();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
 
-  const handleCloseModal = () => {
+  const handleCloseModalDesativar = () => {
     navigate('/usuario');
-    setModalOpen(false);
+    setModalDesativarOpen(false);
+  };
+
+  const handleCloseModalAtivar = () => {
+    navigate('/usuario');
+    setModalAtivarOpen(false);
+  };
+
+  const handleChangeMotivo = (value: string) => {
+    setMotivo(value);
   };
 
   const selectedUsuario = usuarios.find(
@@ -103,6 +140,16 @@ export default function UsuarioPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Usuários</h1>
+        {!selectedRow && (
+          <div className="flex gap-2">
+            <FilterOptions />
+            <DropdownMenu
+              tableHeaders={tableHeaders}
+              data={formattedUsuario}
+              filename="usuario"
+            />
+          </div>
+        )}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -114,10 +161,14 @@ export default function UsuarioPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Desativar"
-                variant="red"
+                text={selectedUsuario?.inativo ? 'Ativar' : 'Desativar'}
+                variant={selectedUsuario?.inativo ? 'blue' : 'red'}
                 icon={<MinusCircleIcon />}
-                onClick={() => setModalOpen(true)}
+                onClick={
+                  selectedUsuario?.inativo
+                    ? () => setModalAtivarOpen(true)
+                    : () => setModalDesativarOpen(true)
+                }
               />
             </>
           ) : (
@@ -128,28 +179,64 @@ export default function UsuarioPage() {
         </div>
       </div>
       <DataTable
+        id="table-usuario"
         columns={tableHeaders}
         rows={formattedUsuario}
         path="/usuario"
-        placeholder="Nenhum usuário cadastrado"
+        placeholder={
+          filter
+            ? 'Nenhum usuário cadastrado no período selecionado!'
+            : 'Nenhum usuário cadastrado.'
+        }
       />
       <Outlet />
 
       {/* delete modal */}
-      {isModalOpen && (
+      {isModalDesativarOpen && (
         <Modal
           title="Desativar Usuário"
-          handleCloseModal={handleCloseModal}
+          handleCloseModal={handleCloseModalDesativar}
           variant="red"
-          content={`Deseja desativar o usuário ${selectedUsuario?.nome_completo} ?`}
+          content={
+            <>
+              <p className="pl-1">{`Deseja desativar o usuário ${selectedUsuario?.nome_completo} ?`}</p>
+              <Textarea
+                name="motivo-text-area"
+                label="Motivo:"
+                onChange={handleChangeMotivo}
+              />
+            </>
+          }
           footerActions={
             <Form method="post">
               <input type="hidden" name="userId" value={selectedRow || ''} />
+              <input type="hidden" name="motivo" value={motivo} />
               <Button
                 name="_action"
                 value="desativar"
                 variant="red"
                 text="Desativar"
+                icon={<MinusCircleIcon />}
+              />
+            </Form>
+          }
+        />
+      )}
+      {/* ativar modal */}
+      {isModalAtivarOpen && (
+        <Modal
+          title="Ativar Usuário"
+          handleCloseModal={handleCloseModalAtivar}
+          variant="red"
+          content={`Deseja ativar o usuário ${selectedUsuario?.nome_completo} ?`}
+          footerActions={
+            <Form method="post">
+              <input type="hidden" name="userId" value={selectedRow || ''} />
+              <Button
+                name="_action"
+                value="ativar"
+                variant="red"
+                text="Ativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

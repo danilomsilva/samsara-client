@@ -56,20 +56,25 @@ export type Boletim = {
   total_abastecimento?: string;
   descricao_manutencao?: string;
   inativo?: boolean;
+  motivo?: string;
 };
 
 export async function getBoletins(
   userToken: User['token'],
-  sortingBy: string | null
+  sortingBy: string | null,
+  filter: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/boletim/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
+
+  // if (perPage) queryParams.set('perPage', perPage ?? '100'); //TODO: implement perPage
+
+  queryParams.set('filter', filter ?? '');
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
@@ -105,6 +110,7 @@ export async function getBoletins(
         lubrificacao: item?.lubrificacao,
         limpeza: item?.limpeza,
         inativo: item?.inativo,
+        motivo: item?.motivo,
       };
     });
 
@@ -254,7 +260,7 @@ export async function _updateBoletim(
         Number(equipamento?.frequencia_revisao),
     } as Equipamento);
 
-    const manutencoes = await getManutencoes(userToken, 'created');
+    const manutencoes = await getManutencoes(userToken, 'created', '');
     const findManutencao = manutencoes.find(
       (item: Manutencao) => item.boletim === boletim.codigo
     );

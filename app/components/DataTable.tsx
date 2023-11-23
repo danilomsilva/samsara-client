@@ -139,7 +139,7 @@ export default function DataTable({
                       }
                     })}
                     {row.motivo && (
-                      <div className="absolute right-2 top-2">
+                      <div className="flex items-center justify-center h-10">
                         <Tooltip
                           contentClassName="z-50 -ml-60 w-72"
                           content={
