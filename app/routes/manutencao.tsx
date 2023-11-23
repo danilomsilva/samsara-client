@@ -82,6 +82,7 @@ export async function action({ request }: ActionArgs) {
       inativo: true,
       motivo: formData?.motivo as string,
     });
+
     setToastMessage(session, 'Sucesso', 'Manutenção desativada!', 'success');
     return redirect('/manutencao', {
       headers: {
@@ -120,8 +121,6 @@ export default function ManutencaoPage() {
   const param = searchParams.get('param');
   const filter = searchParams.get('filter');
 
-  console.log('>>>>>>>', selectedRow);
-
   useEffect(() => {
     setSelectedRow('');
   }, [param, filter, setSelectedRow]);
@@ -153,8 +152,12 @@ export default function ManutencaoPage() {
     };
   });
 
-  const selectedEquipamento = equipamentos?.find(
-    (equip: Equipamento) => equip.id === selectedRow
+  const equipamento = equipamentos?.find(
+    (equip: Equipamento) => equip.id === param
+  );
+
+  const selectedManutencao = manutencoes?.find(
+    (manutencao: Manutencao) => manutencao.id === selectedRow
   );
 
   const tableHeaders = [
@@ -170,20 +173,21 @@ export default function ManutencaoPage() {
   return (
     <>
       <div className="flex justify-between items-end">
-        {/* TODO: fix left link and justify between */}
-        {param && <Link to="/equipamento">Lista de Equipamentos</Link>}
-        {param && '/'}
-        <h1 className="font-semibold">
-          {param
-            ? `Histórico de Manutenções (${selectedEquipamento?.codigo} - ${selectedEquipamento?.tipo_equipamentoX})`
-            : 'Lista de Manutenções'}
-        </h1>
+        <div className="flex gap-2">
+          {param && <Link to="/equipamento">Lista de Equipamentos</Link>}
+          {param && '/'}
+          <h1 className="font-semibold">
+            {param
+              ? `Histórico de Manutenções (${equipamento?.codigo} - ${equipamento?.tipo_equipamentoX})`
+              : 'Lista de Manutenções'}
+          </h1>
+        </div>
         {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
             <DropdownMenu
               tableHeaders={tableHeaders}
-              data={equipamentos}
+              data={formattedManutencoes}
               filename="equipamento"
             />
           </div>
@@ -199,19 +203,11 @@ export default function ManutencaoPage() {
                 Editar
               </LinkButton>
               <Button
-                text={
-                  selectedEquipamento && selectedEquipamento.inativo
-                    ? 'Ativar'
-                    : 'Desativar'
-                }
-                variant={
-                  selectedEquipamento && selectedEquipamento.inativo
-                    ? 'blue'
-                    : 'red'
-                }
+                text={selectedManutencao?.inativo ? 'Ativar' : 'Desativar'}
+                variant={selectedManutencao?.inativo ? 'blue' : 'red'}
                 icon={<MinusCircleIcon />}
                 onClick={
-                  selectedEquipamento && selectedEquipamento.inativo
+                  selectedManutencao?.inativo
                     ? () => setModalAtivarOpen(true)
                     : () => setModalDesativarOpen(true)
                 }
@@ -240,12 +236,12 @@ export default function ManutencaoPage() {
       {/* desativar modal */}
       {isModalDesativarOpen && (
         <Modal
-          title="Desativar Equipamento"
+          title="Desativar Manutenção"
           handleCloseModal={handleCloseModalDesativar}
           variant="red"
           content={
             <>
-              <p className="pl-1">{`Deseja desativar o equipamento ${selectedEquipamento?.codigo} ?`}</p>
+              <p className="pl-1">{`Deseja desativar esta manutenção ?`}</p>
               <Textarea
                 name="motivo-text-area"
                 label="Motivo:"
@@ -254,10 +250,10 @@ export default function ManutencaoPage() {
             </>
           }
           footerActions={
-            <Form method="put">
+            <Form method="post">
               <input
                 type="hidden"
-                name="equipamentoId"
+                name="manutencaoId"
                 value={selectedRow || ''}
               />
               <input type="hidden" name="motivo" value={motivo} />
@@ -275,15 +271,15 @@ export default function ManutencaoPage() {
       {/* ativar modal */}
       {isModalAtivarOpen && (
         <Modal
-          title="Ativar Equipamento"
+          title="Ativar Manutenção"
           handleCloseModal={handleCloseModalAtivar}
           variant="red"
-          content={`Deseja ativar o equipamento ${selectedEquipamento?.codigo} ?`}
+          content={`Deseja ativar esta manutenção ?`}
           footerActions={
             <Form method="post">
               <input
                 type="hidden"
-                name="equipamentoId"
+                name="manutencaoId"
                 value={selectedRow || ''}
               />
               <Button
