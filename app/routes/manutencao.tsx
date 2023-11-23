@@ -126,12 +126,12 @@ export default function ManutencaoPage() {
   }, [param, filter, setSelectedRow]);
 
   const handleCloseModalDesativar = () => {
-    navigate('/obra');
+    navigate('/manutencao');
     setModalDesativarOpen(false);
   };
 
   const handleCloseModalAtivar = () => {
-    navigate('/obra');
+    navigate('/manutencao');
     setModalAtivarOpen(false);
   };
 

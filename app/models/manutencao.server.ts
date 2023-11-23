@@ -59,7 +59,7 @@ export async function getManutencoes(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -93,7 +93,7 @@ export async function getManutencao(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -147,7 +147,7 @@ export async function createManutencao(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -177,7 +177,7 @@ export async function _updateManutencao(
   };
   await updateManutencao(userToken, manutencao.id, editBody);
   if (body.boletim) {
-    const boletins = await getBoletins(userToken, 'created');
+    const boletins = await getBoletins(userToken, 'created', '');
     const findBoletim = boletins?.find(
       (item: Boletim) => item.codigo === body.boletim
     )?.id;
@@ -200,7 +200,7 @@ export async function updateManutencao(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -218,7 +218,7 @@ export async function deleteManutencao(
 ) {
   try {
     const manutencao = await getManutencao(userToken, manutencaoId);
-    const boletins = await getBoletins(userToken, 'created');
+    const boletins = await getBoletins(userToken, 'created', '');
     const findBoletim = await boletins.find(
       (item: Boletim) => item.codigo === manutencao.boletim
     )?.id;
@@ -234,7 +234,7 @@ export async function deleteManutencao(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
