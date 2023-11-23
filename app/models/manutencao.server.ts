@@ -37,7 +37,8 @@ export type Manutencao = {
 
 export async function getManutencoes(
   userToken: User['token'],
-  sortingBy: string | null
+  sortingBy: string | null,
+  filter: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/manutencao/records`;
 
@@ -46,10 +47,12 @@ export async function getManutencoes(
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'encarregado,equipamento');
 
+  // if (perPage) queryParams.set('perPage', perPage ?? '100'); //TODO: implement perPage
+
+  queryParams.set('filter', filter ?? '');
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
@@ -71,6 +74,7 @@ export async function getManutencoes(
       equipamentoX: item.equipamentoX,
       encarregadoX: item.encarregadoX,
       inativo: item?.inativo,
+      motivo: item?.motivo,
     }));
     return transformedData;
   } catch (error) {

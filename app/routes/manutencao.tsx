@@ -36,7 +36,9 @@ import {
 } from '~/session.server';
 import { formatNumberWithDotDelimiter } from '~/utils/utils';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
-import CogIcon from '~/components/icons/CogIcon';
+import FilterOptions from '~/components/FilterOptions';
+import DropdownMenu from '~/components/DropdownMenu';
+import Textarea from '~/components/Textarea';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -54,19 +56,17 @@ export async function loader({ request }: LoaderArgs) {
 
   //encarregado do not have access to table manutencao
   if (userToken && tipoAcesso !== 'Encarregado') {
-    if (filter === 'revisao') {
-      const allManutencoes = await getManutencoes(userToken, sortingBy);
-      const manutencoes = allManutencoes.filter(
-        (item: Manutencao) => item.tipo_manutencao === 'Revisão'
-      );
-
-      const equipamentos = await getEquipamentos(userToken, 'created');
-      return json({ manutencoes, equipamentos });
-    } else {
-      const manutencoes = await getManutencoes(userToken, sortingBy);
-      const equipamentos = await getEquipamentos(userToken, 'created');
-      return json({ manutencoes, equipamentos });
-    }
+    const manutencoes = await getManutencoes(
+      userToken,
+      sortingBy,
+      filter as string
+    );
+    const equipamentos = await getEquipamentos(
+      userToken,
+      'created',
+      filter as string
+    );
+    return json({ manutencoes, equipamentos });
   } else {
     throw json('Acesso proibido', { status: 403 });
   }
@@ -80,8 +80,22 @@ export async function action({ request }: ActionArgs) {
   if (formData?._action === 'desativar') {
     await updateManutencao(userToken, formData.manutencaoId as string, {
       inativo: true,
+      motivo: formData?.motivo as string,
     });
     setToastMessage(session, 'Sucesso', 'Manutenção desativada!', 'success');
+    return redirect('/manutencao', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  if (formData?._action === 'ativar') {
+    await updateManutencao(userToken, formData.manutencaoId as string, {
+      inativo: false,
+      motivo: '',
+    });
+    setToastMessage(session, 'Sucesso', 'Manutenção ativada!', 'success');
     return redirect('/manutencao', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -92,7 +106,9 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function ManutencaoPage() {
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
+  const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
+  const [motivo, setMotivo] = useState('');
   const {
     manutencoes,
     equipamentos,
@@ -104,32 +120,41 @@ export default function ManutencaoPage() {
   const param = searchParams.get('param');
   const filter = searchParams.get('filter');
 
+  console.log('>>>>>>>', selectedRow);
+
   useEffect(() => {
     setSelectedRow('');
   }, [param, filter, setSelectedRow]);
 
-  const handleCloseModal = () => {
-    navigate('/manutencao');
-    setModalOpen(false);
+  const handleCloseModalDesativar = () => {
+    navigate('/obra');
+    setModalDesativarOpen(false);
   };
 
-  const formattedManutencoes: Manutencao[] = manutencoes
-    .map((manutencao) => {
-      const isHorimetro =
-        equipamentos.find((equip) => equip.codigo === manutencao.equipamentoX)
-          ?.instrumento_medicao === 'Horímetro';
-      const suffix = isHorimetro ? ' h' : ' km';
-      return {
-        ...manutencao,
-        IM_atual: `${formatNumberWithDotDelimiter(
-          Number(manutencao.IM_atual)
-        )} ${suffix}`,
-      };
-    })
-    .filter((manutecao) => !param || manutecao.equipamento === param);
+  const handleCloseModalAtivar = () => {
+    navigate('/obra');
+    setModalAtivarOpen(false);
+  };
 
-  const equipamento = equipamentos?.find(
-    (equip: Equipamento) => equip.id === param
+  const handleChangeMotivo = (value: string) => {
+    setMotivo(value);
+  };
+
+  const formattedManutencoes: Manutencao[] = manutencoes.map((manutencao) => {
+    const isHorimetro =
+      equipamentos.find((equip) => equip.codigo === manutencao.equipamentoX)
+        ?.instrumento_medicao === 'Horímetro';
+    const suffix = isHorimetro ? ' h' : ' km';
+    return {
+      ...manutencao,
+      IM_atual: `${formatNumberWithDotDelimiter(
+        Number(manutencao.IM_atual)
+      )} ${suffix}`,
+    };
+  });
+
+  const selectedEquipamento = equipamentos?.find(
+    (equip: Equipamento) => equip.id === selectedRow
   );
 
   const tableHeaders = [
@@ -145,27 +170,25 @@ export default function ManutencaoPage() {
   return (
     <>
       <div className="flex justify-between items-end">
-        <div className="flex gap-2">
-          {param && <Link to="/equipamento">Lista de Equipamentos</Link>}
-          {param && '/'}
-          <h1 className="font-semibold">
-            {param
-              ? `Histórico de Manutenções (${equipamento?.codigo} - ${equipamento?.tipo_equipamentoX})`
-              : 'Lista de Manutenções'}
-          </h1>
-        </div>
+        {/* TODO: fix left link and justify between */}
+        {param && <Link to="/equipamento">Lista de Equipamentos</Link>}
+        {param && '/'}
+        <h1 className="font-semibold">
+          {param
+            ? `Histórico de Manutenções (${selectedEquipamento?.codigo} - ${selectedEquipamento?.tipo_equipamentoX})`
+            : 'Lista de Manutenções'}
+        </h1>
+        {!selectedRow && (
+          <div className="flex gap-2">
+            <FilterOptions />
+            <DropdownMenu
+              tableHeaders={tableHeaders}
+              data={equipamentos}
+              filename="equipamento"
+            />
+          </div>
+        )}
         <div className="flex gap-4">
-          <LinkButton
-            to={`${
-              filter === 'revisao'
-                ? '/manutencao'
-                : '/manutencao?filter=revisao'
-            }`}
-            variant="grey"
-            icon={<CogIcon />}
-          >
-            {filter === 'revisao' ? 'Lista Completa' : 'Apenas Revisões'}
-          </LinkButton>
           {selectedRow ? (
             <>
               <LinkButton
@@ -176,10 +199,22 @@ export default function ManutencaoPage() {
                 Editar
               </LinkButton>
               <Button
-                text="Desativar"
-                variant="red"
+                text={
+                  selectedEquipamento && selectedEquipamento.inativo
+                    ? 'Ativar'
+                    : 'Desativar'
+                }
+                variant={
+                  selectedEquipamento && selectedEquipamento.inativo
+                    ? 'blue'
+                    : 'red'
+                }
                 icon={<MinusCircleIcon />}
-                onClick={() => setModalOpen(true)}
+                onClick={
+                  selectedEquipamento && selectedEquipamento.inativo
+                    ? () => setModalAtivarOpen(true)
+                    : () => setModalDesativarOpen(true)
+                }
               />
             </>
           ) : (
@@ -190,32 +225,72 @@ export default function ManutencaoPage() {
         </div>
       </div>
       <DataTable
+        id="table-obra"
         columns={tableHeaders}
         rows={formattedManutencoes}
         path="/manutencao"
-        placeholder="Nenhuma manutenção cadastrada."
+        placeholder={
+          filter
+            ? 'Nenhuma manutenção iniciada no período selecionado!'
+            : 'Nenhuma manutenção cadastrada.'
+        }
       />
       <Outlet />
 
-      {/* delete modal */}
-      {isModalOpen && (
+      {/* desativar modal */}
+      {isModalDesativarOpen && (
         <Modal
-          title="Desativar Manutenção"
-          handleCloseModal={handleCloseModal}
+          title="Desativar Equipamento"
+          handleCloseModal={handleCloseModalDesativar}
           variant="red"
-          content={`Deseja desativar esta manutenção ?`}
+          content={
+            <>
+              <p className="pl-1">{`Deseja desativar o equipamento ${selectedEquipamento?.codigo} ?`}</p>
+              <Textarea
+                name="motivo-text-area"
+                label="Motivo:"
+                onChange={handleChangeMotivo}
+              />
+            </>
+          }
           footerActions={
-            <Form method="post">
+            <Form method="put">
               <input
                 type="hidden"
-                name="manutencaoId"
+                name="equipamentoId"
                 value={selectedRow || ''}
               />
+              <input type="hidden" name="motivo" value={motivo} />
               <Button
                 name="_action"
                 value="desativar"
                 variant="red"
                 text="Desativar"
+                icon={<MinusCircleIcon />}
+              />
+            </Form>
+          }
+        />
+      )}
+      {/* ativar modal */}
+      {isModalAtivarOpen && (
+        <Modal
+          title="Ativar Equipamento"
+          handleCloseModal={handleCloseModalAtivar}
+          variant="red"
+          content={`Deseja ativar o equipamento ${selectedEquipamento?.codigo} ?`}
+          footerActions={
+            <Form method="post">
+              <input
+                type="hidden"
+                name="equipamentoId"
+                value={selectedRow || ''}
+              />
+              <Button
+                name="_action"
+                value="ativar"
+                variant="red"
+                text="Ativar"
                 icon={<MinusCircleIcon />}
               />
             </Form>

@@ -130,7 +130,7 @@ export default function ObrasPage() {
         <h1 className="font-semibold">Lista de Obras</h1>
         {!selectedRow && (
           <div className="flex gap-2">
-            <FilterOptions obras={obras} />
+            <FilterOptions />
             <DropdownMenu
               tableHeaders={tableHeaders}
               data={obras}
