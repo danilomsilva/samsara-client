@@ -48,6 +48,7 @@ export default function SideMenu({ tipoAcesso, children, user }: PropTypes) {
                   <>
                     <NavItem to="/obra" text="Obra" />
                     <NavItem to="/equipamento" text="Equipamento" />
+                    <NavItem to="/equipamento_tipo" text="Tipos Equipamento" />
                     <NavItem to="/manutencao" text="Manutenção" />
                     <NavItem to="/ordem-servico" text="Ordem de Serviço" />
                     <NavItem to="/operacao" text="Operação" />

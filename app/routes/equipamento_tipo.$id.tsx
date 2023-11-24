@@ -1,0 +1,171 @@
+import {
+  type LoaderArgs,
+  type ActionArgs,
+  redirect,
+  json,
+} from '@remix-run/node';
+import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import { z } from 'zod';
+import Button from '~/components/Button';
+import Input from '~/components/Input';
+import Modal from '~/components/Modal';
+import Row from '~/components/Row';
+import Select from '~/components/Select';
+import PencilIcon from '~/components/icons/PencilIcon';
+import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
+import SpinnerIcon from '~/components/icons/SpinnerIcon';
+import { getGruposEquipamento } from '~/models/equipamento.server';
+import {
+  type EquipamentoTipo,
+  _createEquipamentoTipo,
+  getEquipamentoTipo,
+  _updateEquipamentoTipo,
+} from '~/models/equipamento_tipo.server';
+
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
+import { CAMPO_OBRIGATORIO, type Option } from '~/utils/consts';
+
+export async function loader({ params, request }: LoaderArgs) {
+  const { userToken } = await getUserSession(request);
+  const equipamentoGrupos = await getGruposEquipamento(userToken, 'created');
+
+  if (params.id === 'new') {
+    return json({ equipamentoGrupos });
+  } else {
+    const equipamentoTipo: EquipamentoTipo[] = await getEquipamentoTipo(
+      userToken,
+      params.id as string
+    );
+    return json({ equipamentoTipo, equipamentoGrupos });
+  }
+}
+
+export async function action({ params, request }: ActionArgs) {
+  const { userToken } = await getUserSession(request);
+  const session = await getSession(request);
+  const formData = Object.fromEntries(await request.formData());
+
+  const validationScheme = z.object({
+    tipo_nome: z.string().min(1, CAMPO_OBRIGATORIO),
+    grupo_nome: z.string().min(1, CAMPO_OBRIGATORIO),
+  });
+
+  const validatedScheme = validationScheme.safeParse(formData);
+
+  if (!validatedScheme.success) {
+    const errors = validatedScheme.error.format();
+    return {
+      errors: {
+        tipo_nome: errors.tipo_nome?._errors[0],
+        grupo_nome: errors.grupo_nome?._errors[0],
+      },
+    };
+  }
+
+  if (formData._action === 'create') {
+    const equipamentoTipo = await _createEquipamentoTipo(userToken, formData);
+    if (equipamentoTipo.data) {
+      return json({ error: equipamentoTipo.data });
+    }
+    setToastMessage(
+      session,
+      'Sucesso',
+      'Tipo Equipamento adicionado!',
+      'success'
+    );
+    return redirect('/equipamento_tipo', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
+  if (formData._action === 'edit') {
+    await _updateEquipamentoTipo(userToken, params.id as string, formData);
+    setToastMessage(
+      session,
+      'Sucesso',
+      'Tipo de equipamento editado!',
+      'success'
+    );
+    return redirect('/equipamento_tipo', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+  return redirect('..');
+}
+
+export default function NewEquipamentoTipo() {
+  const { equipamentoTipo, equipamentoGrupos } = useLoaderData();
+  const actionData = useActionData();
+  const navigation = useNavigation();
+  const isSubmitting =
+    navigation.state === 'submitting' || navigation.state === 'loading';
+
+  const sortedGrupos: Option[] = equipamentoGrupos
+    ?.filter((item: any) => !item?.inativo) //TODO: improve on TS
+    ?.map((item: any) => {
+      const { id, grupo_nome } = item;
+      return {
+        name: id,
+        displayName: grupo_nome,
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
+  return (
+    <Modal
+      title={`${equipamentoTipo ? 'Editar' : 'Adicionar'} Tipo de equipamento`}
+      variant={equipamentoTipo ? 'grey' : 'blue'}
+      content={
+        <>
+          <Row>
+            <Input
+              type="text"
+              name="tipo_nome"
+              label="Tipo Equipamento"
+              defaultValue={equipamentoTipo?.tipo_nome}
+              error={actionData?.errors?.tipo_nome}
+              autoFocus
+            />
+            <Select
+              name="grupo_nome"
+              options={sortedGrupos}
+              label="Grupo"
+              defaultValue={equipamentoTipo?.grupo_nome}
+              placeholder="-"
+              error={actionData?.errors?.grupo_nome}
+              className="w-60"
+            />
+          </Row>
+        </>
+      }
+      footerActions={
+        <Button
+          variant={equipamentoTipo ? 'grey' : 'blue'}
+          icon={
+            isSubmitting ? (
+              <SpinnerIcon />
+            ) : equipamentoTipo ? (
+              <PencilIcon />
+            ) : (
+              <PlusCircleIcon />
+            )
+          }
+          text={equipamentoTipo ? 'Editar' : 'Adicionar'}
+          name="_action"
+          value={equipamentoTipo ? 'edit' : 'create'}
+        />
+      }
+    ></Modal>
+  );
+}

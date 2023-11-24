@@ -57,11 +57,11 @@ export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
   const loggedInUser: Usuario = await getUsuario(userToken, userId);
   const loggedInUserObra: Obra['id'] = loggedInUser?.obra;
-  const equipamentos = await getEquipamentos(userToken, 'created');
-  const operadores = await getOperadores(userToken, 'created');
+  const equipamentos = await getEquipamentos(userToken, 'created', '');
+  const operadores = await getOperadores(userToken, 'created', '');
   const OSs = await getOSs(userToken, 'created');
   const operacoes = await getOperacoes(userToken, 'created');
-  const boletins = await getBoletins(userToken, 'created');
+  const boletins = await getBoletins(userToken, 'created', '');
   const newCode = genCodigo(boletins, 'BOL-');
 
   const filteredEquipamentos =

@@ -39,8 +39,8 @@ import { capitalizeWords, genCodigo } from '~/utils/utils';
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
-  const obras: Obra[] = await getObras(userToken, 'created');
-  const usuarios: Usuario[] = await getUsuarios(userToken, 'created');
+  const obras: Obra[] = await getObras(userToken, 'created', '');
+  const usuarios: Usuario[] = await getUsuarios(userToken, 'created', '');
   const encarregados = usuarios
     .filter(
       (usuario) => usuario.tipo_acesso === 'Encarregado' && !usuario?.inativo
@@ -51,7 +51,7 @@ export async function loader({ params, request }: LoaderArgs) {
     }));
 
   if (params.id === 'new') {
-    const operadores = await getOperadores(userToken, 'created');
+    const operadores = await getOperadores(userToken, 'created', '');
     const newCode = genCodigo(operadores, 'OP-');
     return json({ obras, encarregados, newCode });
   } else {
