@@ -146,7 +146,7 @@ export async function loader({ params, request }: LoaderArgs) {
       newCode,
     });
   } else if (params.id?.startsWith('BOL-')) {
-    const boletins = await getBoletins(userToken, 'created');
+    const boletins = await getBoletins(userToken, 'created', '');
     const findBoletim = boletins?.find(
       (boletim: Boletim) => boletim.codigo === params.id
     )?.id;

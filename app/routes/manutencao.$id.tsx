@@ -60,8 +60,8 @@ export async function loader({ params, request }: LoaderArgs) {
   const equipCodigo = searchParams.get('equip');
 
   if (params.id === 'new') {
-    const operadores = await getOperadores(userToken, 'created');
-    const equipamentos = await getEquipamentos(userToken, 'created');
+    const operadores = await getOperadores(userToken, 'created', '');
+    const equipamentos = await getEquipamentos(userToken, 'created', '');
     if (equipCodigo) {
       const findEquip = equipamentos.find(
         (item: Equipamento) => item.codigo === equipCodigo
@@ -78,8 +78,8 @@ export async function loader({ params, request }: LoaderArgs) {
     }
     return json({ operadores, equipamentos });
   } else {
-    const operadores = await getOperadores(userToken, 'created');
-    const equipamentos = await getEquipamentos(userToken, 'created');
+    const operadores = await getOperadores(userToken, 'created', '');
+    const equipamentos = await getEquipamentos(userToken, 'created', '');
     const manutencao = await getManutencao(userToken, params.id as string);
     return json({ operadores, equipamentos, manutencao });
   }
