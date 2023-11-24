@@ -143,7 +143,7 @@ export default function OperadorPage() {
             <DropdownMenu
               tableHeaders={tableHeaders}
               data={operadores}
-              filename="equipamento"
+              filename="operador"
             />
           </div>
         )}

@@ -26,7 +26,7 @@ export default function Column({ column, children, disabledSort }: PropTypes) {
     <th
       className={`${
         disabledSort && 'pointer-events-none'
-      } pl-4 font-semibold cursor-pointer truncate`}
+      } pl-2 font-semibold cursor-pointer truncate`}
     >
       <Link
         to={{ pathname: location.pathname, search: searchParams.toString() }}

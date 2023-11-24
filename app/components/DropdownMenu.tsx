@@ -29,13 +29,14 @@ export default function DropdownMenu({
 
       <Menu.Items className="absolute right-0 bg-white z-50 mt-2 rounded-lg flex flex-col text-grey-dark w-24 shadow-lg divide-y divide-grey/30">
         <Menu.Item
-          className="h-10 flex justify-center items-center hover:bg-grey-light px-3 font-semibold text-xs cursor-pointer gap-2"
+          className="h-10 flex justify-center items-center hover:bg-grey-light font-semibold text-xs cursor-pointer gap-2"
           as="div"
         >
           <CSVLink
             headers={tableHeaders}
             data={data}
             filename={`${filename}_${getCurrentDate()}`}
+            className="w-full px-3 h-8 flex items-center justify-center"
           >
             CSV
           </CSVLink>
@@ -43,7 +44,7 @@ export default function DropdownMenu({
         <Menu.Item
           className="h-10 flex justify-center items-center hover:bg-grey-light px-3 font-semibold text-xs cursor-pointer gap-2"
           as="div"
-          onClick={() => exportPDF('Relatório de Obras', filename)}
+          onClick={() => exportPDF(`Relatório - ${filename}`, filename)}
         >
           PDF
         </Menu.Item>

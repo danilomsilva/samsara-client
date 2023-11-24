@@ -153,14 +153,14 @@ export default function EquipamentoPage() {
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
     { key: 'codigo', label: 'Código' },
-    { key: 'obraX', label: 'Alocado à obra' },
+    { key: 'obraX', label: 'Obra' },
     { key: 'ano', label: 'Ano' },
     { key: 'combustivel', label: 'Combustível' },
     { key: 'instrumento_medicao', label: 'Tipo IM' },
     { key: 'encarregadoX', label: 'Encarregado' },
     { key: 'instrumento_medicao_inicio', label: 'IM Início' },
     { key: 'instrumento_medicao_atual', label: 'IM Atual' },
-    { key: 'frequencia_revisao', label: 'Revisão' },
+    // { key: 'frequencia_revisao', label: 'Revisão' },
     { key: 'proxima_revisao', label: 'Próx. Revisão' },
     { key: 'revisao_status', label: 'Revisão' },
   ];

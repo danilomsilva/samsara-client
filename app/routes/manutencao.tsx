@@ -188,7 +188,7 @@ export default function ManutencaoPage() {
             <DropdownMenu
               tableHeaders={tableHeaders}
               data={formattedManutencoes}
-              filename="equipamento"
+              filename="manutencao"
             />
           </div>
         )}
@@ -221,7 +221,7 @@ export default function ManutencaoPage() {
         </div>
       </div>
       <DataTable
-        id="table-obra"
+        id="table-manutencao"
         columns={tableHeaders}
         rows={formattedManutencoes}
         path="/manutencao"
