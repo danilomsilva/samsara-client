@@ -122,12 +122,11 @@ export default function EquipamentoTipo() {
     (tipo) => tipo?.id === selectedRow
   );
 
-  console.log(selectedTipo);
-
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
     { key: 'tipo_nome', label: 'Tipo Equipamento' },
     { key: 'grupo_nomeX', label: 'Grupo Equipamento' },
+    { key: 'array_operacoes', label: 'Operações' },
   ];
 
   return (

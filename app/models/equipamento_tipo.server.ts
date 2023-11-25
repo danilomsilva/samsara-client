@@ -14,6 +14,8 @@ export type EquipamentoTipo = {
   grupo_nomeX?: string;
   inativo?: boolean;
   motivo?: string;
+  operacoes?: string[];
+  array_operacoes?: string;
 };
 
 export async function getEquipamentoTipos(
@@ -47,8 +49,9 @@ export async function getEquipamentoTipos(
       grupo_nomeX: item?.grupo_nomeX,
       inativo: item?.inativo,
       motivo: item?.motivo,
+      operacoes: item?.operacoes,
+      array_operacoes: item?.array_operacoes,
     }));
-
     return transformedData;
   } catch (error) {
     throw new Error('An error occured while getting tipos de equipamento');
@@ -109,8 +112,12 @@ export async function _createEquipamentoTipo(
     newEquipamentoTipo.grupo_nome
   );
 
+  const parsedArrayOperacoes = JSON.parse(body.array_operacoes as string);
+  const onlyOperacoesIds = parsedArrayOperacoes?.map((item) => item.id);
+
   const editBody = {
     grupo_nomeX: grupo_nome,
+    operacoes: onlyOperacoesIds,
   };
   await updateEquipamentoTipo(userToken, newEquipamentoTipo.id, editBody);
   return newEquipamentoTipo;

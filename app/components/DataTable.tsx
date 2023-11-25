@@ -112,6 +112,30 @@ export default function DataTable({
                                 >
                                   {row[columnName]} %
                                 </Link>
+                              ) : path === '/equipamento_tipo' &&
+                                columnName === 'array_operacoes' ? (
+                                Array.isArray(row[columnName]) ? (
+                                  row[columnName].map((item: any) => {
+                                    return (
+                                      <Tooltip
+                                        key={item}
+                                        content={
+                                          <>
+                                            <p>{item.codigo}</p>
+                                            <p>{item.descricao}</p>
+                                          </>
+                                        }
+                                        contentClassName="whitespace-nowrap"
+                                      >
+                                        <div className="bg-grey/30 rounded-md text-[10px] gap-1 flex overflow-hidden items-center px-1 !h-5 mr-2 cursor-default">
+                                          {item.codigo}
+                                        </div>
+                                      </Tooltip>
+                                    );
+                                  })
+                                ) : (
+                                  ''
+                                )
                               ) : columnName === 'boletim' &&
                                 path === '/manutencao' &&
                                 row[columnName] !== '-' ? (

@@ -5,9 +5,11 @@ import {
   json,
 } from '@remix-run/node';
 import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import { useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import Input from '~/components/Input';
+import InputTag from '~/components/InputTag';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import Select from '~/components/Select';
@@ -21,6 +23,7 @@ import {
   getEquipamentoTipo,
   _updateEquipamentoTipo,
 } from '~/models/equipamento_tipo.server';
+import { getOperacoes } from '~/models/operacao.server';
 
 import {
   commitSession,
@@ -33,15 +36,16 @@ import { CAMPO_OBRIGATORIO, type Option } from '~/utils/consts';
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
   const equipamentoGrupos = await getGruposEquipamento(userToken, 'created');
+  const operacoes = await getOperacoes(userToken, 'created');
 
   if (params.id === 'new') {
-    return json({ equipamentoGrupos });
+    return json({ equipamentoGrupos, operacoes });
   } else {
     const equipamentoTipo: EquipamentoTipo[] = await getEquipamentoTipo(
       userToken,
       params.id as string
     );
-    return json({ equipamentoTipo, equipamentoGrupos });
+    return json({ equipamentoTipo, equipamentoGrupos, operacoes });
   }
 }
 
@@ -103,7 +107,8 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewEquipamentoTipo() {
-  const { equipamentoTipo, equipamentoGrupos } = useLoaderData();
+  const { equipamentoTipo, equipamentoGrupos, operacoes } = useLoaderData();
+  const [operacoesArray, setOperacoesArray] = useState([]);
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -121,6 +126,10 @@ export default function NewEquipamentoTipo() {
     ?.sort((a: Option, b: Option) =>
       a.displayName.localeCompare(b.displayName)
     );
+
+  const handleChangeOperacoes = (operacoes: any) => {
+    setOperacoesArray(operacoes);
+  };
 
   return (
     <Modal
@@ -145,6 +154,19 @@ export default function NewEquipamentoTipo() {
               placeholder="-"
               error={actionData?.errors?.grupo_nome}
               className="w-60"
+            />
+          </Row>
+          <input
+            hidden
+            name="array_operacoes"
+            value={JSON.stringify(operacoesArray)}
+          />
+          <Row>
+            <InputTag
+              name="operacoes"
+              label="Operações"
+              data={operacoes}
+              onChange={handleChangeOperacoes}
             />
           </Row>
         </>
