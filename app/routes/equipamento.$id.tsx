@@ -22,10 +22,13 @@ import {
   _updateEquipamento,
   getEquipamento,
   type TipoEquipamento,
-  getTiposEquipamento,
   type GrupoEquipamento,
   getGruposEquipamento,
 } from '~/models/equipamento.server';
+import {
+  type EquipamentoTipo,
+  getEquipamentoTipos,
+} from '~/models/equipamento_tipo.server';
 import { type Obra, getObras } from '~/models/obra.server';
 import { type Usuario, getUsuarios } from '~/models/usuario.server';
 import {
@@ -44,7 +47,7 @@ import {
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
-  const tiposEquipamento: TipoEquipamento[] = await getTiposEquipamento(
+  const tiposEquipamento: TipoEquipamento[] = await getEquipamentoTipos(
     userToken,
     'created'
   );
@@ -70,6 +73,7 @@ export async function loader({ params, request }: LoaderArgs) {
       userToken,
       params.id as string
     );
+
     return json({
       obras,
       encarregados,
@@ -323,7 +327,17 @@ export default function NewEquipamento() {
       a.displayName.localeCompare(b.displayName)
     );
 
-  const sortedTiposEquipamento: Option[] = tiposEquipamento
+  const filteredTiposEquipamento = equipamento
+    ? tiposEquipamento?.filter(
+        (item: EquipamentoTipo) =>
+          item.grupo_nome === equipamento.grupo_equipamento
+      )
+    : tiposEquipamento?.filter(
+        (item: EquipamentoTipo) =>
+          item?.grupo_nomeX === selectedGrupo?.displayName
+      );
+
+  const sortedTiposEquipamento: Option[] = filteredTiposEquipamento
     ?.map((item: TipoEquipamento) => {
       const { id, tipo_nome } = item;
       return {

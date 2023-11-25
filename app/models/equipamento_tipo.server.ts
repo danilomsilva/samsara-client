@@ -10,6 +10,7 @@ export type EquipamentoTipo = {
       grupo_nome?: string;
     };
   };
+  grupo_nome?: string;
   grupo_nomeX?: string;
   inativo?: boolean;
   motivo?: string;
@@ -42,7 +43,7 @@ export async function getEquipamentoTipos(
       id: item?.id,
       created: item?.created && formatDateTime(item.created),
       tipo_nome: item?.tipo_nome,
-      grupo_nome: item?.expand?.grupo_nome?.grupo_nome,
+      grupo_nome: item?.grupo_nome,
       grupo_nomeX: item?.grupo_nomeX,
       inativo: item?.inativo,
       motivo: item?.motivo,
