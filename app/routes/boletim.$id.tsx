@@ -50,6 +50,7 @@ import TwoLinesInfo from '~/components/TwoLinesInfo';
 import Checkbox from '~/components/Checkbox';
 import Textarea from '~/components/Textarea';
 import { type Obra } from '~/models/obra.server';
+import { getEquipamentoTipos } from '~/models/equipamento_tipo.server';
 
 //just to trigger deploy!
 
@@ -58,6 +59,7 @@ export async function loader({ params, request }: LoaderArgs) {
   const loggedInUser: Usuario = await getUsuario(userToken, userId);
   const loggedInUserObra: Obra['id'] = loggedInUser?.obra;
   const equipamentos = await getEquipamentos(userToken, 'created', '');
+  const equipamentoTipos = await getEquipamentoTipos(userToken, 'created');
   const operadores = await getOperadores(userToken, 'created', '');
   const OSs = await getOSs(userToken, 'created');
   const operacoes = await getOperacoes(userToken, 'created');
@@ -116,28 +118,16 @@ export async function loader({ params, request }: LoaderArgs) {
     a.displayName.localeCompare(b.displayName)
   );
 
-  const sortedOperacoes: Option[] = operacoes
-    ?.map((item: Operacao) => {
-      const { id, codigo } = item;
-      return {
-        name: id,
-        displayName: codigo?.replace('OM-', ''),
-      };
-    })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
-
   const commonProperties = {
     equipamentos,
     sortedEquipamentos,
+    equipamentoTipos,
     loggedInUser,
     operadores,
     sortedOperadores,
     OSs,
     sortedOSs,
     operacoes,
-    sortedOperacoes,
   };
 
   if (params.id === 'new') {
@@ -311,10 +301,10 @@ export default function NewBoletim() {
   const {
     loggedInUser,
     equipamentos,
+    equipamentoTipos,
+    sortedEquipamentos,
     boletim,
     operacoes,
-    sortedOperacoes,
-    sortedEquipamentos,
     sortedOperadores,
     OSs,
     sortedOSs,
@@ -330,6 +320,7 @@ export default function NewBoletim() {
   const [equipLogs, setEquipLogs] = useState<any>([]);
   const [currentLog, setCurrentLog] = useState<any>({});
   const [isFormValid, setIsFormValid] = useState<boolean>(false);
+  const [arrayOperacoes, setArrayOperacoes] = useState([]);
   const [OS, setOS] = useState({});
   const [OP, setOP] = useState({});
   const [showSpinner, setShowSpinner] = useState(true);
@@ -376,12 +367,23 @@ export default function NewBoletim() {
     const equip = equipamentos.find(
       (equip: Equipamento) => equip.id === option.name
     );
+
     setEquipamento(equip);
     setEquipLogs((prevLogs: any) => {
       const firstLog = prevLogs.length > 0 ? { ...prevLogs[0] } : { index: 0 };
       firstLog.IM_inicio = equip?.instrumento_medicao_atual || '';
       return [firstLog, ...prevLogs.slice(1)];
     });
+    setArrayOperacoes(
+      equipamentoTipos
+        .filter((item: any) => item.id === equip.tipo_equipamento)[0]
+        ?.array_operacoes?.map((item) => {
+          return {
+            name: item.id,
+            displayName: item.codigo.split('-')[1].trim().toString(),
+          };
+        })
+    );
   };
 
   const handleChange = (
@@ -567,6 +569,19 @@ export default function NewBoletim() {
                   return (
                     <Row key={index}>
                       <Select
+                        name={`operacao_${index}`}
+                        options={arrayOperacoes}
+                        label="Operação"
+                        labelBold
+                        defaultValue={equipLogs[index]?.OP}
+                        placeholder="-"
+                        error={actionData?.errors?.[`operacao_${index}`]}
+                        className="!w-[132px]"
+                        noLabel={index !== 0}
+                        onChange={(value) => handleChange('OP', value, index)}
+                        onClick={() => handleClickedRow(index)}
+                      />
+                      <Select
                         name={`OS_${index}`}
                         options={sortedOSs}
                         labelBold
@@ -577,19 +592,6 @@ export default function NewBoletim() {
                         className="!w-[132px]"
                         noLabel={index !== 0}
                         onChange={(value) => handleChange('OS', value, index)}
-                        onClick={() => handleClickedRow(index)}
-                      />
-                      <Select
-                        name={`operacao_${index}`}
-                        options={sortedOperacoes}
-                        label="Operação"
-                        labelBold
-                        defaultValue={equipLogs[index]?.OP}
-                        placeholder="-"
-                        error={actionData?.errors?.[`operacao_${index}`]}
-                        className="!w-[132px]"
-                        noLabel={index !== 0}
-                        onChange={(value) => handleChange('OP', value, index)}
                         onClick={() => handleClickedRow(index)}
                       />
                       <InputValue

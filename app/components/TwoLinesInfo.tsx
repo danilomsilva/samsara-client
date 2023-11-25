@@ -14,20 +14,20 @@ export default function TwoLinesInfo({ OP, OS }: PropTypes) {
         {(OS || OP) && <InfoCircleIcon className="h-6 w-6 text-orange" />}
         <div>
           <p>
-            {OS && (
-              <>
-                <span className="font-bold">{OS?.codigo}</span>
-                <span> - </span>
-                <span>{OS?.descricao}</span>
-              </>
-            )}
-          </p>
-          <p>
             {OP && (
               <>
                 <span className="font-bold">{OP?.codigo}</span>
                 <span> - </span>
                 <span>{OP?.descricao}</span>
+              </>
+            )}
+          </p>
+          <p>
+            {OS && (
+              <>
+                <span className="font-bold">{OS?.codigo}</span>
+                <span> - </span>
+                <span>{OS?.descricao}</span>
               </>
             )}
           </p>
