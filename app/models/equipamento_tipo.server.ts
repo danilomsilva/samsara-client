@@ -106,14 +106,21 @@ export async function _createEquipamentoTipo(
   userToken: User['token'],
   body: EquipamentoTipo
 ) {
-  const newEquipamentoTipo = await createEquipamentoTipo(userToken, body);
+  const parsedArrayOperacoes = JSON.parse(body.array_operacoes as string);
+  const sortedArrayOperacoes = parsedArrayOperacoes.sort((a: any, b: any) =>
+    a.codigo.localeCompare(b.codigo)
+  );
+
+  const newEquipamentoTipo = await createEquipamentoTipo(userToken, {
+    ...body,
+    array_operacoes: sortedArrayOperacoes,
+  });
   const { grupo_nome } = await getEquipamentoGrupo(
     userToken,
     newEquipamentoTipo.grupo_nome
   );
 
-  const parsedArrayOperacoes = JSON.parse(body.array_operacoes as string);
-  const onlyOperacoesIds = parsedArrayOperacoes?.map((item) => item.id);
+  const onlyOperacoesIds = sortedArrayOperacoes?.map((item) => item.id);
 
   const editBody = {
     grupo_nomeX: grupo_nome,
@@ -128,21 +135,32 @@ export async function _updateEquipamentoTipo(
   equipTipoId: string,
   body: EquipamentoTipo
 ) {
-  const equipamentoTipo = await updateEquipamentoTipo(
+  const parsedArrayOperacoes = JSON.parse(body.array_operacoes as string);
+  const sortedArrayOperacoes = parsedArrayOperacoes.sort((a: any, b: any) =>
+    a.codigo.localeCompare(b.codigo)
+  );
+
+  const newEquipamentoTipo = await updateEquipamentoTipo(
     userToken,
     equipTipoId,
-    body
+    {
+      ...body,
+      array_operacoes: sortedArrayOperacoes,
+    }
   );
   const { grupo_nome } = await getEquipamentoGrupo(
     userToken,
-    equipamentoTipo.grupo_nome
+    newEquipamentoTipo.grupo_nome
   );
+
+  const onlyOperacoesIds = sortedArrayOperacoes?.map((item) => item.id);
 
   const editBody = {
     grupo_nomeX: grupo_nome,
+    operacoes: onlyOperacoesIds,
   };
-  await updateEquipamentoTipo(userToken, equipamentoTipo.id, editBody);
-  return equipamentoTipo;
+  await updateEquipamentoTipo(userToken, newEquipamentoTipo.id, editBody);
+  return newEquipamentoTipo;
 }
 
 export async function createEquipamentoTipo(

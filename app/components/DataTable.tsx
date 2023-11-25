@@ -70,7 +70,9 @@ export default function DataTable({
                     key={i}
                     className={`${row.inativo && 'text-grey/30'} ${
                       selectedRow === row.id && 'bg-blue/20 text-blue'
-                    } h-10 border-t-grey-light border-t hover:bg-blue/20 relative`}
+                    } ${
+                      path === '/equipamento_tipo' ? 'h-20' : 'h-10'
+                    } border-t-grey-light border-t hover:bg-blue/20 relative`}
                     onClick={() => setSelectedRow(row.id)}
                   >
                     {columnNames.map((columnName, i) => {
@@ -114,28 +116,29 @@ export default function DataTable({
                                 </Link>
                               ) : path === '/equipamento_tipo' &&
                                 columnName === 'array_operacoes' ? (
-                                Array.isArray(row[columnName]) ? (
-                                  row[columnName].map((item: any) => {
-                                    return (
-                                      <Tooltip
-                                        key={item}
-                                        content={
-                                          <>
-                                            <p>{item.codigo}</p>
-                                            <p>{item.descricao}</p>
-                                          </>
-                                        }
-                                        contentClassName="whitespace-nowrap"
-                                      >
-                                        <div className="bg-grey/30 rounded-md text-[10px] gap-1 flex overflow-hidden items-center px-1 !h-5 mr-2 cursor-default">
-                                          {item.codigo}
-                                        </div>
-                                      </Tooltip>
-                                    );
-                                  })
-                                ) : (
-                                  ''
-                                )
+                                <div className="flex flex-wrap gap-1">
+                                  {Array.isArray(row[columnName])
+                                    ? row[columnName].map((item: any) => {
+                                        return (
+                                          // TODO: make the position dynamic to screen to avoid cuts
+                                          <Tooltip
+                                            key={item}
+                                            content={
+                                              <>
+                                                <p>{item.codigo}</p>
+                                                <p>{item.descricao}</p>
+                                              </>
+                                            }
+                                            contentClassName="whitespace-nowrap"
+                                          >
+                                            <div className="bg-grey/30 rounded-md flex items-center px-1 cursor-default">
+                                              {item.codigo}
+                                            </div>
+                                          </Tooltip>
+                                        );
+                                      })
+                                    : ''}
+                                </div>
                               ) : columnName === 'boletim' &&
                                 path === '/manutencao' &&
                                 row[columnName] !== '-' ? (

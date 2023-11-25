@@ -6,7 +6,7 @@ type PropTypes = {
   name: string;
   label: string;
   className?: string;
-  defaultValue?: string;
+  defaultValue?: any;
   error?: string;
   onChange?: (value: any) => void;
   placeholder?: string;
@@ -27,6 +27,10 @@ export default function InputTag({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
+    setArray(defaultValue);
+  }, []);
+
+  useEffect(() => {
     onChange && onChange(array);
   }, [array]);
 
@@ -36,7 +40,10 @@ export default function InputTag({
   };
 
   const handleAddToArray = () => {
-    const findEntry = data.find((item) => item.codigo.split('-')[1] === value);
+    const findEntry = data.find(
+      (item) => item.codigo.split('-')[1]?.trim() === value?.trim()
+    );
+
     if (findEntry) {
       const findArray = array.find((item) => item.codigo === findEntry.codigo);
       if (findArray) {
@@ -64,7 +71,6 @@ export default function InputTag({
         type="text"
         min={1}
         className="rounded-lg p-2 px-4 focus:outline-blue h-9"
-        defaultValue={defaultValue}
         value={value}
         autoComplete="off"
         onChange={handleChange}
@@ -79,12 +85,12 @@ export default function InputTag({
           />
         </div>
       )}
-      <div className="flex gap-1 p-2">
+      <div className="flex gap-1 p-2 flex-wrap">
         {array.map((item) => {
           return (
             <div
               key={item.id}
-              className="bg-grey/30 rounded-md text-[10px] gap-1 flex overflow-hidden items-center pl-1 !h-5"
+              className="bg-grey/30 rounded-md text-[10px] gap-1 flex overflow-hidden items-center pl-1 !h-5 whitespace-nowrap"
             >
               {item.codigo}
               <div

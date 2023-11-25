@@ -166,6 +166,7 @@ export default function NewEquipamentoTipo() {
               name="operacoes"
               label="Operações"
               data={operacoes}
+              defaultValue={equipamentoTipo?.array_operacoes}
               onChange={handleChangeOperacoes}
             />
           </Row>
