@@ -102,6 +102,7 @@ export default function OperacaoPage() {
     { key: 'created', label: 'Data de criação' },
     { key: 'codigo', label: 'Código' },
     { key: 'descricao', label: 'Descrição' },
+    { key: 'array_ordens_servico', label: 'Ordens de Serviço' },
   ];
 
   return (
@@ -133,6 +134,7 @@ export default function OperacaoPage() {
         </div>
       </div>
       <DataTable
+        id="table-operacao"
         columns={tableHeaders}
         rows={operacoes}
         path="/operacao"

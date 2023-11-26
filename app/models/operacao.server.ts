@@ -7,6 +7,8 @@ export type Operacao = {
   codigo?: string;
   descricao?: string;
   inativo?: boolean;
+  ordens_servico?: string[];
+  array_ordens_servico?: string;
 };
 
 export async function getOperacoes(
@@ -37,6 +39,8 @@ export async function getOperacoes(
       codigo: item.codigo,
       descricao: item.descricao,
       inativo: item?.inativo,
+      ordens_servico: item?.ordens_servico,
+      array_ordens_servico: item?.array_ordens_servico,
     }));
     return transformedData;
   } catch (error) {
@@ -61,6 +65,28 @@ export async function getOperacao(userToken: User['token'], opId: string) {
   } catch (error) {
     throw new Error('An error occured while getting Operacao');
   }
+}
+
+export async function _createOperacao(
+  userToken: User['token'],
+  body: Operacao
+) {
+  const parsedOSArray = JSON.parse(body.array_ordens_servico as string);
+  const sortedOSArray = parsedOSArray.sort((a: any, b: any) =>
+    a.codigo.localeCompare(b.codigo)
+  );
+
+  const newEquipamentoTipo = await createOperacao(userToken, {
+    ...body,
+    array_ordens_servico: sortedOSArray,
+  });
+
+  const onlyOperacoesIds = sortedOSArray?.map((item) => item.id);
+
+  await updateOperacao(userToken, newEquipamentoTipo.id, {
+    ordens_servico: onlyOperacoesIds,
+  });
+  return newEquipamentoTipo;
 }
 
 export async function createOperacao(userToken: User['token'], body: Operacao) {
@@ -89,6 +115,29 @@ export async function createOperacao(userToken: User['token'], body: Operacao) {
       throw new Error('An error occured while creating Operacao');
     }
   }
+}
+
+export async function _updateOperacao(
+  userToken: User['token'],
+  equipTipoId: string,
+  body: Operacao
+) {
+  const parsedOSArray = JSON.parse(body.array_ordens_servico as string);
+  const sortedOSArray = parsedOSArray.sort((a: any, b: any) =>
+    a.codigo.localeCompare(b.codigo)
+  );
+
+  const newEquipamentoTipo = await updateOperacao(userToken, equipTipoId, {
+    ...body,
+    array_ordens_servico: sortedOSArray,
+  });
+
+  const onlyOperacoesIds = sortedOSArray?.map((item) => item.id);
+
+  await updateOperacao(userToken, newEquipamentoTipo.id, {
+    ordens_servico: onlyOperacoesIds,
+  });
+  return newEquipamentoTipo;
 }
 
 export async function updateOperacao(

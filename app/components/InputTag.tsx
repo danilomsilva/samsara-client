@@ -27,7 +27,7 @@ export default function InputTag({
   const [error, setError] = useState<string>('');
 
   useEffect(() => {
-    setArray(defaultValue);
+    if (defaultValue) setArray(defaultValue);
   }, []);
 
   useEffect(() => {
@@ -47,13 +47,21 @@ export default function InputTag({
     if (findEntry) {
       const findArray = array.find((item) => item.codigo === findEntry.codigo);
       if (findArray) {
-        setError('Operação já adicionada');
+        setError(
+          name === 'operacoes'
+            ? 'Operação já adicionada!'
+            : 'Ordem de serviço já adicionada!'
+        );
       } else {
         setArray((prev) => [...prev, findEntry]);
         setValue('');
       }
     } else {
-      setError('Operação não cadastrada!');
+      setError(
+        name === 'operacoes'
+          ? 'Operação não cadastrada!'
+          : 'Ordem de serviço não cadastrada!'
+      );
     }
   };
 

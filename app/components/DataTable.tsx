@@ -139,6 +139,31 @@ export default function DataTable({
                                       })
                                     : ''}
                                 </div>
+                              ) : path === '/operacao' &&
+                                columnName === 'array_ordens_servico' ? (
+                                <div className="flex flex-wrap gap-1">
+                                  {Array.isArray(row[columnName])
+                                    ? row[columnName].map((item: any) => {
+                                        return (
+                                          // TODO: make the position dynamic to screen to avoid cuts
+                                          <Tooltip
+                                            key={item}
+                                            content={
+                                              <>
+                                                <p>{item.codigo}</p>
+                                                <p>{item.descricao}</p>
+                                              </>
+                                            }
+                                            contentClassName="whitespace-nowrap"
+                                          >
+                                            <div className="bg-grey/30 rounded-md flex items-center px-1 cursor-default">
+                                              {item.codigo}
+                                            </div>
+                                          </Tooltip>
+                                        );
+                                      })
+                                    : ''}
+                                </div>
                               ) : columnName === 'boletim' &&
                                 path === '/manutencao' &&
                                 row[columnName] !== '-' ? (

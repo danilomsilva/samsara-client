@@ -168,6 +168,7 @@ export default function NewEquipamentoTipo() {
               data={operacoes}
               defaultValue={equipamentoTipo?.array_operacoes}
               onChange={handleChangeOperacoes}
+              placeholder="Digite apenas o código da operação e clique + para adicionar"
             />
           </Row>
         </>

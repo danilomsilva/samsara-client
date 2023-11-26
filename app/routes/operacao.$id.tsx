@@ -5,20 +5,23 @@ import {
   json,
 } from '@remix-run/node';
 import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import { useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import ErrorMessage from '~/components/ErrorMessage';
 import Input from '~/components/Input';
+import InputTag from '~/components/InputTag';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import {
-  createOperacao,
+  _createOperacao,
+  _updateOperacao,
   getOperacao,
-  updateOperacao,
 } from '~/models/operacao.server';
+import { getOSs } from '~/models/ordem-servico.server';
 import {
   commitSession,
   getSession,
@@ -29,12 +32,14 @@ import { CAMPO_OBRIGATORIO } from '~/utils/consts';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
+  const OSs = await getOSs(userToken, 'created');
 
-  if (params.id !== 'new') {
+  if (params.id === 'new') {
+    return json({ OSs });
+  } else {
     const operacao = await getOperacao(userToken, params.id as string);
-    return json({ operacao });
+    return json({ operacao, OSs });
   }
-  return json({});
 }
 
 export async function action({ params, request }: ActionArgs) {
@@ -63,7 +68,7 @@ export async function action({ params, request }: ActionArgs) {
   }
 
   if (formData._action === 'create') {
-    const operacao = await createOperacao(userToken, formData);
+    const operacao = await _createOperacao(userToken, formData);
     if (operacao.data) {
       return json({ error: operacao.data });
     }
@@ -76,7 +81,7 @@ export async function action({ params, request }: ActionArgs) {
   }
 
   if (formData._action === 'edit') {
-    await updateOperacao(userToken, params.id as string, formData);
+    await _updateOperacao(userToken, params.id as string, formData);
     setToastMessage(session, 'Sucesso', 'Operação editada!', 'success');
     return redirect('/operacao', {
       headers: {
@@ -88,11 +93,16 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewOS() {
-  const { operacao } = useLoaderData();
+  const { operacao, OSs } = useLoaderData();
+  const [OSarray, setOSArray] = useState([]);
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
+
+  const handleChangeOSs = (operacoes: any) => {
+    setOSArray(operacoes);
+  };
 
   return (
     <Modal
@@ -120,6 +130,21 @@ export default function NewOS() {
             />
           </Row>
           {actionData?.error && <ErrorMessage error={actionData?.error} />}
+          <input
+            hidden
+            name="array_ordens_servico"
+            value={JSON.stringify(OSarray)}
+          />
+          <Row>
+            <InputTag
+              name="ordens_servico"
+              label="Ordens de Serviço"
+              data={OSs}
+              defaultValue={operacao?.array_ordens_servico}
+              onChange={handleChangeOSs}
+              placeholder="Digite apenas o código da OS e clique + para adicionar"
+            />
+          </Row>
         </>
       }
       footerActions={
