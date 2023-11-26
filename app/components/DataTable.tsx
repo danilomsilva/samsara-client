@@ -71,7 +71,9 @@ export default function DataTable({
                     className={`${row.inativo && 'text-grey/30'} ${
                       selectedRow === row.id && 'bg-blue/20 text-blue'
                     } ${
-                      path === '/equipamento_tipo' ? 'h-20' : 'h-10'
+                      path === '/equipamento_tipo' || path === '/operacao'
+                        ? 'h-20'
+                        : 'h-10'
                     } border-t-grey-light border-t hover:bg-blue/20 relative`}
                     onClick={() => setSelectedRow(row.id)}
                   >
