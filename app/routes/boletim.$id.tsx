@@ -52,8 +52,6 @@ import Textarea from '~/components/Textarea';
 import { type Obra } from '~/models/obra.server';
 import { getEquipamentoTipos } from '~/models/equipamento_tipo.server';
 
-//just to trigger deploy!
-
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
   const loggedInUser: Usuario = await getUsuario(userToken, userId);
@@ -322,6 +320,7 @@ export default function NewBoletim() {
   const [isFormValid, setIsFormValid] = useState<boolean>(false);
   const [arrayOperacoes, setArrayOperacoes] = useState([]);
   const [OS, setOS] = useState({});
+  const [arrayOSs, setArrayOSs] = useState([]);
   const [OP, setOP] = useState({});
   const [showSpinner, setShowSpinner] = useState(true);
 
@@ -348,6 +347,22 @@ export default function NewBoletim() {
         };
       });
       setEquipLogs(newEquipLogsMap);
+
+      //set operacoes
+      const findEquipTipo = equipamentoTipos?.find(
+        (item) => item?.id === findEquip?.tipo_equipamento
+      );
+      setArrayOperacoes(
+        findEquipTipo?.array_operacoes?.map((item) => {
+          return {
+            name: item?.id,
+            displayName: item?.codigo?.split('-')[1]?.trim()?.toString(),
+          };
+        })
+      );
+
+      setArrayOSs(sortedOSs);
+
       setTimeout(() => {
         setIsFormValid(true);
         setShowSpinner(false);
@@ -391,15 +406,23 @@ export default function NewBoletim() {
     value: Option | string,
     index: number
   ) => {
-    if (name === 'OS') {
-      const findOS = OSs.find((item: OS) => item?.id === value?.name);
-      setOS(findOS);
-    }
     if (name === 'OP') {
       const findOP = operacoes.find(
         (item: Operacao) => item?.id === value?.name
       );
+      setArrayOSs(
+        findOP?.array_ordens_servico?.map((item) => {
+          return {
+            name: item.id,
+            displayName: item?.codigo?.split('-')[1]?.trim()?.toString(),
+          };
+        })
+      );
       setOP(findOP);
+    }
+    if (name === 'OS') {
+      const findOS = OSs.find((item: OS) => item?.id === value?.name);
+      setOS(findOS);
     }
     const logToUpdate =
       equipLogs.find((log) => log.index === index) || currentLog;
@@ -583,7 +606,7 @@ export default function NewBoletim() {
                       />
                       <Select
                         name={`OS_${index}`}
-                        options={sortedOSs}
+                        options={arrayOSs}
                         labelBold
                         label="O.S."
                         defaultValue={equipLogs[index]?.OS}
