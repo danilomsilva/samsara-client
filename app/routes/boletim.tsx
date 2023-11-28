@@ -43,7 +43,7 @@ export const meta: V2_MetaFunction = () => {
 };
 
 export async function loader({ request }: LoaderArgs) {
-  const { userToken } = await getUserSession(request);
+  const { userToken, userId, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
   const filter = searchParams.get('filter');
   const sortParam = searchParams.get('sort');
@@ -52,7 +52,16 @@ export async function loader({ request }: LoaderArgs) {
     order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
 
   if (userToken) {
-    const boletins = await getBoletins(userToken, sortingBy, filter as string);
+    const allBoletins = await getBoletins(
+      userToken,
+      sortingBy,
+      filter as string
+    );
+    const boletins =
+      tipoAcesso === 'Encarregado'
+        ? allBoletins?.filter((item: Boletim) => item.encarregado === userId)
+        : allBoletins;
+
     return json({ boletins });
   } else {
     throw json('Acesso proibido', { status: 403 });
