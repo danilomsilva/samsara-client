@@ -121,7 +121,12 @@ export default function DataTable({
                                   to={`/manutencao/new?equip=${row.codigo}`}
                                   className={`bg-${revisaoStatusColor} w-fit rounded-lg px-2 py-1 text-white font-semibold items-center justify-center mr-1 whitespace-nowrap`}
                                 >
-                                  {row[columnName]}
+                                  {row[columnName]}{' '}
+                                  {`${
+                                    row.instrumento_medicao === 'Horímetro'
+                                      ? 'h'
+                                      : 'km'
+                                  }`}
                                 </Link>
                               ) : path === '/equipamento_tipo' &&
                                 columnName === 'array_operacoes' ? (
@@ -182,11 +187,6 @@ export default function DataTable({
                                 >
                                   {row[columnName]}
                                 </Link>
-                              ) : columnName === 'tipo_equipamentoX' &&
-                                path === '/equipamento' ? (
-                                <div className="w-[120px]">
-                                  {row[columnName]}
-                                </div>
                               ) : (
                                 <div className="mr-2 whitespace-nowrap">
                                   {typeof row[columnName] === 'boolean' ? (
