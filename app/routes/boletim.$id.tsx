@@ -76,10 +76,10 @@ export async function loader({ params, request }: LoaderArgs) {
   const sortedEquipamentos: Option[] = filteredEquipamentos
     ?.filter((item: Equipamento) => !item?.inativo)
     ?.map((item: Equipamento) => {
-      const { id, codigo } = item;
+      const { id, codigo, tipo_equipamentoX, modelo } = item;
       return {
         name: id,
-        displayName: codigo,
+        displayName: `${codigo} - ${tipo_equipamentoX} - ${modelo}`,
       };
     })
     .sort((a: Option, b: Option) => a.displayName.localeCompare(b.displayName));

@@ -78,12 +78,19 @@ export default function DataTable({
                     onClick={() => setSelectedRow(row.id)}
                   >
                     {columnNames.map((columnName, i) => {
+                      const colorsConditions =
+                        row.grupo_equipamentoX === 'Máquina' ||
+                        row.grupo_equipamentoX === 'Motocicleta'
+                          ? 100
+                          : row.grupo_equipamentoX === 'Caminhão' ||
+                            row.grupo_equipamentoX === 'Automóvel'
+                          ? 1000
+                          : 100;
                       const revisaoStatusColor =
-                        columnName === 'revisao_status' && row[columnName] < 20
+                        columnName === 'revisao_status' && row[columnName] <= 0
                           ? 'red'
-                          : row[columnName] >= 20 &&
-                            row[columnName] &&
-                            row[columnName] < 40
+                          : row[columnName] > 0 &&
+                            row[columnName] <= colorsConditions
                           ? 'orange'
                           : 'green';
 
@@ -114,7 +121,7 @@ export default function DataTable({
                                   to={`/manutencao/new?equip=${row.codigo}`}
                                   className={`bg-${revisaoStatusColor} w-fit rounded-lg px-2 py-1 text-white font-semibold items-center justify-center mr-1 whitespace-nowrap`}
                                 >
-                                  {row[columnName]} %
+                                  {row[columnName]}
                                 </Link>
                               ) : path === '/equipamento_tipo' &&
                                 columnName === 'array_operacoes' ? (

@@ -218,10 +218,10 @@ export default function NewOperador() {
   const sortedEquipamentos: Option[] = equipamentos
     ?.filter((item: Equipamento) => !item?.inativo)
     ?.map((item: Equipamento) => {
-      const { id, codigo, tipo_equipamentoX } = item;
+      const { id, codigo, tipo_equipamentoX, modelo } = item;
       return {
         name: id,
-        displayName: `${codigo} - ${tipo_equipamentoX}`,
+        displayName: `${codigo} - ${tipo_equipamentoX} - ${modelo}`,
       };
     })
     ?.sort((a: Option, b: Option) =>

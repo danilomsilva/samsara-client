@@ -19,6 +19,7 @@ export type Equipamento = {
   id?: string;
   created?: string;
   codigo?: string;
+  modelo?: string;
   numero_serie?: string;
   obra?: Obra;
   obraX?: string;
@@ -76,7 +77,7 @@ export async function getGruposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -109,7 +110,7 @@ export async function getTiposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -148,7 +149,7 @@ export async function getEquipamentos(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -159,13 +160,14 @@ export async function getEquipamentos(
       codigo: item.codigo,
       obra: item?.obra,
       obraX: item.obraX,
-      valor_locacao: item.valor_locacao,
+      valor_locacao: item.valor_locacao, //TODO: check if working correctly!
       tipo_locacao: item.tipo_locacao,
       tipo_equipamento: item.tipo_equipamento,
       tipo_equipamentoX: item?.expand?.tipo_equipamento?.tipo_nome,
       grupo_equipamento: item.grupo_equipamento,
       grupo_equipamentoX: item?.expand?.grupo_equipamento?.grupo_nome,
       numero_serie: item.numero_serie,
+      modelo: item.modelo,
       ano: item.ano,
       combustivel: item.combustivel,
       encarregado: item?.encarregado,
@@ -197,7 +199,7 @@ export async function getEquipamento(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -223,17 +225,14 @@ export async function _createEquipamento(
     );
 
     // REVISAO CALCULATIONS
-
-    const differencePercentage =
-      ((Number(equipamento?.proxima_revisao) -
-        Number(equipamento?.instrumento_medicao_atual)) *
-        100) /
-      Number(equipamento?.frequencia_revisao);
+    const diffToRevisao =
+      Number(equipamento?.proxima_revisao) -
+      Number(equipamento?.instrumento_medicao_atual);
 
     const editBody = {
       obraX: nome,
       encarregadoX: nome_completo,
-      revisao_status: Number(differencePercentage).toFixed(2),
+      revisao_status: Number(diffToRevisao).toFixed(2),
     };
 
     await updateEquipamento(userToken, equipamento.id, editBody);
@@ -259,7 +258,7 @@ export async function createEquipamento(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
+            'Authorization': `Bearer ${userToken}`,
           },
           body: JSON.stringify(body),
         }
@@ -284,17 +283,15 @@ export async function _updateEquipamento(
     equipamento.encarregado
   );
 
-  const differencePercentage =
-    ((Number(equipamento?.proxima_revisao) -
-      Number(body?.instrumento_medicao_atual)) *
-      100) /
-    Number(body?.frequencia_revisao);
+  const diffToRevisao =
+    Number(equipamento?.proxima_revisao) -
+    Number(body?.instrumento_medicao_atual);
 
   if (equipamento?.frequencia_revisao === Number(body?.frequencia_revisao)) {
     const editBody = {
       obraX: nome,
       encarregadoX: nome_completo,
-      revisao_status: differencePercentage.toFixed(2),
+      revisao_status: diffToRevisao.toFixed(2),
     };
     await updateEquipamento(userToken, equipamento.id, editBody);
   } else {
@@ -304,7 +301,7 @@ export async function _updateEquipamento(
       proxima_revisao:
         Number(body?.frequencia_revisao) +
         Number(body?.instrumento_medicao_atual),
-      revisao_status: differencePercentage.toFixed(2),
+      revisao_status: diffToRevisao.toFixed(2),
     };
     await updateEquipamento(userToken, equipamento.id, editBody);
   }
@@ -324,7 +321,7 @@ export async function updateEquipamento(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -347,7 +344,7 @@ export async function deleteEquipamento(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

@@ -94,6 +94,7 @@ export async function action({ params, request }: ActionArgs) {
     tipo_equipamento: z.string().refine((val) => val, CAMPO_OBRIGATORIO),
     numero: z.string().min(1, { message: 'Campo ...' }),
     codigo: z.string(),
+    modelo: z.string().min(1, CAMPO_OBRIGATORIO),
     numero_serie: z.string().min(1, CAMPO_OBRIGATORIO),
     ano: z
       .string()
@@ -128,6 +129,7 @@ export async function action({ params, request }: ActionArgs) {
         tipo_equipamento: errors.tipo_equipamento?._errors[0],
         numero: errors.numero?._errors[0],
         codigo: errors.codigo?._errors[0],
+        modelo: errors.modelo?._errors[0],
         numero_serie: errors.numero_serie?._errors[0],
         ano: errors.ano?._errors[0],
         combustivel: errors.combustivel?._errors[0],
@@ -417,6 +419,13 @@ export default function NewEquipamento() {
           <Row>
             <Input
               type="text"
+              name="modelo"
+              label="Modelo"
+              defaultValue={equipamento?.modelo}
+              error={actionData?.errors?.modelo}
+            />
+            <Input
+              type="text"
               name="numero_serie"
               label="Número Série"
               defaultValue={equipamento?.numero_serie}
@@ -435,7 +444,7 @@ export default function NewEquipamento() {
               name="combustivel"
               options={COMBUSTIVEIS}
               label="Combustível"
-              className="!w-[175px]"
+              className="!w-[120px]"
               placeholder="-"
               defaultValue={equipamento?.combustivel}
               error={actionData?.errors?.combustivel}
