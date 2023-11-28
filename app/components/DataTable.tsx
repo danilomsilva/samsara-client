@@ -112,7 +112,7 @@ export default function DataTable({
                                     contentClassName="w-[200px] z-50"
                                     content={`Número de série: ${row.numero_serie}`}
                                   >
-                                    <InfoIcon className="h-7 w-7 text-orange" />
+                                    <InfoIcon className="h-6 w-6 text-orange" />
                                   </Tooltip>
                                 </div>
                               ) : path === '/equipamento' &&
@@ -182,6 +182,11 @@ export default function DataTable({
                                 >
                                   {row[columnName]}
                                 </Link>
+                              ) : columnName === 'tipo_equipamentoX' &&
+                                path === '/equipamento' ? (
+                                <div className="w-[120px]">
+                                  {row[columnName]}
+                                </div>
                               ) : (
                                 <div className="mr-2 whitespace-nowrap">
                                   {typeof row[columnName] === 'boolean' ? (

@@ -151,8 +151,8 @@ export default function EquipamentoPage() {
   const selectedEquipamento = equipamentos.find((eq) => eq?.id === selectedRow);
 
   const tableHeaders = [
-    { key: 'codigo', label: 'Código' },
     { key: 'tipo_equipamentoX', label: 'Tipo Equip.' },
+    { key: 'codigo', label: 'Código' },
     { key: 'modelo', label: 'Modelo' },
     { key: 'ano', label: 'Ano' },
     { key: 'combustivel', label: 'Combustível' },
@@ -160,7 +160,7 @@ export default function EquipamentoPage() {
     { key: 'instrumento_medicao_inicio', label: 'IM Início' },
     { key: 'instrumento_medicao_atual', label: 'IM Atual' },
     { key: 'proxima_revisao', label: 'Próx. Revisão' },
-    { key: 'revisao_status', label: 'Revisão' },
+    { key: 'revisao_status', label: 'Faltando' },
     { key: 'encarregadoX', label: 'Encarregado' },
     { key: 'obraX', label: 'Obra' },
   ];

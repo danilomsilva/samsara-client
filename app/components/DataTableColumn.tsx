@@ -31,7 +31,7 @@ export default function Column({ column, children, disabledSort }: PropTypes) {
       <Link
         to={{ pathname: location.pathname, search: searchParams.toString() }}
       >
-        <div className="flex items-center gap-2 group">
+        <div className="flex items-center gap-1 group">
           {children}
           <ChrevronDownIcon
             className={clsx(

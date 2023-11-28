@@ -77,7 +77,7 @@ export async function getGruposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -110,7 +110,7 @@ export async function getTiposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -149,7 +149,7 @@ export async function getEquipamentos(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -160,8 +160,9 @@ export async function getEquipamentos(
       codigo: item.codigo,
       obra: item?.obra,
       obraX: item.obraX,
-      valor_locacao: item.valor_locacao, //TODO: check if working correctly!
-      tipo_locacao: item.tipo_locacao,
+      valor_locacao_diario: item.valor_locacao_diario,
+      valor_locacao_mensal: item.valor_locacao_mensal,
+      valor_locacao_hora: item.valor_locacao_hora,
       tipo_equipamento: item.tipo_equipamento,
       tipo_equipamentoX: item?.expand?.tipo_equipamento?.tipo_nome,
       grupo_equipamento: item.grupo_equipamento,
@@ -199,7 +200,7 @@ export async function getEquipamento(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -258,7 +259,7 @@ export async function createEquipamento(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`,
+            Authorization: `Bearer ${userToken}`,
           },
           body: JSON.stringify(body),
         }
@@ -321,7 +322,7 @@ export async function updateEquipamento(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -344,7 +345,7 @@ export async function deleteEquipamento(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

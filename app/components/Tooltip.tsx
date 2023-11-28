@@ -23,11 +23,32 @@ export default function Tooltip({
     const childrenElement = childrenRef.current;
 
     if (childrenElement) {
-      const { top } = childrenElement.getBoundingClientRect();
+      const { left, top, right } = childrenElement.getBoundingClientRect();
       const windowHeight = window.innerHeight;
+      const windowWidth = window.innerWidth;
       const bottomDistance = windowHeight - top;
 
-      const newPosition = bottomDistance < 150 ? 'top' : 'bottom';
+      let newPosition;
+
+      // Determine vertical position
+      if (bottomDistance < 150) {
+        newPosition = 'top';
+      } else {
+        newPosition = 'bottom';
+      }
+
+      // Check if the right value is close to the right side of the page
+      const rightCloseToPageRight = windowWidth - right < 150;
+
+      // Check if the left value is close to the left side of the page
+      const leftCloseToPageLeft = left < 150;
+
+      if (rightCloseToPageRight) {
+        newPosition = 'left';
+      } else if (leftCloseToPageLeft) {
+        newPosition = 'right';
+      }
+
       setTooltipPosition(newPosition);
     }
   };
@@ -56,7 +77,9 @@ export default function Tooltip({
       >
         {/* content */}
         <div
-          className={`${contentClassName} bg-orange px-6 py-4 font-normal text-white rounded-lg drop-shadow-md`}
+          className={`${contentClassName} bg-orange px-6 py-4 font-normal text-white rounded-lg drop-shadow-md  ${
+            position === 'left' && 'transform -translate-x-[40%]'
+          }`}
         >
           {content}
         </div>
