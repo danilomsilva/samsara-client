@@ -3,6 +3,7 @@ import { PairLabelValue } from './PairLabelValue';
 import { type Equipamento } from '~/models/equipamento.server';
 
 type PropTypes = {
+  codigoBoletim: string;
   loggedInUser?: Usuario;
   equipamento?: Equipamento;
   firstHour?: string;
@@ -12,6 +13,7 @@ type PropTypes = {
 };
 
 export default function FooterSummary({
+  codigoBoletim,
   loggedInUser,
   equipamento,
   firstHour,
@@ -19,9 +21,17 @@ export default function FooterSummary({
   IMInicio,
   IMFinal,
 }: PropTypes) {
-  const suffix = equipamento?.instrumento_medicao === 'Odômetro' ? 'km' : 'h';
+  const suffix = equipamento?.instrumento_medicao
+    ? equipamento?.instrumento_medicao === 'Odômetro'
+      ? 'km'
+      : 'h'
+    : '';
+
   return (
     <div className="flex gap-10 -mt-1">
+      {codigoBoletim && (
+        <PairLabelValue label="Boletim" value={codigoBoletim ?? ''} />
+      )}
       <PairLabelValue label="Obra" value={loggedInUser?.obraX ?? ''} />
       <PairLabelValue
         label="Encarregado"

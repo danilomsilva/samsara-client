@@ -767,6 +767,7 @@ export default function NewBoletim() {
       }
       footerSummary={
         <FooterSummary
+          codigoBoletim={boletim?.codigo}
           loggedInUser={loggedInUser}
           equipamento={equipamento}
           firstHour={equipLogs[0]?.hora_inicio}
