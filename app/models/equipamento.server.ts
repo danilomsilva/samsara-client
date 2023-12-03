@@ -2,6 +2,7 @@ import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
 import { type Obra, getObra } from './obra.server';
 import { type Usuario, getUsuario } from './usuario.server';
+import { getEquipamentoTipo } from './equipamento_tipo.server';
 
 export type GrupoEquipamento = {
   id?: string;
@@ -164,7 +165,7 @@ export async function getEquipamentos(
       valor_locacao_mensal: item.valor_locacao_mensal,
       valor_locacao_hora: item.valor_locacao_hora,
       tipo_equipamento: item.tipo_equipamento,
-      tipo_equipamentoX: item?.expand?.tipo_equipamento?.tipo_nome,
+      tipo_equipamentoX: item?.tipo_equipamentoX,
       grupo_equipamento: item.grupo_equipamento,
       grupo_equipamentoX: item?.expand?.grupo_equipamento?.grupo_nome,
       numero_serie: item.numero_serie,
@@ -225,6 +226,11 @@ export async function _createEquipamento(
       equipamento.encarregado
     );
 
+    const tipoEquipamento = await getEquipamentoTipo(
+      userToken,
+      body.tipo_equipamento as string
+    );
+
     // REVISAO CALCULATIONS
     const diffToRevisao =
       Number(equipamento?.proxima_revisao) -
@@ -234,6 +240,7 @@ export async function _createEquipamento(
       obraX: nome,
       encarregadoX: nome_completo,
       revisao_status: Number(diffToRevisao).toFixed(2),
+      tipo_equipamentoX: tipoEquipamento.tipo_nome,
     };
 
     await updateEquipamento(userToken, equipamento.id, editBody);
@@ -283,6 +290,10 @@ export async function _updateEquipamento(
     userToken,
     equipamento.encarregado
   );
+  const tipoEquipamento = await getEquipamentoTipo(
+    userToken,
+    body.tipo_equipamento as string
+  );
 
   const diffToRevisao =
     Number(equipamento?.proxima_revisao) -
@@ -293,6 +304,7 @@ export async function _updateEquipamento(
       obraX: nome,
       encarregadoX: nome_completo,
       revisao_status: diffToRevisao.toFixed(2),
+      tipo_equipamentoX: tipoEquipamento.tipo_nome,
     };
     await updateEquipamento(userToken, equipamento.id, editBody);
   } else {

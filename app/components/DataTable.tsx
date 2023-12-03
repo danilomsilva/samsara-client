@@ -7,6 +7,7 @@ import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { useEffect } from 'react';
 import CogIcon from './icons/CogIcon';
 import { Link } from '@remix-run/react';
+import TooltipDisabled from './TooltipDisabled';
 
 type ColumnType = {
   key: string;
@@ -134,7 +135,6 @@ export default function DataTable({
                                   {Array.isArray(row[columnName])
                                     ? row[columnName].map((item: any) => {
                                         return (
-                                          // TODO: make the position dynamic to screen to avoid cuts
                                           <Tooltip
                                             key={item}
                                             content={
@@ -206,7 +206,7 @@ export default function DataTable({
                     })}
                     {row.motivo && (
                       <div className="flex items-center justify-center h-10">
-                        <Tooltip
+                        <TooltipDisabled
                           contentClassName="z-50 -ml-60 w-72"
                           content={
                             <>
@@ -216,7 +216,7 @@ export default function DataTable({
                           }
                         >
                           <InfoIcon className="h-6 w-6 text-orange" />
-                        </Tooltip>
+                        </TooltipDisabled>
                       </div>
                     )}
                   </tr>

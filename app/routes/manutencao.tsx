@@ -166,7 +166,7 @@ export default function ManutencaoPage() {
     { key: 'equipamentoX', label: 'Cód. Equip.' },
     { key: 'modelo_equipamento', label: 'Modelo Equip.' },
     { key: 'IM_atual', label: 'Horím./Odôm.' },
-    { key: 'tipo_manutencao', label: 'Tipo de Manutenção' },
+    { key: 'tipo_manutencao', label: 'Tipo' },
     { key: 'feito_porX', label: 'Feito por' },
     { key: 'encarregadoX', label: 'Encarregado' },
   ];
