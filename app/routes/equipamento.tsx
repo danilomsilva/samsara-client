@@ -171,7 +171,7 @@ export default function EquipamentoPage() {
         <h1 className="font-semibold">Lista de Equipamentos</h1>
         {!selectedRow && (
           <div className="flex gap-2">
-            <FilterOptions />
+            <FilterOptions filterDateBy="updated" />
             <DropdownMenu
               tableHeaders={tableHeaders}
               data={equipamentos}

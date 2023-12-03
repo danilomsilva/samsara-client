@@ -139,18 +139,20 @@ export default function ManutencaoPage() {
     setMotivo(value);
   };
 
-  const formattedManutencoes: Manutencao[] = manutencoes.map((manutencao) => {
-    const isHorimetro =
-      equipamentos.find((equip) => equip.codigo === manutencao.equipamentoX)
-        ?.instrumento_medicao === 'Horímetro';
-    const suffix = isHorimetro ? ' h' : ' km';
-    return {
-      ...manutencao,
-      IM_atual: `${formatNumberWithDotDelimiter(
-        Number(manutencao.IM_atual)
-      )} ${suffix}`,
-    };
-  });
+  const formattedManutencoes: Manutencao[] = manutencoes
+    ?.filter((manutencao) => (param ? manutencao?.equipamento === param : true))
+    ?.map((manutencao) => {
+      const isHorimetro =
+        equipamentos.find((equip) => equip.codigo === manutencao.equipamentoX)
+          ?.instrumento_medicao === 'Horímetro';
+      const suffix = isHorimetro ? ' h' : ' km';
+      return {
+        ...manutencao,
+        IM_atual: `${formatNumberWithDotDelimiter(
+          Number(manutencao.IM_atual)
+        )} ${suffix}`,
+      };
+    });
 
   const equipamento = equipamentos?.find(
     (equip: Equipamento) => equip.id === param

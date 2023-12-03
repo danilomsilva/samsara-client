@@ -1,5 +1,5 @@
 import type { User } from '~/session.server';
-import { formatDateTime } from '~/utils/utils';
+import { formatDate, formatDateTime } from '~/utils/utils';
 import { _updateEquipamento, getEquipamento } from './equipamento.server';
 import { getOperador } from './operador.server';
 import {
@@ -59,12 +59,14 @@ export async function getManutencoes(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
     const transformedData = data.items.map((item: Manutencao) => ({
       id: item.id,
+      data_manutencao:
+        item?.data_manutencao && formatDate(item?.data_manutencao),
       created: item?.created && formatDateTime(item.created),
       boletim: item.boletim,
       IM_atual: item.IM_atual,
@@ -94,7 +96,7 @@ export async function getManutencao(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -148,7 +150,7 @@ export async function createManutencao(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -201,7 +203,7 @@ export async function updateManutencao(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -235,7 +237,7 @@ export async function deleteManutencao(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

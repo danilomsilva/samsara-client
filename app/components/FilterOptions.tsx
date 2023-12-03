@@ -17,7 +17,11 @@ import {
 import Button from './Button';
 import XIcon from './icons/XIcon';
 
-export default function FilterOptions() {
+type PropTypes = {
+  filterDateBy?: string;
+};
+
+export default function FilterOptions({ filterDateBy = 'created' }: PropTypes) {
   const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
@@ -62,17 +66,17 @@ export default function FilterOptions() {
       if (filter?.includes('inativo')) {
         newSearchParams.set(
           'filter',
-          `(inativo=false&&created>='${convertToReverseDate(
+          `(inativo=false&&${filterDateBy}>='${convertToReverseDate(
             startDate
-          )}' && created<='${convertToReverseDate(endDate)}')`
+          )}' && ${filterDateBy}<='${convertToReverseDate(endDate)}')`
         );
         navigate(`${location.pathname}?${newSearchParams.toString()}`);
       } else {
         newSearchParams.set(
           'filter',
-          `(created>='${convertToReverseDate(
+          `(${filterDateBy}>='${convertToReverseDate(
             startDate
-          )}' && created<='${convertToReverseDate(endDate)}')`
+          )}' && ${filterDateBy}<='${convertToReverseDate(endDate)}')`
         );
         navigate(`${location.pathname}?${newSearchParams.toString()}`);
       }
