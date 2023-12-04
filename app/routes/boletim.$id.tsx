@@ -51,6 +51,7 @@ import Checkbox from '~/components/Checkbox';
 import Textarea from '~/components/Textarea';
 import { type Obra } from '~/models/obra.server';
 import { getEquipamentoTipos } from '~/models/equipamento_tipo.server';
+import { CSVLink } from 'react-csv';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -116,6 +117,18 @@ export async function loader({ params, request }: LoaderArgs) {
     a.displayName.localeCompare(b.displayName)
   );
 
+  const sortedOPs: Option[] = operacoes
+    ?.map((item: OS) => {
+      const { id, codigo } = item;
+      return {
+        name: id,
+        displayName: codigo?.replace('OM-', ''),
+      };
+    })
+    ?.sort((a: Option, b: Option) =>
+      a.displayName.localeCompare(b.displayName)
+    );
+
   const commonProperties = {
     equipamentos,
     sortedEquipamentos,
@@ -141,9 +154,51 @@ export async function loader({ params, request }: LoaderArgs) {
     return redirect(`/boletim/${findBoletim}`);
   } else {
     const boletim = await getBoletim(userToken, params.id as string);
+    let boletimToExport;
+    const repeatedProperties = {
+      data_criacao: convertISOToDate(boletim.created),
+      ultima_alteracao: convertISOToDate(boletim.updated),
+      data_boletim: convertISOToDate(boletim.data_boletim),
+      codigo: boletim.codigo,
+      equipamento: boletim.equipamentoX,
+      tipo_equipamento: boletim.tipo_equipamento,
+      modelo_equipamento: filteredEquipamentos?.find(
+        (item) => item.id === boletim.equipamento
+      )?.modelo,
+      total_abastecimento: boletim.total_abastecimento,
+      lubrificacao: boletim.lubrificacao.toString(),
+      manutencao: boletim.manutencao.toString(),
+      descricao_manutencao: boletim.descricao_manutencao,
+      limpeza: boletim.limpeza.toString(),
+      obra: boletim.obraX,
+      nome_encarregado: boletim.encarregadoX,
+      operador: boletim.operadorX,
+      inativo: boletim.inativo.toString(),
+      inativo_motivo: boletim.motivo,
+    };
+
+    if (boletim?.equipamento_logs && boletim?.equipamento_logs.length > 0) {
+      const mixedLogs = boletim?.equipamento_logs.map((log) => {
+        const newLog = {
+          OP: sortedOPs.find((item) => item.name === log.OP)?.displayName,
+          OS: sortedOSs.find((item) => item.name === log.OS)?.displayName,
+          hora_inicio: log.hora_inicio,
+          hora_final: log.hora_final,
+          IM_inicio: log.IM_inicio,
+          IM_final: log.IM_final,
+        };
+        return {
+          ...repeatedProperties,
+          ...newLog,
+        };
+      });
+      boletimToExport = mixedLogs;
+    }
+
     return json({
       ...commonProperties,
       boletim,
+      boletimToExport,
     });
   }
 }
@@ -307,6 +362,7 @@ export default function NewBoletim() {
     OSs,
     sortedOSs,
     newCode,
+    boletimToExport,
   } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
@@ -761,6 +817,18 @@ export default function NewBoletim() {
                   error={actionData?.errors?.descricao_manutencao}
                 />
               </Row>
+              {boletim && boletimToExport && (
+                <Row className="mt-6">
+                  <div className="w-full h-full justify-end flex">
+                    <CSVLink
+                      data={boletimToExport}
+                      className="bg-green text-white rounded-md px-3 py-1"
+                    >
+                      Exportar CSV
+                    </CSVLink>
+                  </div>
+                </Row>
+              )}
             </div>
           </div>
         )
