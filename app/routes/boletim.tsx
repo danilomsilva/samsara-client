@@ -154,7 +154,7 @@ export default function BoletinsPage() {
               tableHeaders={tableHeaders}
               data={boletins}
               filename="boletim"
-              extra={['Relatório Completo']}
+              // extra={['Relatório Completo']}
             />
           </div>
         )}

@@ -13,15 +13,15 @@ type PropTypes = {
   tableHeaders: ColumnType[];
   data: any[];
   filename: string;
-  extra?: string[];
+  // extra?: string[];
 };
 
 export default function DropdownMenu({
   tableHeaders,
   data,
   filename,
-  extra,
-}: PropTypes) {
+}: // extra,
+PropTypes) {
   return (
     <Menu as="div" className="relative  text-sm">
       <Menu.Button className="flex px-4 rounded-lg justify-center h-10 items-center bg-white font-semibold uppercase text-xs gap-2 text-grey border border-orange">
