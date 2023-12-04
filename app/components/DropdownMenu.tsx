@@ -13,12 +13,14 @@ type PropTypes = {
   tableHeaders: ColumnType[];
   data: any[];
   filename: string;
+  extra?: string[];
 };
 
 export default function DropdownMenu({
   tableHeaders,
   data,
   filename,
+  extra,
 }: PropTypes) {
   return (
     <Menu as="div" className="relative  text-sm">
@@ -38,15 +40,26 @@ export default function DropdownMenu({
             filename={`${filename}_${getCurrentDate()}`}
             className="w-full px-3 h-8 flex items-center justify-center"
           >
-            CSV
+            CSV Simples
           </CSVLink>
         </Menu.Item>
+        {/* {extra && (
+          <Menu.Item
+            className="h-10 flex justify-center items-center hover:bg-grey-light px-3 font-semibold text-xs cursor-pointer gap-2"
+            as="div"
+            onClick={() =>
+              exportPDF(`Relatório Completo - ${filename}`, filename)
+            }
+          >
+            CSV Compl.
+          </Menu.Item>
+        )} */}
         <Menu.Item
           className="h-10 flex justify-center items-center hover:bg-grey-light px-3 font-semibold text-xs cursor-pointer gap-2"
           as="div"
           onClick={() => exportPDF(`Relatório - ${filename}`, filename)}
         >
-          PDF
+          PDF Simples
         </Menu.Item>
       </Menu.Items>
     </Menu>
