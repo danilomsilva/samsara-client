@@ -3,8 +3,10 @@ import {
   type ActionArgs,
   redirect,
   json,
+  unstable_parseMultipartFormData,
 } from '@remix-run/node';
 import {
+  Form,
   Link,
   useActionData,
   useLoaderData,
@@ -89,6 +91,44 @@ export async function action({ params, request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
+
+  let uploadHandler = async ({ name, stream, filename, mimetype }) => {
+    console.log('in uploadHandler', mimetype);
+
+    if (name !== 'my-file') {
+      stream.resume();
+      return;
+    } else {
+      console.log(name, filename);
+    }
+
+    // Get the file as a buffer
+    const chunks = [];
+    for await (const chunk of stream) chunks.push(chunk);
+    const buffer = Buffer.concat(chunks);
+
+    console.log(buffer);
+
+    // const { data, error } = await supabaseClient.storage
+    //   .from("images")
+    //   .upload(filename, buffer);
+    // if (error) {
+    //   throw error;
+    // }
+    console.log('returning', filename);
+    return filename;
+  };
+
+  // get file info back after image upload
+  const form = await unstable_parseMultipartFormData(request, uploadHandler);
+
+  //convert it to an object to padd back as actionData
+  const fileInfo = { fileName: form.get('my-file') };
+
+  // this is response from upload handler
+  console.log('the form', fileInfo);
+
+  return fileInfo || null;
 
   const validationScheme = z.object({
     tipo_manutencao: z.string(),
@@ -228,6 +268,10 @@ export default function NewOperador() {
       a.displayName.localeCompare(b.displayName)
     );
 
+  const handleUploadFile = () => {
+    console.log('test');
+  };
+
   return (
     <Modal
       title={`${manutencao ? 'Editar' : 'Adicionar'} ${
@@ -334,6 +378,12 @@ export default function NewOperador() {
               defaultValue={manutencao?.descricao}
               error={actionData?.errors?.descricao}
             />
+          </Row>
+          <Row>
+            <Form method="post" encType="multipart/form-data">
+              <input type="file" id="my-file" name="my-file" />
+              <button type="submit">UPLOAD</button>
+            </Form>
           </Row>
           {manutencao && manutencao?.boletim !== '-' && (
             <div className="flex items-center gap-1">
