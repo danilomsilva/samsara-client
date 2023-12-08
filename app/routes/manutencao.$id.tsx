@@ -3,10 +3,8 @@ import {
   type ActionArgs,
   redirect,
   json,
-  unstable_parseMultipartFormData,
 } from '@remix-run/node';
 import {
-  Form,
   Link,
   useActionData,
   useLoaderData,
@@ -16,6 +14,7 @@ import {
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
+import FileUploader from '~/components/FileUploader';
 import Input from '~/components/Input';
 import InputMask from '~/components/InputMask';
 import Modal from '~/components/Modal';
@@ -35,6 +34,7 @@ import {
   _updateManutencao,
 } from '~/models/manutencao.server';
 import { type Operador, getOperadores } from '~/models/operador.server';
+import { uploadFile } from '~/models/upload-file';
 import {
   commitSession,
   getSession,
@@ -92,44 +92,6 @@ export async function action({ params, request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  let uploadHandler = async ({ name, stream, filename, mimetype }) => {
-    console.log('in uploadHandler', mimetype);
-
-    if (name !== 'my-file') {
-      stream.resume();
-      return;
-    } else {
-      console.log(name, filename);
-    }
-
-    // Get the file as a buffer
-    const chunks = [];
-    for await (const chunk of stream) chunks.push(chunk);
-    const buffer = Buffer.concat(chunks);
-
-    console.log(buffer);
-
-    // const { data, error } = await supabaseClient.storage
-    //   .from("images")
-    //   .upload(filename, buffer);
-    // if (error) {
-    //   throw error;
-    // }
-    console.log('returning', filename);
-    return filename;
-  };
-
-  // get file info back after image upload
-  const form = await unstable_parseMultipartFormData(request, uploadHandler);
-
-  //convert it to an object to padd back as actionData
-  const fileInfo = { fileName: form.get('my-file') };
-
-  // this is response from upload handler
-  console.log('the form', fileInfo);
-
-  return fileInfo || null;
-
   const validationScheme = z.object({
     tipo_manutencao: z.string(),
     data_manutencao: z.string().refine((val) => {
@@ -145,6 +107,7 @@ export async function action({ params, request }: ActionArgs) {
 
   if (!validatedScheme.success) {
     const errors = validatedScheme.error.format();
+    console.log('>>>>>', errors);
     return {
       errors: {
         tipo_manutencao: errors.tipo_manutencao?._errors[0],
@@ -155,6 +118,12 @@ export async function action({ params, request }: ActionArgs) {
         descricao: errors.descricao?._errors[0],
       },
     };
+  }
+
+  if (formData._action === 'upload_file') {
+    console.log('-------------');
+    // const uploadingFile = await uploadFile(userToken, formData.documents);
+    // console.log('.....................', uploadingFile);
   }
 
   if (formData._action === 'create') {
@@ -268,10 +237,6 @@ export default function NewOperador() {
       a.displayName.localeCompare(b.displayName)
     );
 
-  const handleUploadFile = () => {
-    console.log('test');
-  };
-
   return (
     <Modal
       title={`${manutencao ? 'Editar' : 'Adicionar'} ${
@@ -380,10 +345,7 @@ export default function NewOperador() {
             />
           </Row>
           <Row>
-            <Form method="post" encType="multipart/form-data">
-              <input type="file" id="my-file" name="my-file" />
-              <button type="submit">UPLOAD</button>
-            </Form>
+            <FileUploader />
           </Row>
           {manutencao && manutencao?.boletim !== '-' && (
             <div className="flex items-center gap-1">
