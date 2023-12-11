@@ -1,4 +1,16 @@
 import { type User } from '~/session.server';
+import { type Manutencao } from './manutencao.server';
+
+export type FileTypes = {
+  collectionId: string;
+  collectionName: string;
+  created: string;
+  file: string[];
+  id: string;
+  manutencao: Manutencao['id'];
+  name: string;
+  updated: string;
+};
 
 export async function getFiles(userToken: User['token']) {
   let url = `${process.env.BASE_API_URL}/collections/files/records`;

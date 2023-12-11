@@ -6,7 +6,7 @@ export default function MinusCircleIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className={`${className} h-5 w-5`}
+      className={`${className ? className : 'h-5 w-5'}`}
     >
       <path
         strokeLinecap="round"
