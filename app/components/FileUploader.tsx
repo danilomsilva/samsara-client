@@ -1,16 +1,12 @@
-import { useFetcher } from 'react-router-dom';
-
-export default function FileUploader() {
-  //   const [files, setFiles] = useState(null);
-  const fetcher = useFetcher();
-
-  const handleFileChange = (e) => {
-    const file = new FormData();
-    file.append('documents', e.target.files[0]);
-    file.append('title', e.target.files[0].name);
-    file.append('_action', 'upload_file');
-
-    fetcher.submit(file, { method: 'post', encType: 'multipart/form-data' });
+export default function FileUploader({ onChange }) {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (event.currentTarget.files && event.currentTarget.files[0]) {
+      const files = event.currentTarget.files;
+      onChange(files);
+    }
   };
+
   return <input type="file" name="file" onChange={handleFileChange} />;
 }

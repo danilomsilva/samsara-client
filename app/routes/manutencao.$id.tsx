@@ -7,6 +7,7 @@ import {
 import {
   Link,
   useActionData,
+  useFetcher,
   useLoaderData,
   useNavigation,
   useSearchParams,
@@ -34,7 +35,6 @@ import {
   _updateManutencao,
 } from '~/models/manutencao.server';
 import { type Operador, getOperadores } from '~/models/operador.server';
-import { uploadFile } from '~/models/upload-file';
 import {
   commitSession,
   getSession,
@@ -107,7 +107,6 @@ export async function action({ params, request }: ActionArgs) {
 
   if (!validatedScheme.success) {
     const errors = validatedScheme.error.format();
-    console.log('>>>>>', errors);
     return {
       errors: {
         tipo_manutencao: errors.tipo_manutencao?._errors[0],
@@ -118,12 +117,6 @@ export async function action({ params, request }: ActionArgs) {
         descricao: errors.descricao?._errors[0],
       },
     };
-  }
-
-  if (formData._action === 'upload_file') {
-    console.log('-------------');
-    // const uploadingFile = await uploadFile(userToken, formData.documents);
-    // console.log('.....................', uploadingFile);
   }
 
   if (formData._action === 'create') {
@@ -183,6 +176,7 @@ export default function NewOperador() {
   const [selectedEquipamento, setSelectedEquipamento] = useState<Option | null>(
     null
   );
+  const uploadFileFetcher = useFetcher();
 
   const [equipamento, setEquipamento] = useState<Equipamento>(
     manutencao?.expand?.equipamento
@@ -236,6 +230,17 @@ export default function NewOperador() {
     ?.sort((a: Option, b: Option) =>
       a.displayName.localeCompare(b.displayName)
     );
+
+  const handleFileUpload = async (files: File[]) => {
+    const formData = new FormData();
+
+    formData.append('new_file', files[0]);
+    uploadFileFetcher.submit(formData, {
+      method: 'post',
+      action: '../uploadFile',
+      encType: 'multipart/form-data',
+    });
+  };
 
   return (
     <Modal
@@ -345,7 +350,7 @@ export default function NewOperador() {
             />
           </Row>
           <Row>
-            <FileUploader />
+            <FileUploader onChange={handleFileUpload} />
           </Row>
           {manutencao && manutencao?.boletim !== '-' && (
             <div className="flex items-center gap-1">
