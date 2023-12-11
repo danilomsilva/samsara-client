@@ -28,6 +28,7 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
+import { getFiles } from '~/models/files.server';
 import {
   type Manutencao,
   _createManutencao,
@@ -83,7 +84,12 @@ export async function loader({ params, request }: LoaderArgs) {
     const operadores = await getOperadores(userToken, 'created', '');
     const equipamentos = await getEquipamentos(userToken, 'created', '');
     const manutencao = await getManutencao(userToken, params.id as string);
-    return json({ operadores, equipamentos, manutencao });
+    const allFiles = await getFiles(userToken);
+    const files = allFiles.items.filter(
+      (item) => item.manutencao === params.id
+    );
+
+    return json({ operadores, equipamentos, manutencao, files });
   }
 }
 
@@ -166,6 +172,7 @@ export default function NewOperador() {
     operadores,
     equipamentos,
     equipamento: paramEquipamento,
+    files,
   } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
@@ -233,11 +240,13 @@ export default function NewOperador() {
 
   const handleFileUpload = async (files: File[]) => {
     const formData = new FormData();
+    formData.append('file', files[0]);
+    formData.append('name', files[0]?.name ?? '');
+    formData.append('manutencao', manutencao.id);
 
-    formData.append('new_file', files[0]);
     uploadFileFetcher.submit(formData, {
       method: 'post',
-      action: '../uploadFile',
+      action: '../../upload-file',
       encType: 'multipart/form-data',
     });
   };
@@ -351,6 +360,11 @@ export default function NewOperador() {
           </Row>
           <Row>
             <FileUploader onChange={handleFileUpload} />
+          </Row>
+          <Row>
+            {files.map((item) => (
+              <div key={item.id}>{item.name}</div>
+            ))}
           </Row>
           {manutencao && manutencao?.boletim !== '-' && (
             <div className="flex items-center gap-1">

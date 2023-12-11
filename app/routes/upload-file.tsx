@@ -8,16 +8,15 @@ export const action: ActionFunction = async ({ request }) => {
 
   try {
     const response = await fetch(
-      `${process.env.BASE_API_URL}/collections/manutencao/records`,
+      `${process.env.BASE_API_URL}/collections/files/records`,
       {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           Authorization: `Bearer ${userToken}`,
         },
         body: formData,
       }
     );
-    console.log('>>>>>>>>>>>', response);
     return response;
   } catch (err) {
     console.log(err);
