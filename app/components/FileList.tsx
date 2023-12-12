@@ -1,24 +1,36 @@
 import { type FileTypes } from '~/models/files.server';
 import DocumentIcon from './icons/DocumentIcon';
 import MinusCircleIcon from './icons/MinusCircleIcon';
-import { useFetcher } from '@remix-run/react';
 
 export default function FileList({ files }: { files: FileTypes[] }) {
-  const downloadFileFetcher = useFetcher();
-
-  const handleDownloadFile = (file) => {
+  const handleDownloadFile = async (file: FileTypes) => {
     const { collectionId, id, file: fileName } = file;
-    downloadFileFetcher.submit(
-      {
-        collectionId,
-        id,
-        fileName: fileName[0],
-      },
-      {
-        method: 'post',
-        action: '../../download-file',
+
+    try {
+      const response = await fetch(
+        `http://159.223.244.247/api/files/${collectionId}/${id}/${fileName}`,
+        {
+          method: 'GET',
+        }
+      );
+
+      if (response.ok) {
+        // Trigger file download on the client side
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName[0];
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('File download failed');
       }
-    );
+    } catch (err) {
+      console.error(err);
+    }
   };
   return (
     <div className="text-sm">
