@@ -1,17 +1,23 @@
 import { type FileTypes } from '~/models/files.server';
 import DocumentIcon from './icons/DocumentIcon';
 import MinusCircleIcon from './icons/MinusCircleIcon';
+import { useFetcher } from '@remix-run/react';
+import SpinnerIcon from './icons/SpinnerIcon';
+import { useState } from 'react';
 
 export default function FileList({ files }: { files: FileTypes[] }) {
+  const [removingFile, setRemovingFile] = useState<string | null>(null);
+  const removeFileFetcher = useFetcher();
+  const isRemovingFile =
+    removeFileFetcher.state === 'submitting' ||
+    removeFileFetcher.state === 'loading';
+
   const handleDownloadFile = async (file: FileTypes) => {
     const { collectionId, id, file: fileName } = file;
 
     try {
       const response = await fetch(
-        `http://159.223.244.247/api/files/${collectionId}/${id}/${fileName}`,
-        {
-          method: 'GET',
-        }
+        `http://159.223.244.247/api/files/${collectionId}/${id}/${fileName}`
       );
 
       if (response.ok) {
@@ -32,9 +38,23 @@ export default function FileList({ files }: { files: FileTypes[] }) {
       console.error(err);
     }
   };
+
+  const handleRemoveFile = (file: FileTypes) => {
+    setRemovingFile(file.id);
+    removeFileFetcher.submit(
+      {
+        id: file.id,
+      },
+      {
+        method: 'post',
+        action: '../../remove-file',
+      }
+    );
+  };
+
   return (
     <div className="text-sm">
-      <label>Anexos</label>
+      {files.length > 0 && <label>Anexos</label>}
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         {files.map((item: FileTypes) => {
           return (
@@ -46,7 +66,14 @@ export default function FileList({ files }: { files: FileTypes[] }) {
               >
                 {item?.name}
               </p>
-              <MinusCircleIcon className="h-4 w-4 text-grey hover:text-red cursor-pointer" />
+              {isRemovingFile && removingFile === item.id ? (
+                <SpinnerIcon className="h-3 w-3" />
+              ) : (
+                <MinusCircleIcon
+                  className="h-4 w-4 text-grey hover:text-red cursor-pointer"
+                  onClick={() => handleRemoveFile(item)}
+                />
+              )}
             </div>
           );
         })}

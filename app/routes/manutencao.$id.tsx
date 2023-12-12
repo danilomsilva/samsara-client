@@ -29,7 +29,7 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
-import { getFiles } from '~/models/files.server';
+import { type FileTypes, getFiles } from '~/models/files.server';
 import {
   type Manutencao,
   _createManutencao,
@@ -86,8 +86,8 @@ export async function loader({ params, request }: LoaderArgs) {
     const equipamentos = await getEquipamentos(userToken, 'created', '');
     const manutencao = await getManutencao(userToken, params.id as string);
     const allFiles = await getFiles(userToken);
-    const files = allFiles.items.filter(
-      (item) => item.manutencao === params.id
+    const files = allFiles?.items?.filter(
+      (item: FileTypes) => item.manutencao === params.id
     );
 
     return json({ operadores, equipamentos, manutencao, files });
@@ -185,6 +185,9 @@ export default function NewOperador() {
     null
   );
   const uploadFileFetcher = useFetcher();
+  const isUploadingFile =
+    uploadFileFetcher.state === 'submitting' ||
+    uploadFileFetcher.state === 'loading';
 
   const [equipamento, setEquipamento] = useState<Equipamento>(
     manutencao?.expand?.equipamento
@@ -359,12 +362,20 @@ export default function NewOperador() {
               error={actionData?.errors?.descricao}
             />
           </Row>
-          <Row className="pl-2">
-            <FileList files={files} />
-          </Row>
-          <Row>
-            <FileUploader onChange={handleFileUpload} />
-          </Row>
+          {files && (
+            <Row className="pl-2">
+              <FileList files={files} />
+            </Row>
+          )}
+          {manutencao && (
+            <Row>
+              <FileUploader
+                onChange={handleFileUpload}
+                isUploadingFile={isUploadingFile}
+              />
+            </Row>
+          )}
+
           {manutencao && manutencao?.boletim !== '-' && (
             <div className="flex items-center gap-1">
               <InfoIcon className="h-5 w-5 text-orange" />

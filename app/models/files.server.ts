@@ -13,7 +13,7 @@ export type FileTypes = {
 };
 
 export async function getFiles(userToken: User['token']) {
-  let url = `${process.env.BASE_API_URL}/collections/files/records`;
+  let url = `${process.env.BASE_API_URL}/collections/manutencao_files/records`;
 
   const queryParams = new URLSearchParams();
 
@@ -29,6 +29,6 @@ export async function getFiles(userToken: User['token']) {
     });
     return await response.json();
   } catch (error) {
-    throw new Error('An error occured while getting obras');
+    throw new Error('An error occured while getting manutencao files');
   }
 }
