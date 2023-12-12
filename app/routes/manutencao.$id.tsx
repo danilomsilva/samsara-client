@@ -261,123 +261,139 @@ export default function NewOperador() {
         equip ? 'Revisão' : 'Manutenção'
       }`}
       variant={manutencao ? 'grey' : 'blue'}
+      size={files ? 'lg' : 'md'}
       content={
         <>
-          <Row>
-            {equip ? (
-              <RadioOptions
-                name="tipo_manutencao"
-                label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
-                options={TIPOS_REVISAO}
-                defaultValue="Revisão"
-                disabled={manutencao && manutencao?.boletim !== '-'}
-              />
-            ) : (
-              <RadioOptions
-                name="tipo_manutencao"
-                label="Tipo de Manutenção:"
-                options={TIPOS_MANUTENCAO}
-                defaultValue={manutencao?.tipo_manutencao}
-                disabled={manutencao && manutencao?.boletim !== '-'}
-              />
+          <div
+            className={`${
+              files ? 'grid-cols-[350px_350px] gap-4' : 'grid-cols-1'
+            } grid`}
+          >
+            <div>
+              <Row>
+                {equip ? (
+                  <RadioOptions
+                    name="tipo_manutencao"
+                    label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
+                    options={TIPOS_REVISAO}
+                    defaultValue="Revisão"
+                    disabled={manutencao && manutencao?.boletim !== '-'}
+                  />
+                ) : (
+                  <RadioOptions
+                    name="tipo_manutencao"
+                    label="Tipo de Manutenção:"
+                    options={TIPOS_MANUTENCAO}
+                    defaultValue={manutencao?.tipo_manutencao}
+                    disabled={manutencao && manutencao?.boletim !== '-'}
+                  />
+                )}
+              </Row>
+              <Row>
+                <InputMask
+                  mask="99/99/9999"
+                  type="text"
+                  name="data_manutencao"
+                  label="Data"
+                  defaultValue={
+                    manutencao
+                      ? convertISOToDate(manutencao?.data_manutencao)
+                      : getCurrentDate()
+                  }
+                  error={actionData?.errors?.data_manutencao}
+                  disabled={manutencao && manutencao?.boletim !== '-'}
+                />
+                <Select
+                  name="feito_por"
+                  options={sortedOperadores}
+                  label="Feito por"
+                  defaultValue={manutencao?.feito_por}
+                  placeholder="-"
+                  error={actionData?.errors?.feito_por}
+                  disabled={manutencao && manutencao?.boletim !== '-'}
+                />
+              </Row>
+              <Row>
+                <Select
+                  name="equipamento"
+                  options={sortedEquipamentos}
+                  label="Código do Equipamento"
+                  defaultValue={
+                    paramEquipamento
+                      ? paramEquipamento.name
+                      : manutencao?.equipamento
+                  }
+                  placeholder="-"
+                  error={actionData?.errors?.equipamento}
+                  onChange={setSelectedEquipamento}
+                  disabled={
+                    (manutencao && manutencao?.boletim !== '-') ||
+                    paramEquipamento
+                  }
+                />
+                <Input
+                  type="IM"
+                  name="IM_atual"
+                  label={`${
+                    equipamento
+                      ? equipamento?.instrumento_medicao
+                      : 'Horím./Odôm.'
+                  }`}
+                  className="!w-[130px]"
+                  defaultValue={
+                    paramEquipamento
+                      ? paramEquipamento?.IM_atual
+                      : manutencao?.IM_atual
+                  }
+                  error={actionData?.errors?.IM_atual}
+                  suffix={selectedIMSuffix}
+                  disabled={
+                    (manutencao && manutencao?.boletim !== '-') ||
+                    paramEquipamento
+                  }
+                />
+              </Row>
+              <Row>
+                {manutencao?.boletim && (
+                  <Input
+                    type="text"
+                    name="boletim"
+                    label="Código do Boletim"
+                    defaultValue={manutencao?.boletim}
+                    error={actionData?.errors?.boletim}
+                    disabled
+                  />
+                )}
+              </Row>
+              <Row>
+                <Textarea
+                  name="descricao"
+                  label="Descrição"
+                  defaultValue={manutencao?.descricao}
+                  error={actionData?.errors?.descricao}
+                />
+              </Row>
+            </div>
+            {files && (
+              <div className="border-l border-grey/50 w-[300px]">
+                {files && (
+                  <Row className="pl-2">
+                    <FileList files={files} path="manutencao" />
+                  </Row>
+                )}
+                {manutencao && (
+                  <Row>
+                    <FileUploader
+                      onChange={handleFileUpload}
+                      isUploadingFile={isUploadingFile}
+                    />
+                  </Row>
+                )}
+              </div>
             )}
-          </Row>
-          <Row>
-            <InputMask
-              mask="99/99/9999"
-              type="text"
-              name="data_manutencao"
-              label="Data"
-              defaultValue={
-                manutencao
-                  ? convertISOToDate(manutencao?.data_manutencao)
-                  : getCurrentDate()
-              }
-              error={actionData?.errors?.data_manutencao}
-              disabled={manutencao && manutencao?.boletim !== '-'}
-            />
-            <Select
-              name="feito_por"
-              options={sortedOperadores}
-              label="Feito por"
-              defaultValue={manutencao?.feito_por}
-              placeholder="-"
-              error={actionData?.errors?.feito_por}
-              disabled={manutencao && manutencao?.boletim !== '-'}
-            />
-          </Row>
-          <Row>
-            <Select
-              name="equipamento"
-              options={sortedEquipamentos}
-              label="Código do Equipamento"
-              defaultValue={
-                paramEquipamento
-                  ? paramEquipamento.name
-                  : manutencao?.equipamento
-              }
-              placeholder="-"
-              error={actionData?.errors?.equipamento}
-              onChange={setSelectedEquipamento}
-              disabled={
-                (manutencao && manutencao?.boletim !== '-') || paramEquipamento
-              }
-            />
-            <Input
-              type="IM"
-              name="IM_atual"
-              label={`${
-                equipamento ? equipamento?.instrumento_medicao : 'Horím./Odôm.'
-              }`}
-              className="!w-[130px]"
-              defaultValue={
-                paramEquipamento
-                  ? paramEquipamento?.IM_atual
-                  : manutencao?.IM_atual
-              }
-              error={actionData?.errors?.IM_atual}
-              suffix={selectedIMSuffix}
-              disabled={
-                (manutencao && manutencao?.boletim !== '-') || paramEquipamento
-              }
-            />
-          </Row>
-          <Row>
-            {manutencao?.boletim && (
-              <Input
-                type="text"
-                name="boletim"
-                label="Código do Boletim"
-                defaultValue={manutencao?.boletim}
-                error={actionData?.errors?.boletim}
-                disabled
-              />
-            )}
-          </Row>
-          <Row>
-            <Textarea
-              name="descricao"
-              label="Descrição"
-              defaultValue={manutencao?.descricao}
-              error={actionData?.errors?.descricao}
-            />
-          </Row>
-          {files && (
-            <Row className="pl-2">
-              <FileList files={files} path="manutencao" />
-            </Row>
-          )}
-          {manutencao && (
-            <Row>
-              <FileUploader
-                onChange={handleFileUpload}
-                isUploadingFile={isUploadingFile}
-              />
-            </Row>
-          )}
-
+          </div>
           {manutencao && manutencao?.boletim !== '-' && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mt-4">
               <InfoIcon className="h-5 w-5 text-orange" />
               <p>
                 Manutenção criada através do Boletim{' '}

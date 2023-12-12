@@ -59,7 +59,7 @@ export default function Modal({
             : size === 'sm'
             ? 'w-[400px]'
             : 'w-[500px]'
-        }`}
+        } scale-90`}
       >
         <div className="flex border-b p-6 justify-between w-full border items-center border-b-grey/50 border-x-0 border-t-0">
           <h1

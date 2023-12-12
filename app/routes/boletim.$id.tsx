@@ -620,7 +620,7 @@ export default function NewBoletim() {
       variant={boletim ? 'grey' : 'blue'}
       content={
         showSpinner ? (
-          <div className="flex justify-center flex-col items-center gap-4 h-[500px]">
+          <div className="flex justify-center flex-col items-center gap-4">
             <SpinnerIcon className="!h-12 !w-12" />
             <p>Carregando boletim...</p>
           </div>
