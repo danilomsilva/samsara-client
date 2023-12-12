@@ -7,6 +7,7 @@ import {
 import {
   Link,
   useActionData,
+  useFetcher,
   useLoaderData,
   useNavigation,
   useSearchParams,
@@ -14,6 +15,8 @@ import {
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
+import FileList from '~/components/FileList';
+import FileUploader from '~/components/FileUploader';
 import Input from '~/components/Input';
 import InputMask from '~/components/InputMask';
 import Modal from '~/components/Modal';
@@ -26,6 +29,7 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
+import { type FileTypes, getFiles } from '~/models/files.server';
 import {
   type Manutencao,
   _createManutencao,
@@ -81,7 +85,12 @@ export async function loader({ params, request }: LoaderArgs) {
     const operadores = await getOperadores(userToken, 'created', '');
     const equipamentos = await getEquipamentos(userToken, 'created', '');
     const manutencao = await getManutencao(userToken, params.id as string);
-    return json({ operadores, equipamentos, manutencao });
+    const allFiles = await getFiles(userToken, 'manutencao');
+    const files = allFiles?.items?.filter(
+      (item: FileTypes) => item.manutencao === params.id
+    );
+
+    return json({ operadores, equipamentos, manutencao, files });
   }
 }
 
@@ -164,6 +173,7 @@ export default function NewOperador() {
     operadores,
     equipamentos,
     equipamento: paramEquipamento,
+    files,
   } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
@@ -174,6 +184,10 @@ export default function NewOperador() {
   const [selectedEquipamento, setSelectedEquipamento] = useState<Option | null>(
     null
   );
+  const uploadFileFetcher = useFetcher();
+  const isUploadingFile =
+    uploadFileFetcher.state === 'submitting' ||
+    uploadFileFetcher.state === 'loading';
 
   const [equipamento, setEquipamento] = useState<Equipamento>(
     manutencao?.expand?.equipamento
@@ -228,115 +242,158 @@ export default function NewOperador() {
       a.displayName.localeCompare(b.displayName)
     );
 
+  const handleFileUpload = async (files: File[]) => {
+    const formData = new FormData();
+    formData.append('file', files[0]);
+    formData.append('name', files[0]?.name ?? '');
+    formData.append('manutencao', manutencao.id);
+
+    uploadFileFetcher.submit(formData, {
+      method: 'post',
+      action: '../../upload-file-manutencao',
+      encType: 'multipart/form-data',
+    });
+  };
+
   return (
     <Modal
       title={`${manutencao ? 'Editar' : 'Adicionar'} ${
         equip ? 'Revisão' : 'Manutenção'
       }`}
       variant={manutencao ? 'grey' : 'blue'}
+      size={files ? 'lg' : 'md'}
       content={
         <>
-          <Row>
-            {equip ? (
-              <RadioOptions
-                name="tipo_manutencao"
-                label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
-                options={TIPOS_REVISAO}
-                defaultValue="Revisão"
-                disabled={manutencao && manutencao?.boletim !== '-'}
-              />
-            ) : (
-              <RadioOptions
-                name="tipo_manutencao"
-                label="Tipo de Manutenção:"
-                options={TIPOS_MANUTENCAO}
-                defaultValue={manutencao?.tipo_manutencao}
-                disabled={manutencao && manutencao?.boletim !== '-'}
-              />
+          <div
+            className={`${
+              files ? 'grid-cols-[350px_350px] gap-4' : 'grid-cols-1'
+            } grid`}
+          >
+            <div>
+              <Row>
+                {equip ? (
+                  <RadioOptions
+                    name="tipo_manutencao"
+                    label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
+                    options={TIPOS_REVISAO}
+                    defaultValue="Revisão"
+                    disabled={manutencao && manutencao?.boletim !== '-'}
+                  />
+                ) : (
+                  <RadioOptions
+                    name="tipo_manutencao"
+                    label="Tipo de Manutenção:"
+                    options={TIPOS_MANUTENCAO}
+                    defaultValue={manutencao?.tipo_manutencao}
+                    disabled={manutencao && manutencao?.boletim !== '-'}
+                  />
+                )}
+              </Row>
+              <Row>
+                <InputMask
+                  mask="99/99/9999"
+                  type="text"
+                  name="data_manutencao"
+                  label="Data"
+                  defaultValue={
+                    manutencao
+                      ? convertISOToDate(manutencao?.data_manutencao)
+                      : getCurrentDate()
+                  }
+                  error={actionData?.errors?.data_manutencao}
+                  disabled={manutencao && manutencao?.boletim !== '-'}
+                />
+                <Select
+                  name="feito_por"
+                  options={sortedOperadores}
+                  label="Feito por"
+                  defaultValue={manutencao?.feito_por}
+                  placeholder="-"
+                  error={actionData?.errors?.feito_por}
+                  disabled={manutencao && manutencao?.boletim !== '-'}
+                />
+              </Row>
+              <Row>
+                <Select
+                  name="equipamento"
+                  options={sortedEquipamentos}
+                  label="Código do Equipamento"
+                  defaultValue={
+                    paramEquipamento
+                      ? paramEquipamento.name
+                      : manutencao?.equipamento
+                  }
+                  placeholder="-"
+                  error={actionData?.errors?.equipamento}
+                  onChange={setSelectedEquipamento}
+                  disabled={
+                    (manutencao && manutencao?.boletim !== '-') ||
+                    paramEquipamento
+                  }
+                />
+                <Input
+                  type="IM"
+                  name="IM_atual"
+                  label={`${
+                    equipamento
+                      ? equipamento?.instrumento_medicao
+                      : 'Horím./Odôm.'
+                  }`}
+                  className="!w-[130px]"
+                  defaultValue={
+                    paramEquipamento
+                      ? paramEquipamento?.IM_atual
+                      : manutencao?.IM_atual
+                  }
+                  error={actionData?.errors?.IM_atual}
+                  suffix={selectedIMSuffix}
+                  disabled={
+                    (manutencao && manutencao?.boletim !== '-') ||
+                    paramEquipamento
+                  }
+                />
+              </Row>
+              <Row>
+                {manutencao?.boletim && (
+                  <Input
+                    type="text"
+                    name="boletim"
+                    label="Código do Boletim"
+                    defaultValue={manutencao?.boletim}
+                    error={actionData?.errors?.boletim}
+                    disabled
+                  />
+                )}
+              </Row>
+              <Row>
+                <Textarea
+                  name="descricao"
+                  label="Descrição"
+                  defaultValue={manutencao?.descricao}
+                  error={actionData?.errors?.descricao}
+                />
+              </Row>
+            </div>
+            {files && (
+              <div className="border-l border-grey/50 w-[300px]">
+                {files && (
+                  <Row className="pl-2">
+                    <FileList files={files} path="manutencao" />
+                  </Row>
+                )}
+                {manutencao && (
+                  <Row>
+                    <FileUploader
+                      onChange={handleFileUpload}
+                      isUploadingFile={isUploadingFile}
+                    />
+                  </Row>
+                )}
+              </div>
             )}
-          </Row>
-          <Row>
-            <InputMask
-              mask="99/99/9999"
-              type="text"
-              name="data_manutencao"
-              label="Data"
-              defaultValue={
-                manutencao
-                  ? convertISOToDate(manutencao?.data_manutencao)
-                  : getCurrentDate()
-              }
-              error={actionData?.errors?.data_manutencao}
-              disabled={manutencao && manutencao?.boletim !== '-'}
-            />
-            <Select
-              name="feito_por"
-              options={sortedOperadores}
-              label="Feito por"
-              defaultValue={manutencao?.feito_por}
-              placeholder="-"
-              error={actionData?.errors?.feito_por}
-              disabled={manutencao && manutencao?.boletim !== '-'}
-            />
-          </Row>
-          <Row>
-            <Select
-              name="equipamento"
-              options={sortedEquipamentos}
-              label="Código do Equipamento"
-              defaultValue={
-                paramEquipamento
-                  ? paramEquipamento.name
-                  : manutencao?.equipamento
-              }
-              placeholder="-"
-              error={actionData?.errors?.equipamento}
-              onChange={setSelectedEquipamento}
-              disabled={
-                (manutencao && manutencao?.boletim !== '-') || paramEquipamento
-              }
-            />
-            <Input
-              type="IM"
-              name="IM_atual"
-              label={`${
-                equipamento ? equipamento?.instrumento_medicao : 'Horím./Odôm.'
-              }`}
-              className="!w-[130px]"
-              defaultValue={
-                paramEquipamento
-                  ? paramEquipamento?.IM_atual
-                  : manutencao?.IM_atual
-              }
-              error={actionData?.errors?.IM_atual}
-              suffix={selectedIMSuffix}
-              disabled={
-                (manutencao && manutencao?.boletim !== '-') || paramEquipamento
-              }
-            />
-          </Row>
-          <Row>
-            {manutencao?.boletim && (
-              <Input
-                type="text"
-                name="boletim"
-                label="Código do Boletim"
-                defaultValue={manutencao?.boletim}
-                error={actionData?.errors?.boletim}
-                disabled
-              />
-            )}
-          </Row>
-          <Row>
-            <Textarea
-              name="descricao"
-              label="Descrição"
-              defaultValue={manutencao?.descricao}
-              error={actionData?.errors?.descricao}
-            />
-          </Row>
+          </div>
           {manutencao && manutencao?.boletim !== '-' && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 mt-4">
               <InfoIcon className="h-5 w-5 text-orange" />
               <p>
                 Manutenção criada através do Boletim{' '}

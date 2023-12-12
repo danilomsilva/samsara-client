@@ -29,6 +29,9 @@ import {
   getBoletins,
   updateBoletim,
 } from '~/models/boletim.server';
+import { getEquipamentos } from '~/models/equipamento.server';
+import { getOperacoes } from '~/models/operacao.server';
+import { getOSs } from '~/models/ordem-servico.server';
 import {
   commitSession,
   getSession,
@@ -62,7 +65,63 @@ export async function loader({ request }: LoaderArgs) {
         ? allBoletins?.filter((item: Boletim) => item.encarregado === userId)
         : allBoletins;
 
-    return json({ boletins });
+    const equipamentos = await getEquipamentos(userToken, 'created', '');
+    const operacoes = await getOperacoes(userToken, 'created');
+    const OSs = await getOSs(userToken, 'created');
+
+    const boletinsToExport = boletins.flatMap((boletim) => {
+      return boletim.equipamento_logs.map((log) => {
+        return {
+          ...boletim,
+          ...log,
+        };
+      });
+    });
+    const newBoletinsToExport = boletinsToExport?.map((boletim) => {
+      //TODO: move this into relatorios-utils.server.ts
+      const findOS = OSs.find((item) => item.id === boletim.OS);
+      const findOP = operacoes.find((item) => item.id === boletim.OP);
+      const findEquipamento = equipamentos.find(
+        (item) => item.id === boletim.equipamento
+      );
+      return {
+        codigo: boletim.codigo,
+        data_criacao: boletim.created,
+        ultima_alteracao: boletim.updated,
+        data_boletim: boletim.data_boletim,
+        codigo_equipamento: findEquipamento?.codigo,
+        tipo_equipamento: findEquipamento?.tipo_equipamentoX,
+        grupo_equipamento: findEquipamento?.grupo_equipamentoX,
+        numero_serie_equipamento: findEquipamento?.numero_serie,
+        modelo_equipamento: findEquipamento?.modelo,
+        ano_equipamento: findEquipamento?.ano,
+        combubstivel_equipamento: findEquipamento?.combustivel,
+        IM: findEquipamento.instrumento_medicao,
+        valor_locacao_diario: findEquipamento?.valor_locacao_diario,
+        valor_locacao_mensal: findEquipamento?.valor_locacao_mensal,
+        valor_locacao_hora: findEquipamento?.valor_locacao_hora,
+        total_abastecimento: boletim.total_abastecimento,
+        lubrificacao: boletim.lubrificacao ? 'SIM' : 'NÃO',
+        manutencao: boletim.manutencao ? 'SIM' : 'NÃO',
+        descricao_manutencao: boletim.descricao_manutencao,
+        limpeza: boletim.limpeza ? 'SIM' : 'NÃO',
+        obra: boletim.obraX,
+        nome_encarregado: boletim.encarregadoX,
+        operador: boletim.operadorX,
+        inativo: boletim.inativo ? 'SIM' : 'NÃO',
+        inativo_motivo: boletim.motivo,
+        OP_codigo: findOP?.codigo,
+        OP_descricao: findOP?.descricao,
+        OS_codigo: findOS?.codigo,
+        OS_descricao: findOS?.descricao,
+        hora_inicio: boletim.hora_inicio,
+        hora_final: boletim.hora_final,
+        IM_inicio: boletim.IM_inicio,
+        IM_final: boletim.IM_final,
+      };
+    });
+
+    return json({ boletins, newBoletinsToExport });
   } else {
     throw json('Acesso proibido', { status: 403 });
   }
@@ -105,7 +164,8 @@ export default function BoletinsPage() {
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
-  const { boletins }: { boletins: Boletim[] } = useLoaderData();
+  const { boletins, newBoletinsToExport }: { boletins: Boletim[] } =
+    useLoaderData(); //TODO: create a type for newBoletinsToExport
   const [searchParams] = useSearchParams();
   const filter = searchParams.get('filter');
   const { selectedRow } = useSelectRow() as UseSelectedRow;
@@ -154,7 +214,8 @@ export default function BoletinsPage() {
               tableHeaders={tableHeaders}
               data={boletins}
               filename="boletim"
-              // extra={['Relatório Completo']}
+              includes={['relatorio_completo']}
+              includesData={newBoletinsToExport}
             />
           </div>
         )}

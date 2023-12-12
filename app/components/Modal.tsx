@@ -59,7 +59,7 @@ export default function Modal({
             : size === 'sm'
             ? 'w-[400px]'
             : 'w-[500px]'
-        }`}
+        } scale-90`}
       >
         <div className="flex border-b p-6 justify-between w-full border items-center border-b-grey/50 border-x-0 border-t-0">
           <h1
@@ -93,7 +93,7 @@ export default function Modal({
             </Link>
           )}
         </div>
-        <Form method="post">
+        <Form method="post" encType="multipart/form-data">
           <div className="p-8 px-6 gap-2 flex flex-col">{content}</div>
           <div className="border-t-grey/50 border-x-0 border-b-0 border-t h-16 flex items-center px-6 justify-end">
             {footerSummary && <div className="w-full">{footerSummary}</div>}

@@ -5,7 +5,12 @@ import {
   json,
   redirect,
 } from '@remix-run/node';
-import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import {
+  useActionData,
+  useFetcher,
+  useLoaderData,
+  useNavigation,
+} from '@remix-run/react';
 import Button from '~/components/Button';
 import InputMask from '~/components/InputMask';
 import Modal from '~/components/Modal';
@@ -52,6 +57,9 @@ import Textarea from '~/components/Textarea';
 import { type Obra } from '~/models/obra.server';
 import { getEquipamentoTipos } from '~/models/equipamento_tipo.server';
 import { CSVLink } from 'react-csv';
+import FileUploader from '~/components/FileUploader';
+import FileList from '~/components/FileList';
+import { type FileTypes, getFiles } from '~/models/files.server';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -195,10 +203,16 @@ export async function loader({ params, request }: LoaderArgs) {
       boletimToExport = mixedLogs;
     }
 
+    const allFiles = await getFiles(userToken, 'boletim');
+    const files = allFiles?.items?.filter(
+      (item: FileTypes) => item.boletim === params.id
+    );
+
     return json({
       ...commonProperties,
       boletim,
       boletimToExport,
+      files,
     });
   }
 }
@@ -363,6 +377,7 @@ export default function NewBoletim() {
     sortedOSs,
     newCode,
     boletimToExport,
+    files,
   } = useLoaderData();
   const actionData = useActionData();
   const navigation = useNavigation();
@@ -379,6 +394,10 @@ export default function NewBoletim() {
   const [arrayOSs, setArrayOSs] = useState([]);
   const [OP, setOP] = useState({});
   const [showSpinner, setShowSpinner] = useState(true);
+  const uploadFileFetcher = useFetcher();
+  const isUploadingFile =
+    uploadFileFetcher.state === 'submitting' ||
+    uploadFileFetcher.state === 'loading';
 
   useEffect(() => {
     if (boletim) {
@@ -581,6 +600,19 @@ export default function NewBoletim() {
     }
   };
 
+  const handleFileUpload = async (files: File[]) => {
+    const formData = new FormData();
+    formData.append('file', files[0]);
+    formData.append('name', files[0]?.name ?? '');
+    formData.append('boletim', boletim.id);
+
+    uploadFileFetcher.submit(formData, {
+      method: 'post',
+      action: '../../upload-file-boletim',
+      encType: 'multipart/form-data',
+    });
+  };
+
   return (
     <Modal
       size="xxl"
@@ -588,7 +620,7 @@ export default function NewBoletim() {
       variant={boletim ? 'grey' : 'blue'}
       content={
         showSpinner ? (
-          <div className="flex justify-center flex-col items-center gap-4 h-[500px]">
+          <div className="flex justify-center flex-col items-center gap-4">
             <SpinnerIcon className="!h-12 !w-12" />
             <p>Carregando boletim...</p>
           </div>
@@ -817,6 +849,19 @@ export default function NewBoletim() {
                   error={actionData?.errors?.descricao_manutencao}
                 />
               </Row>
+              {files && (
+                <Row className="pl-2 mt-2">
+                  <FileList files={files} path="boletim" />
+                </Row>
+              )}
+              {boletim && (
+                <Row>
+                  <FileUploader
+                    onChange={handleFileUpload}
+                    isUploadingFile={isUploadingFile}
+                  />
+                </Row>
+              )}
               {boletim && boletimToExport && (
                 <Row className="mt-6">
                   <div className="w-full h-full justify-end flex">

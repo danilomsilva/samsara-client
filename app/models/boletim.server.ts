@@ -30,6 +30,7 @@ export type EquipamentoLog = {
 
 export type Boletim = {
   created?: string;
+  updated?: string;
   id?: string;
   newCode?: string;
   codigo?: string;
@@ -90,8 +91,10 @@ export async function getBoletins(
       return {
         id: item?.id,
         created: item?.created && formatDateTime(item.created),
+        updated: item?.updated && formatDateTime(item.updated),
         data_boletim: item?.data_boletim && formatDate(item.data_boletim),
         codigo: item?.codigo,
+        equipamento: item?.equipamento,
         equipamentoX: item?.equipamentoX,
         descricao_equipamento: item?.descricao_equipamento,
         operadorX: item?.operadorX,

@@ -1,4 +1,10 @@
-export default function MinusCircleIcon({ className }: { className?: string }) {
+export default function MinusCircleIcon({
+  className,
+  onClick,
+}: {
+  className?: string;
+  onClick?: () => void;
+}) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -6,7 +12,8 @@ export default function MinusCircleIcon({ className }: { className?: string }) {
       viewBox="0 0 24 24"
       strokeWidth={1.5}
       stroke="currentColor"
-      className={`${className} h-5 w-5`}
+      className={`${className ? className : 'h-5 w-5'}`}
+      onClick={onClick}
     >
       <path
         strokeLinecap="round"

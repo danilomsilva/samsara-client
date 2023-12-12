@@ -13,15 +13,17 @@ type PropTypes = {
   tableHeaders: ColumnType[];
   data: any[];
   filename: string;
-  // extra?: string[];
+  includes?: string[];
+  includesData?: any; //TODO: improve on this!!
 };
 
 export default function DropdownMenu({
   tableHeaders,
   data,
   filename,
-}: // extra,
-PropTypes) {
+  includes,
+  includesData,
+}: PropTypes) {
   return (
     <Menu as="div" className="relative  text-sm">
       <Menu.Button className="flex px-4 rounded-lg justify-center h-10 items-center bg-white font-semibold uppercase text-xs gap-2 text-grey border border-orange">
@@ -43,17 +45,20 @@ PropTypes) {
             CSV Simples
           </CSVLink>
         </Menu.Item>
-        {/* {extra && (
+        {includes?.includes('relatorio_completo') && includesData && (
           <Menu.Item
-            className="h-10 flex justify-center items-center hover:bg-grey-light px-3 font-semibold text-xs cursor-pointer gap-2"
+            className="h-10 flex justify-center items-center hover:bg-grey-light font-semibold text-xs cursor-pointer gap-2"
             as="div"
-            onClick={() =>
-              exportPDF(`Relatório Completo - ${filename}`, filename)
-            }
           >
-            CSV Compl.
+            <CSVLink
+              data={includesData}
+              filename={`${filename}_completo_${getCurrentDate()}`}
+              className="w-full px-3 h-8 flex items-center justify-center"
+            >
+              CSV Compl.
+            </CSVLink>
           </Menu.Item>
-        )} */}
+        )}
         <Menu.Item
           className="h-10 flex justify-center items-center hover:bg-grey-light px-3 font-semibold text-xs cursor-pointer gap-2"
           as="div"
