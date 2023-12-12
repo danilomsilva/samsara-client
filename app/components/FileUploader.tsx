@@ -44,6 +44,8 @@ export default function FileUploader({
               onChange={handleFileChange}
               className="hidden"
               ref={fileInputRef}
+              //only accpets images, pdf files and excel sheets
+              accept=".pdf, image/*, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             />
           </label>
         )}
