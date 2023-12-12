@@ -22,20 +22,20 @@ export default function FileUploader({
 
   return (
     <div className="w-full flex justify-center mt-4">
-      <div className="w-[250px] bg-white border-dashed border-2 border-grey rounded-lg py-4">
+      <div className="w-[250px] bg-white border-dashed border-2 border-grey rounded-lg">
         {isUploadingFile ? (
-          <div className="flex justify-center flex-col gap-1 items-center">
+          <div className="flex justify-center flex-col gap-1 items-center py-4">
             <SpinnerIcon />
             <p>Carregando...</p>
           </div>
         ) : (
           <label
             htmlFor="file-upload"
-            className="flex items-center justify-center gap-2"
+            className="flex items-center justify-center gap-2 cursor-pointer py-4 hover:text-blue"
           >
             <DocumentIcon className="w-10 h-10" />
             <span className="text-xs">
-              Clique ou arraste <br /> algum arquivo aqui.
+              Clique aqui para <br /> adicionar de arquivos.
             </span>
             <input
               id="file-upload"
