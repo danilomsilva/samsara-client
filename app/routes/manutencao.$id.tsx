@@ -5,7 +5,6 @@ import {
   json,
 } from '@remix-run/node';
 import {
-  Form,
   Link,
   useActionData,
   useFetcher,
@@ -16,6 +15,7 @@ import {
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
+import FileList from '~/components/FileList';
 import FileUploader from '~/components/FileUploader';
 import Input from '~/components/Input';
 import InputMask from '~/components/InputMask';
@@ -24,14 +24,12 @@ import RadioOptions from '~/components/RadioOptions';
 import Row from '~/components/Row';
 import Select from '~/components/Select';
 import Textarea from '~/components/Textarea';
-import DocumentIcon from '~/components/icons/DocumentIcon';
 import InfoIcon from '~/components/icons/InfoIcon';
-import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
-import { type FileTypes, getFiles } from '~/models/files.server';
+import { getFiles } from '~/models/files.server';
 import {
   type Manutencao,
   _createManutencao,
@@ -361,24 +359,8 @@ export default function NewOperador() {
               error={actionData?.errors?.descricao}
             />
           </Row>
-          <Row className="flex-col !gap-0 pl-2 mb-4">
-            <label>Anexos</label>
-            <div className="flex flex-wrap gap-x-4 gap-y-1">
-              {files.map((item: FileTypes) => {
-                console.log(JSON.stringify(item));
-                return (
-                  <div key={item?.id} className="flex gap-2 items-center">
-                    <DocumentIcon className="h-4 w-4" />
-                    <Form action="/download-file" method="post">
-                      <button type="submit" className="text-sm hover:text-blue">
-                        {item?.name}
-                      </button>
-                    </Form>
-                    <MinusCircleIcon className="h-4 w-4 text-grey hover:text-red cursor-pointer" />
-                  </div>
-                );
-              })}
-            </div>
+          <Row className="pl-2">
+            <FileList files={files} />
           </Row>
           <Row>
             <FileUploader onChange={handleFileUpload} />
