@@ -85,7 +85,7 @@ export async function loader({ params, request }: LoaderArgs) {
     const operadores = await getOperadores(userToken, 'created', '');
     const equipamentos = await getEquipamentos(userToken, 'created', '');
     const manutencao = await getManutencao(userToken, params.id as string);
-    const allFiles = await getFiles(userToken);
+    const allFiles = await getFiles(userToken, 'manutencao');
     const files = allFiles?.items?.filter(
       (item: FileTypes) => item.manutencao === params.id
     );
@@ -250,7 +250,7 @@ export default function NewOperador() {
 
     uploadFileFetcher.submit(formData, {
       method: 'post',
-      action: '../../upload-file',
+      action: '../../upload-file-manutencao',
       encType: 'multipart/form-data',
     });
   };
@@ -364,7 +364,7 @@ export default function NewOperador() {
           </Row>
           {files && (
             <Row className="pl-2">
-              <FileList files={files} />
+              <FileList files={files} path="manutencao" />
             </Row>
           )}
           {manutencao && (

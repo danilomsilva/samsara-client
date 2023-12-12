@@ -5,7 +5,13 @@ import { useFetcher } from '@remix-run/react';
 import SpinnerIcon from './icons/SpinnerIcon';
 import { useState } from 'react';
 
-export default function FileList({ files }: { files: FileTypes[] }) {
+export default function FileList({
+  files,
+  path,
+}: {
+  files: FileTypes[];
+  path: string;
+}) {
   const [removingFile, setRemovingFile] = useState<string | null>(null);
   const removeFileFetcher = useFetcher();
   const isRemovingFile =
@@ -47,7 +53,7 @@ export default function FileList({ files }: { files: FileTypes[] }) {
       },
       {
         method: 'post',
-        action: '../../remove-file',
+        action: `../../remove-file-${path}`,
       }
     );
   };

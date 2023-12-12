@@ -1,5 +1,6 @@
 import { type User } from '~/session.server';
 import { type Manutencao } from './manutencao.server';
+import { type Boletim } from './boletim.server';
 
 export type FileTypes = {
   collectionId: string;
@@ -7,13 +8,14 @@ export type FileTypes = {
   created: string;
   file: string[];
   id: string;
-  manutencao: Manutencao['id'];
+  manutencao?: Manutencao['id'];
+  boletim?: Boletim['id'];
   name: string;
   updated: string;
 };
 
-export async function getFiles(userToken: User['token']) {
-  let url = `${process.env.BASE_API_URL}/collections/manutencao_files/records`;
+export async function getFiles(userToken: User['token'], path: string) {
+  let url = `${process.env.BASE_API_URL}/collections/${path}_files/records`;
 
   const queryParams = new URLSearchParams();
 

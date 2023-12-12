@@ -22,5 +22,4 @@ export const action: ActionFunction = async ({ request }) => {
     console.log(err);
     return json({ err });
   }
-  return json({});
 };
