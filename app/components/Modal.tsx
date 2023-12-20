@@ -47,7 +47,7 @@ export default function Modal({
     },
   };
   return (
-    <div className="bg-black/30 absolute top-0 left-0 w-full h-screen flex justify-center items-center">
+    <div className="bg-black/30 absolute top-0 left-0 w-full h-screen flex justify-center items-center z-40">
       <div
         className={`${
           variant && variantStyle[variant]?.borderTop
@@ -61,7 +61,7 @@ export default function Modal({
             : 'w-[500px]'
         } scale-90`}
       >
-        <div className="flex border-b p-6 justify-between w-full border items-center border-b-grey/50 border-x-0 border-t-0">
+        <div className="flex border-b p-6 justify-between w-full border items-center border-b-grey/50 border-x-0 border-t-0 z-50">
           <h1
             className={`${
               variant && variantStyle[variant]?.title
