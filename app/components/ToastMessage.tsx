@@ -60,7 +60,7 @@ export default function ToastMessage({
       leaveTo="opacity-0"
     >
       <div
-        className={`${variants[variant].borderColor} min-h-12 absolute bottom-4 right-4 flex w-96  gap-4 border-t-8 bg-white py-4 pl-4 pr-3 text-sm shadow-lg rounded-lg`}
+        className={`${variants[variant].borderColor} min-h-12 absolute bottom-4 right-4 flex w-96  gap-4 border-t-8 bg-white py-4 pl-4 pr-3 text-sm shadow-lg rounded-lg z-50`}
       >
         <div className="mt-0.5">{variants[variant].icon}</div>
         <div className="flex w-full gap-1">
