@@ -51,7 +51,7 @@ export default function DataTable({
           style={{ scrollbarGutter: 'stable' }}
         >
           <table className="bg-white w-full text-sm" id={id}>
-            <thead className="sticky top-0 bg-white shadow-sm">
+            <thead className="sticky top-0 bg-white shadow-md z-10">
               <tr className="text-left h-10">
                 {columns.map((col: ColumnType, i: number) => (
                   <Column
