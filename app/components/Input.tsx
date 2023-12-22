@@ -58,6 +58,10 @@ export default function Input({
           decimalScale={2}
           defaultValue={defaultValue}
           placeholder={placeholder}
+          isAllowed={(values: any) => {
+            const { formattedValue, floatValue } = values;
+            return formattedValue === '' || floatValue <= 9999999;
+          }}
         />
       ) : type === 'IM' ? (
         <NumericFormat
@@ -75,6 +79,10 @@ export default function Input({
           readOnly={readOnly}
           onChange={(e) => onChange && onChange(e.target.value)}
           placeholder={placeholder}
+          isAllowed={(values: any) => {
+            const { formattedValue, floatValue } = values;
+            return formattedValue === '' || floatValue <= 9999999;
+          }}
         />
       ) : (
         <input
