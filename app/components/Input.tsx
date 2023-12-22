@@ -60,7 +60,7 @@ export default function Input({
           placeholder={placeholder}
           isAllowed={(values: any) => {
             const { formattedValue, floatValue } = values;
-            return formattedValue === '' || floatValue <= 9999999;
+            return formattedValue === '' || floatValue <= 999999;
           }}
         />
       ) : type === 'IM' ? (
@@ -81,7 +81,7 @@ export default function Input({
           placeholder={placeholder}
           isAllowed={(values: any) => {
             const { formattedValue, floatValue } = values;
-            return formattedValue === '' || floatValue <= 9999999;
+            return formattedValue === '' || floatValue <= 999999;
           }}
         />
       ) : (
