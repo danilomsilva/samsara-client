@@ -70,8 +70,7 @@ export async function getBoletins(
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
 
-  // if (perPage) queryParams.set('perPage', perPage ?? '100'); //TODO: implement perPage
-
+  queryParams.set('perPage', '200'); //set max items per page when querying db
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {

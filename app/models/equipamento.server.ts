@@ -139,7 +139,7 @@ export async function getEquipamentos(
     'expand',
     'obra,encarregado,tipo_equipamento,grupo_equipamento'
   );
-  // if (perPage) queryParams.set('perPage', perPage ?? '100'); //TODO: implement perPage
+  queryParams.set('perPage', '200'); //set max items per page when querying db
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
