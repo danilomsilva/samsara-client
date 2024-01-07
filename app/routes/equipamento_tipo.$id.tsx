@@ -57,6 +57,12 @@ export async function action({ params, request }: ActionArgs) {
   const validationScheme = z.object({
     tipo_nome: z.string().min(1, CAMPO_OBRIGATORIO),
     grupo_nome: z.string().min(1, CAMPO_OBRIGATORIO),
+    array_operacoes: z.string().refine((data) => {
+      const toArray = JSON.parse(data);
+      if (toArray.length > 0) {
+        return true;
+      }
+    }, CAMPO_OBRIGATORIO),
   });
 
   const validatedScheme = validationScheme.safeParse(formData);
@@ -67,6 +73,7 @@ export async function action({ params, request }: ActionArgs) {
       errors: {
         tipo_nome: errors.tipo_nome?._errors[0],
         grupo_nome: errors.grupo_nome?._errors[0],
+        array_operacoes: errors.array_operacoes?._errors[0],
       },
     };
   }
@@ -169,6 +176,7 @@ export default function NewEquipamentoTipo() {
               defaultValue={equipamentoTipo?.array_operacoes}
               onChange={handleChangeOperacoes}
               placeholder="Digite apenas o código da operação e clique + para adicionar"
+              error={actionData?.errors?.array_operacoes}
             />
           </Row>
         </>
