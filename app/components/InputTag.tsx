@@ -21,6 +21,7 @@ export default function InputTag({
   className,
   label,
   data,
+  error: errorMessage,
 }: PropTypes) {
   const [array, setArray] = useState<any[]>([]);
   const [value, setValue] = useState<string | undefined>();
@@ -84,7 +85,8 @@ export default function InputTag({
         onChange={handleChange}
         placeholder={placeholder}
       />
-      {error && <ErrorMessage error={error} />}
+      {error ||
+        (errorMessage && <ErrorMessage error={error || errorMessage} />)}
       {value && value?.length > 0 && !error && (
         <div className="absolute right-2 top-7  rounded-full cursor-pointer hover:bg-green/50 bg-green">
           <PlusCircleIcon

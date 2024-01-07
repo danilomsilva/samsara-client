@@ -39,6 +39,7 @@ export async function getUsuarios(
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra');
   queryParams.set('filter', filter ?? '');
+  queryParams.set('perPage', '200'); //set max items per page when querying db
 
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;
@@ -48,7 +49,7 @@ export async function getUsuarios(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -77,7 +78,7 @@ export async function getUsuario(userToken: User['token'], userId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -106,7 +107,7 @@ export async function createUsuario(userToken: User['token'], body: Usuario) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -144,7 +145,7 @@ export async function updateUsuario(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -164,7 +165,7 @@ export async function deleteUsuario(userToken: User['token'], userId: string) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

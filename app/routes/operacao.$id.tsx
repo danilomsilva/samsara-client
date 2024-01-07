@@ -53,6 +53,12 @@ export async function action({ params, request }: ActionArgs) {
       .startsWith('OM-', { message: 'OM-' })
       .min(4, { message: 'Obrigatório' }),
     descricao: z.string().min(1, CAMPO_OBRIGATORIO),
+    array_ordens_servico: z.string().refine((data) => {
+      const toArray = JSON.parse(data);
+      if (toArray.length > 0) {
+        return true;
+      }
+    }, CAMPO_OBRIGATORIO),
   });
 
   const validatedScheme = validationScheme.safeParse(formData);
@@ -63,6 +69,7 @@ export async function action({ params, request }: ActionArgs) {
       errors: {
         codigo: errors.codigo?._errors[0],
         descricao: errors.descricao?._errors[0],
+        array_ordens_servico: errors.array_ordens_servico?._errors[0],
       },
     };
   }
@@ -143,6 +150,7 @@ export default function NewOS() {
               defaultValue={operacao?.array_ordens_servico}
               onChange={handleChangeOSs}
               placeholder="Digite apenas o código da OS e clique + para adicionar"
+              error={actionData?.errors?.array_ordens_servico}
             />
           </Row>
         </>

@@ -83,7 +83,7 @@ export async function action({ params, request }: ActionArgs) {
         nome_completo: errors.nome_completo?._errors[0],
         atividade: errors.atividade?._errors[0],
         obra: errors.obra?._errors[0],
-        encaregado: errors.nome_completo?._errors[0],
+        encarregado: errors.nome_completo?._errors[0],
       },
     };
   }

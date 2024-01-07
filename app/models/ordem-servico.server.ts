@@ -17,17 +17,17 @@ export async function getOSs(
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
+  queryParams.set('perPage', '200'); //set max items per page when querying db
+
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
-  } else {
-    url += `?perPage=100`;
+    url += `?${queryParams.toString()}`;
   }
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -52,7 +52,7 @@ export async function getOS(userToken: User['token'], osId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -76,7 +76,7 @@ export async function createOS(userToken: User['token'], body: OS) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${userToken}`,
+            'Authorization': `Bearer ${userToken}`,
           },
           body: JSON.stringify(body),
         }
@@ -101,7 +101,7 @@ export async function updateOS(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -121,7 +121,7 @@ export async function deleteOS(userToken: User['token'], osId: string) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
