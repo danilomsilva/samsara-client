@@ -6,6 +6,7 @@ import {
   redirect,
 } from '@remix-run/node';
 import {
+  Form,
   useActionData,
   useFetcher,
   useLoaderData,
@@ -60,6 +61,9 @@ import { CSVLink } from 'react-csv';
 import FileUploader from '~/components/FileUploader';
 import FileList from '~/components/FileList';
 import { type FileTypes, getFiles } from '~/models/files.server';
+import { isMobile } from 'react-device-detect';
+import ArrowRightIcon from '~/components/icons/ArrowRightIcon';
+import { UseCurrentStep, useCurrentStep, useStep } from '~/stores/useStep';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -394,6 +398,7 @@ export default function NewBoletim() {
   const [arrayOSs, setArrayOSs] = useState([]);
   const [OP, setOP] = useState({});
   const [showSpinner, setShowSpinner] = useState(true);
+  const { currentStep, nextStep, previousStep } = useStep() as UseCurrentStep;
   const uploadFileFetcher = useFetcher();
   const isUploadingFile =
     uploadFileFetcher.state === 'submitting' ||
@@ -613,20 +618,74 @@ export default function NewBoletim() {
     });
   };
 
-  return (
-    <Modal
-      size="xxl"
-      title={`${boletim ? 'Editar' : 'Adicionar'} Boletim`}
-      variant={boletim ? 'grey' : 'blue'}
-      content={
-        showSpinner ? (
-          <div className="flex justify-center flex-col items-center gap-4">
-            <SpinnerIcon className="!h-12 !w-12" />
-            <p>Carregando boletim...</p>
+  if (isMobile) {
+    return (
+      <div className="bg-grey-light fixed top-0 left-0 w-full h-full border-t-8 border-blue flex flex-col py-6 gap-4 z-50">
+        <div className="px-6 flex flex-col gap-2">
+          <h1 className="text-2xl text-blue font-semibold w-full text-center">
+            Adicionar Boletim
+          </h1>
+          <label>Etapas</label>
+          <div className="flex ">
+            <div
+              className={`${
+                currentStep === 1
+                  ? 'bg-orange text-white shadow-lg'
+                  : 'text-blue font-bold border-grey'
+              } h-12 w-12 border rounded-lg flex items-center justify-center text-2xl font-bold`}
+            >
+              1
+            </div>
+            <div className="h-6 w-8 border-b border-b-grey flex" />
+            <div
+              className={`${
+                currentStep === 2
+                  ? 'bg-orange text-white shadow-lg'
+                  : 'text-blue font-bold border-grey'
+              } h-12 w-12 border rounded-lg flex items-center justify-center text-2xl font-bold`}
+            >
+              2
+            </div>
+            <div className="h-6 w-8 border-b border-b-grey flex" />
+            <div
+              className={`${
+                currentStep === 3
+                  ? 'bg-orange text-white shadow-lg'
+                  : 'text-blue font-bold border-grey'
+              } h-12 w-12 border rounded-lg flex items-center justify-center text-2xl font-bold`}
+            >
+              3
+            </div>
+            <div className="h-6 w-8 border-b border-b-grey flex" />
+            <div
+              className={`${
+                currentStep === 4
+                  ? 'bg-orange text-white shadow-lg'
+                  : 'text-blue font-bold border-grey'
+              } h-12 w-12 border rounded-lg flex items-center justify-center text-2xl font-bold`}
+            >
+              4
+            </div>
+            <div className="h-6 w-8 border-b border-b-grey flex" />
+            <div
+              className={`${
+                currentStep === 5
+                  ? 'bg-orange text-white shadow-lg'
+                  : 'text-blue font-bold border-grey'
+              } h-12 w-12 border rounded-lg flex items-center justify-center text-2xl font-bold`}
+            >
+              5
+            </div>
           </div>
-        ) : (
-          <div className="flex">
-            <div className="pr-4 border-r-grey/40 border-r">
+        </div>
+        <div className="border-t border-t-grey/30 w-full" />
+        <Form
+          method="post"
+          encType="multipart/form-data"
+          className="p-6 flex flex-col gap-4"
+        >
+          {currentStep === 1 ? (
+            <>
               <Row>
                 <InputMask
                   mask="99/99/9999"
@@ -641,6 +700,8 @@ export default function NewBoletim() {
                   className="!w-[132px]"
                   error={actionData?.errors?.data_boletim}
                 />
+              </Row>
+              <Row>
                 <Select
                   name="equipamento"
                   options={sortedEquipamentos}
@@ -649,18 +710,20 @@ export default function NewBoletim() {
                   placeholder="-"
                   error={actionData?.errors?.equipamento}
                   onChange={handleSelectEquipamento}
-                  className="!w-[132px]"
                 />
+              </Row>
+              <Row>
                 <InputValue
                   type="text"
                   name="tipo_equipamento"
                   label="Descrição do equipamento"
-                  className="!w-[280px]"
                   value={equipamento?.tipo_equipamentoX}
                   disabled
                   tabIndex={-1}
                   error={actionData?.errors?.tipo_equipamento}
                 />
+              </Row>
+              <Row>
                 <Select
                   name="operador"
                   options={sortedOperadores}
@@ -668,245 +731,335 @@ export default function NewBoletim() {
                   defaultValue={boletim?.operador}
                   placeholder="-"
                   error={actionData?.errors?.operador}
-                  className="!w-[280px]"
                 />
               </Row>
-              <input hidden name="obra" value={loggedInUser?.obra} />
-              <input hidden name="encarregado" value={loggedInUser?.id} />
-              <input hidden name="newCode" value={newCode} />
-              <input hidden name="rows" value={rows} />
-              <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
-                {Array.from(new Array(rows), (_, index) => {
-                  return (
-                    <Row key={index}>
-                      <Select
-                        name={`operacao_${index}`}
-                        options={arrayOperacoes}
-                        label="Operação"
-                        labelBold
-                        defaultValue={equipLogs[index]?.OP}
-                        placeholder="-"
-                        error={actionData?.errors?.[`operacao_${index}`]}
-                        className="!w-[132px]"
-                        noLabel={index !== 0}
-                        onChange={(value) => handleChange('OP', value, index)}
-                        onClick={() => handleClickedRow(index)}
-                      />
-                      <Select
-                        name={`OS_${index}`}
-                        options={arrayOSs}
-                        labelBold
-                        label="O.S."
-                        defaultValue={equipLogs[index]?.OS}
-                        placeholder="-"
-                        error={actionData?.errors?.[`OS_${index}`]}
-                        className="!w-[132px]"
-                        noLabel={index !== 0}
-                        onChange={(value) => handleChange('OS', value, index)}
-                        onClick={() => handleClickedRow(index)}
-                      />
-                      <InputValue
-                        type="time"
-                        name={`hora_inicio_${index}`}
-                        label="Hora Início"
-                        labelBold
-                        className="!w-[132px]"
-                        value={equipLogs[index]?.hora_inicio}
-                        error={actionData?.errors?.[`hora_inicio_${index}`]}
-                        noLabel={index !== 0}
-                        onChange={(value) =>
-                          handleChange('hora_inicio', value, index)
-                        }
-                        onClick={() => handleClickedRow(index)}
-                        disabled={index !== 0}
-                      />
-                      <InputValue
-                        type="time"
-                        name={`hora_final_${index}`}
-                        label="Hora Final"
-                        labelBold
-                        className="!w-[132px]"
-                        value={equipLogs[index]?.hora_final}
-                        noLabel={index !== 0}
-                        onChange={(value) =>
-                          handleChange('hora_final', value, index)
-                        }
-                        onClick={() => handleClickedRow(index)}
-                        error={
-                          equipLogs[index]?.isHoraValid === false
-                            ? 'Hora inválida!'
-                            : '' || actionData?.errors?.[`hora_final_${index}`]
-                        }
-                      />
-                      <InputValue
-                        type="IM"
-                        name={`IM_inicio_${index}`}
-                        label={`${
-                          equipamento?.instrumento_medicao
-                            ? equipamento?.instrumento_medicao
-                            : 'IM'
-                        } Início`}
-                        labelBold
-                        className="!w-[130px]"
-                        value={equipLogs[index]?.IM_inicio}
-                        error={actionData?.errors?.[`IM_inicio_${index}`]}
-                        noLabel={index !== 0}
-                        onChange={(value) =>
-                          handleChange('IM_inicio', value, index)
-                        }
-                        onClick={() => handleClickedRow(index)}
-                        disabled
-                      />
-                      <InputValue
-                        type="IM"
-                        name={`IM_final_${index}`}
-                        label={`${
-                          equipamento?.instrumento_medicao
-                            ? equipamento?.instrumento_medicao
-                            : 'IM'
-                        } Final`}
-                        labelBold
-                        className="!w-[130px]"
-                        value={equipLogs[index]?.IM_final}
-                        noLabel={index !== 0}
-                        onChange={(value) =>
-                          handleChange('IM_final', value, index)
-                        }
-                        onClick={() => handleClickedRow(index)}
-                        error={
-                          equipLogs[index]?.isIMValid === false
-                            ? 'IM inválido!'
-                            : '' || actionData?.errors?.[`IM_final_${index}`]
-                        }
-                      />
-                    </Row>
-                  );
-                })}
-                <TwoLinesInfo OS={OS} OP={OP} />
+            </>
+          ) : currentStep === 1 ? (
+            ''
+          ) : (
+            ''
+          )}
+        </Form>
+        <div className="border-t border-t-grey/30 w-full" />
+        <div className="w-full flex justify-between px-6">
+          <div>
+            {currentStep > 1 && (
+              <button
+                className="flex gap-2 p-2 px-4 rounded-lg justify-center h-10 items-center text-blue border border-blue uppercase font-semibold text-sm"
+                onClick={() => previousStep()}
+              >
+                Voltar
+              </button>
+            )}
+          </div>
+          <div>
+            <button
+              className="bg-blue flex gap-2 p-2 px-4 rounded-lg justify-center h-10 items-center text-white uppercase font-semibold text-sm"
+              onClick={() => nextStep()}
+            >
+              Avancar
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  } else {
+    return (
+      <Modal
+        size="xxl"
+        title={`${boletim ? 'Editar' : 'Adicionar'} Boletim`}
+        variant={boletim ? 'grey' : 'blue'}
+        content={
+          showSpinner ? (
+            <div className="flex justify-center flex-col items-center gap-4">
+              <SpinnerIcon className="!h-12 !w-12" />
+              <p>Carregando boletim...</p>
+            </div>
+          ) : (
+            <div className="flex">
+              <div className="pr-4 border-r-grey/40 border-r">
+                <Row>
+                  <InputMask
+                    mask="99/99/9999"
+                    type="text"
+                    name="data_boletim"
+                    label="Data de início"
+                    defaultValue={
+                      boletim
+                        ? convertISOToDate(boletim?.data_boletim)
+                        : getCurrentDate()
+                    }
+                    className="!w-[132px]"
+                    error={actionData?.errors?.data_boletim}
+                  />
+                  <Select
+                    name="equipamento"
+                    options={sortedEquipamentos}
+                    label="Equipamento"
+                    defaultValue={boletim?.equipamento}
+                    placeholder="-"
+                    error={actionData?.errors?.equipamento}
+                    onChange={handleSelectEquipamento}
+                    className="!w-[132px]"
+                  />
+                  <InputValue
+                    type="text"
+                    name="tipo_equipamento"
+                    label="Descrição do equipamento"
+                    className="!w-[280px]"
+                    value={equipamento?.tipo_equipamentoX}
+                    disabled
+                    tabIndex={-1}
+                    error={actionData?.errors?.tipo_equipamento}
+                  />
+                  <Select
+                    name="operador"
+                    options={sortedOperadores}
+                    label="Operador"
+                    defaultValue={boletim?.operador}
+                    placeholder="-"
+                    error={actionData?.errors?.operador}
+                    className="!w-[280px]"
+                  />
+                </Row>
+                <input hidden name="obra" value={loggedInUser?.obra} />
+                <input hidden name="encarregado" value={loggedInUser?.id} />
+                <input hidden name="newCode" value={newCode} />
+                <input hidden name="rows" value={rows} />
+                <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
+                  {Array.from(new Array(rows), (_, index) => {
+                    return (
+                      <Row key={index}>
+                        <Select
+                          name={`operacao_${index}`}
+                          options={arrayOperacoes}
+                          label="Operação"
+                          labelBold
+                          defaultValue={equipLogs[index]?.OP}
+                          placeholder="-"
+                          error={actionData?.errors?.[`operacao_${index}`]}
+                          className="!w-[132px]"
+                          noLabel={index !== 0}
+                          onChange={(value) => handleChange('OP', value, index)}
+                          onClick={() => handleClickedRow(index)}
+                        />
+                        <Select
+                          name={`OS_${index}`}
+                          options={arrayOSs}
+                          labelBold
+                          label="O.S."
+                          defaultValue={equipLogs[index]?.OS}
+                          placeholder="-"
+                          error={actionData?.errors?.[`OS_${index}`]}
+                          className="!w-[132px]"
+                          noLabel={index !== 0}
+                          onChange={(value) => handleChange('OS', value, index)}
+                          onClick={() => handleClickedRow(index)}
+                        />
+                        <InputValue
+                          type="time"
+                          name={`hora_inicio_${index}`}
+                          label="Hora Início"
+                          labelBold
+                          className="!w-[132px]"
+                          value={equipLogs[index]?.hora_inicio}
+                          error={actionData?.errors?.[`hora_inicio_${index}`]}
+                          noLabel={index !== 0}
+                          onChange={(value) =>
+                            handleChange('hora_inicio', value, index)
+                          }
+                          onClick={() => handleClickedRow(index)}
+                          disabled={index !== 0}
+                        />
+                        <InputValue
+                          type="time"
+                          name={`hora_final_${index}`}
+                          label="Hora Final"
+                          labelBold
+                          className="!w-[132px]"
+                          value={equipLogs[index]?.hora_final}
+                          noLabel={index !== 0}
+                          onChange={(value) =>
+                            handleChange('hora_final', value, index)
+                          }
+                          onClick={() => handleClickedRow(index)}
+                          error={
+                            equipLogs[index]?.isHoraValid === false
+                              ? 'Hora inválida!'
+                              : '' ||
+                                actionData?.errors?.[`hora_final_${index}`]
+                          }
+                        />
+                        <InputValue
+                          type="IM"
+                          name={`IM_inicio_${index}`}
+                          label={`${
+                            equipamento?.instrumento_medicao
+                              ? equipamento?.instrumento_medicao
+                              : 'IM'
+                          } Início`}
+                          labelBold
+                          className="!w-[130px]"
+                          value={equipLogs[index]?.IM_inicio}
+                          error={actionData?.errors?.[`IM_inicio_${index}`]}
+                          noLabel={index !== 0}
+                          onChange={(value) =>
+                            handleChange('IM_inicio', value, index)
+                          }
+                          onClick={() => handleClickedRow(index)}
+                          disabled
+                        />
+                        <InputValue
+                          type="IM"
+                          name={`IM_final_${index}`}
+                          label={`${
+                            equipamento?.instrumento_medicao
+                              ? equipamento?.instrumento_medicao
+                              : 'IM'
+                          } Final`}
+                          labelBold
+                          className="!w-[130px]"
+                          value={equipLogs[index]?.IM_final}
+                          noLabel={index !== 0}
+                          onChange={(value) =>
+                            handleChange('IM_final', value, index)
+                          }
+                          onClick={() => handleClickedRow(index)}
+                          error={
+                            equipLogs[index]?.isIMValid === false
+                              ? 'IM inválido!'
+                              : '' || actionData?.errors?.[`IM_final_${index}`]
+                          }
+                        />
+                      </Row>
+                    );
+                  })}
+                  <TwoLinesInfo OS={OS} OP={OP} />
 
-                {rows < 12 && (
-                  <div className="w-full flex justify-center mt-2 mb-4">
-                    <div
-                      className={`${
-                        isFormValid
-                          ? 'hover:bg-white rounded-full cursor-pointer'
-                          : 'cursor-default pointer-events-none'
-                      }`}
-                      onClick={handleAddRow}
-                    >
-                      <PlusCircleIcon
+                  {rows < 12 && (
+                    <div className="w-full flex justify-center mt-2 mb-4">
+                      <div
                         className={`${
-                          isFormValid ? 'text-blue' : 'text-grey'
-                        } h-8 w-8`}
-                      />
+                          isFormValid
+                            ? 'hover:bg-white rounded-full cursor-pointer'
+                            : 'cursor-default pointer-events-none'
+                        }`}
+                        onClick={handleAddRow}
+                      >
+                        <PlusCircleIcon
+                          className={`${
+                            isFormValid ? 'text-blue' : 'text-grey'
+                          } h-8 w-8`}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
+                </div>
+              </div>
+              <div className="w-full pl-4">
+                <Row>
+                  <InputValue
+                    type="IM"
+                    name="abastecimento_1"
+                    label="Abast. 1"
+                    value={boletim?.abastecimento_1}
+                    suffix=" L"
+                    className="!w-[114px]"
+                  />
+                  <InputValue
+                    type="IM"
+                    name="abastecimento_2"
+                    label="Abast. 2"
+                    value={boletim?.abastecimento_2}
+                    suffix=" L"
+                    className="!w-[114px]"
+                  />
+                </Row>
+                <Row className="!gap-3">
+                  <Checkbox
+                    label="Manutenção"
+                    name="manutencao"
+                    value={boletim?.manutencao}
+                    disabled={boletim?.manutencao}
+                  />
+                  <Checkbox
+                    label="Lubrificação"
+                    name="lubrificacao"
+                    value={boletim?.lubrificacao}
+                  />
+                  <Checkbox
+                    label="Limpeza"
+                    name="limpeza"
+                    value={boletim?.limpeza}
+                  />
+                </Row>
+                <Row className="mt-2">
+                  <Textarea
+                    name="descricao_manutencao"
+                    label="Descrição da Manutenção"
+                    defaultValue={boletim?.descricao_manutencao}
+                    error={actionData?.errors?.descricao_manutencao}
+                  />
+                </Row>
+                {files && (
+                  <Row className="pl-2 mt-2">
+                    <FileList files={files} path="boletim" />
+                  </Row>
+                )}
+                {boletim && (
+                  <Row>
+                    <FileUploader
+                      onChange={handleFileUpload}
+                      isUploadingFile={isUploadingFile}
+                    />
+                  </Row>
+                )}
+                {boletim && boletimToExport && (
+                  <Row className="mt-6">
+                    <div className="w-full h-full justify-end flex">
+                      <CSVLink
+                        data={boletimToExport}
+                        className="bg-green text-white rounded-md px-3 py-1"
+                      >
+                        Exportar CSV
+                      </CSVLink>
+                    </div>
+                  </Row>
                 )}
               </div>
             </div>
-            <div className="w-full pl-4">
-              <Row>
-                <InputValue
-                  type="IM"
-                  name="abastecimento_1"
-                  label="Abast. 1"
-                  value={boletim?.abastecimento_1}
-                  suffix=" L"
-                  className="!w-[114px]"
-                />
-                <InputValue
-                  type="IM"
-                  name="abastecimento_2"
-                  label="Abast. 2"
-                  value={boletim?.abastecimento_2}
-                  suffix=" L"
-                  className="!w-[114px]"
-                />
-              </Row>
-              <Row className="!gap-3">
-                <Checkbox
-                  label="Manutenção"
-                  name="manutencao"
-                  value={boletim?.manutencao}
-                  disabled={boletim?.manutencao}
-                />
-                <Checkbox
-                  label="Lubrificação"
-                  name="lubrificacao"
-                  value={boletim?.lubrificacao}
-                />
-                <Checkbox
-                  label="Limpeza"
-                  name="limpeza"
-                  value={boletim?.limpeza}
-                />
-              </Row>
-              <Row className="mt-2">
-                <Textarea
-                  name="descricao_manutencao"
-                  label="Descrição da Manutenção"
-                  defaultValue={boletim?.descricao_manutencao}
-                  error={actionData?.errors?.descricao_manutencao}
-                />
-              </Row>
-              {files && (
-                <Row className="pl-2 mt-2">
-                  <FileList files={files} path="boletim" />
-                </Row>
-              )}
-              {boletim && (
-                <Row>
-                  <FileUploader
-                    onChange={handleFileUpload}
-                    isUploadingFile={isUploadingFile}
-                  />
-                </Row>
-              )}
-              {boletim && boletimToExport && (
-                <Row className="mt-6">
-                  <div className="w-full h-full justify-end flex">
-                    <CSVLink
-                      data={boletimToExport}
-                      className="bg-green text-white rounded-md px-3 py-1"
-                    >
-                      Exportar CSV
-                    </CSVLink>
-                  </div>
-                </Row>
-              )}
-            </div>
-          </div>
-        )
-      }
-      footerSummary={
-        <FooterSummary
-          codigoBoletim={boletim?.codigo}
-          loggedInUser={loggedInUser}
-          equipamento={equipamento}
-          firstHour={equipLogs[0]?.hora_inicio}
-          lastHour={equipLogs[equipLogs.length - 1]?.hora_final}
-          IMInicio={equipLogs[0]?.IM_inicio}
-          IMFinal={equipLogs[equipLogs.length - 1]?.IM_final}
-        />
-      }
-      footerActions={
-        <Button
-          variant={boletim ? 'grey' : 'blue'}
-          icon={
-            isSubmitting ? (
-              <SpinnerIcon />
-            ) : boletim ? (
-              <PencilIcon />
-            ) : (
-              <PlusCircleIcon />
-            )
-          }
-          text={boletim ? 'Editar' : 'Adicionar'}
-          name="_action"
-          value={boletim ? 'edit' : 'create'}
-          disabled={!isFormValid}
-        />
-      }
-    />
-  );
+          )
+        }
+        footerSummary={
+          <FooterSummary
+            codigoBoletim={boletim?.codigo}
+            loggedInUser={loggedInUser}
+            equipamento={equipamento}
+            firstHour={equipLogs[0]?.hora_inicio}
+            lastHour={equipLogs[equipLogs.length - 1]?.hora_final}
+            IMInicio={equipLogs[0]?.IM_inicio}
+            IMFinal={equipLogs[equipLogs.length - 1]?.IM_final}
+          />
+        }
+        footerActions={
+          <Button
+            variant={boletim ? 'grey' : 'blue'}
+            icon={
+              isSubmitting ? (
+                <SpinnerIcon />
+              ) : boletim ? (
+                <PencilIcon />
+              ) : (
+                <PlusCircleIcon />
+              )
+            }
+            text={boletim ? 'Editar' : 'Adicionar'}
+            name="_action"
+            value={boletim ? 'edit' : 'create'}
+            disabled={!isFormValid}
+          />
+        }
+      />
+    );
+  }
 }

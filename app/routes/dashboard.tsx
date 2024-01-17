@@ -5,8 +5,10 @@ import {
   json,
   type V2_MetaFunction,
 } from '@remix-run/node';
-import { Form } from '@remix-run/react';
+import { Form, Link } from '@remix-run/react';
 import { getUserSession, logout } from '~/session.server';
+import { isMobile } from 'react-device-detect';
+import Button from '~/components/Button';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -26,9 +28,26 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Dashboard() {
-  return (
-    <Form method="post">
-      <button type="submit">Logout</button>
-    </Form>
-  );
+  if (isMobile) {
+    return (
+      <div className="h-full flex flex-col items-center gap-32">
+        <div className="pt-10 flex flex-col gap-6">
+          <img src="/assets/logo.png" alt="logo" width={80} height={80} />
+          <h1 className="text-2xl text-blue font-semibold">Dashboard</h1>
+        </div>
+        <Link
+          to="/boletim/new"
+          className="bg-orange rounded-md text-white h-12 w-full flex justify-center items-center"
+        >
+          Boletim
+        </Link>
+      </div>
+    );
+  } else {
+    return (
+      <Form method="post">
+        <button type="submit">DESKTOP</button>
+      </Form>
+    );
+  }
 }

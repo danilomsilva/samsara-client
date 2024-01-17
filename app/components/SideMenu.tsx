@@ -22,7 +22,7 @@ export default function SideMenu({ tipoAcesso, children, user }: PropTypes) {
         className={clsx(
           ` ${
             isOpen ? 'min-w-[180px] max-w-[180px]' : 'w-[50px]'
-          } bg-white h-screen px-6 py-8 gap-8 flex flex-col relative`
+          } bg-white h-screen px-6 py-8 gap-8 flex flex-col relative max-sm:hidden`
         )}
       >
         {isOpen && (
