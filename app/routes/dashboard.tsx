@@ -5,7 +5,7 @@ import {
   json,
   type V2_MetaFunction,
 } from '@remix-run/node';
-import { Form } from '@remix-run/react';
+import { Link } from '@remix-run/react';
 import { getUserSession, logout } from '~/session.server';
 
 // page title
@@ -27,8 +27,24 @@ export async function action({ request }: ActionArgs) {
 
 export default function Dashboard() {
   return (
-    <Form method="post">
-      <button type="submit">Logout</button>
-    </Form>
+    <>
+      {/* SHOW WHEN SCREEN GETS SMALLER */}
+      <div className="flex flex-col items-center gap-2 pt-10 lg:hidden">
+        <img src="/assets/logo.png" alt="logo" width={80} height={80} />
+        <h1 className="font-semibold text-blue text-2xl">Dashboard</h1>
+        <Link
+          to="/boletim/new"
+          className="w-[300px] bg-orange py-4 px-6 text-white uppercase text-center rounded font-semibold text-sm mt-20"
+        >
+          Boletim
+        </Link>
+      </div>
+      {/* SHOW WHEN SCREEN GETS BIGGER */}
+      <div className="max-lg:hidden">Logout</div>
+    </>
   );
 }
+
+// tailwind css breakpoints helper notes
+// lg:hidden - will make it show when the breakpoint is less or equal to lg
+// max-lg:hidden - will make it show when breakpoint is more than lg
