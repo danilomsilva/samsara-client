@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import XIcon from './icons/XIcon';
-import { Form, Link } from '@remix-run/react';
+import { Form, Link, useLocation } from '@remix-run/react';
 
 type VariantStyle = {
   [key: string]: {
@@ -29,6 +29,9 @@ export default function Modal({
   footerActions,
   handleCloseModal,
 }: PropTypes) {
+  const location = useLocation();
+  const isBoletimRoute = location.pathname === '/boletim/new';
+
   const variantStyle: VariantStyle = {
     blue: {
       borderTop: 'border-t-blue',
@@ -47,7 +50,7 @@ export default function Modal({
     },
   };
   return (
-    <div className="bg-black/30 absolute top-0 left-0 w-full h-screen flex justify-center items-center z-40">
+    <div className="bg-black/30 absolute top-0 left-0 w-full h-screen flex justify-center items-center z-40 max-lg:bg-white">
       <div
         className={`${
           variant && variantStyle[variant]?.borderTop
@@ -59,7 +62,7 @@ export default function Modal({
             : size === 'sm'
             ? 'w-[400px]'
             : 'w-[500px]'
-        } scale-90`}
+        } scale-90 max-lg:scale-100 max-lg:absolute max-lg:top-0 max-lg:left-0 max-lg:w-full max-lg:overflow-hidden max-lg:h-full`}
       >
         <div className="flex border-b p-6 justify-between w-full border items-center border-b-grey/50 border-x-0 border-t-0 z-50">
           <h1
