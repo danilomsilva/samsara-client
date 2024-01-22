@@ -809,17 +809,17 @@ export default function NewBoletim() {
                 <InputValue
                   type="IM"
                   name="abastecimento_1"
-                  label="Abast. 1"
+                  label="Abast. 1 (L)"
                   value={boletim?.abastecimento_1}
-                  suffix=" L"
+                  // suffix="L"
                   className="!w-[114px]"
                 />
                 <InputValue
                   type="IM"
                   name="abastecimento_2"
-                  label="Abast. 2"
+                  label="Abast. 2 (L)"
                   value={boletim?.abastecimento_2}
-                  suffix=" L"
+                  // suffix="L"
                   className="!w-[114px]"
                 />
               </Row>
