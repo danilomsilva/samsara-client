@@ -10,6 +10,7 @@ import {
   useFetcher,
   useLoaderData,
   useNavigation,
+  useSearchParams,
 } from '@remix-run/react';
 import Button from '~/components/Button';
 import InputMask from '~/components/InputMask';
@@ -383,6 +384,8 @@ export default function NewBoletim() {
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
+  const [searchParams] = useSearchParams();
+  const isReadMode = searchParams.get('read');
 
   const [rows, setRows] = useState(boletim ? 0 : 1);
   const [equipamento, setEquipamento] = useState<any>();
@@ -616,7 +619,9 @@ export default function NewBoletim() {
   return (
     <Modal
       size="xxl"
-      title={`${boletim ? 'Editar' : 'Adicionar'} Boletim`}
+      title={`${
+        isReadMode ? 'Visualizar' : boletim ? 'Editar' : 'Adicionar'
+      } Boletim`}
       variant={boletim ? 'grey' : 'blue'}
       content={
         showSpinner ? (
@@ -640,6 +645,7 @@ export default function NewBoletim() {
                   }
                   className="!w-[132px]"
                   error={actionData?.errors?.data_boletim}
+                  disabled={isReadMode}
                 />
                 <Select
                   name="equipamento"
@@ -650,6 +656,7 @@ export default function NewBoletim() {
                   error={actionData?.errors?.equipamento}
                   onChange={handleSelectEquipamento}
                   className="!w-[132px]"
+                  disabled={isReadMode}
                 />
                 <InputValue
                   type="text"
@@ -669,6 +676,7 @@ export default function NewBoletim() {
                   placeholder="-"
                   error={actionData?.errors?.operador}
                   className="!w-[280px]"
+                  disabled={isReadMode}
                 />
               </Row>
               <input hidden name="obra" value={loggedInUser?.obra} />
@@ -691,6 +699,7 @@ export default function NewBoletim() {
                         noLabel={index !== 0}
                         onChange={(value) => handleChange('OP', value, index)}
                         onClick={() => handleClickedRow(index)}
+                        disabled={isReadMode}
                       />
                       <Select
                         name={`OS_${index}`}
@@ -704,6 +713,7 @@ export default function NewBoletim() {
                         noLabel={index !== 0}
                         onChange={(value) => handleChange('OS', value, index)}
                         onClick={() => handleClickedRow(index)}
+                        disabled={isReadMode}
                       />
                       <InputValue
                         type="time"
@@ -718,7 +728,7 @@ export default function NewBoletim() {
                           handleChange('hora_inicio', value, index)
                         }
                         onClick={() => handleClickedRow(index)}
-                        disabled={index !== 0}
+                        disabled={index !== 0 || isReadMode}
                       />
                       <InputValue
                         type="time"
@@ -737,6 +747,7 @@ export default function NewBoletim() {
                             ? 'Hora inválida!'
                             : '' || actionData?.errors?.[`hora_final_${index}`]
                         }
+                        disabled={isReadMode}
                       />
                       <InputValue
                         type="IM"
@@ -778,13 +789,15 @@ export default function NewBoletim() {
                             ? 'IM inválido!'
                             : '' || actionData?.errors?.[`IM_final_${index}`]
                         }
+                        disabled={isReadMode}
                       />
                     </Row>
                   );
                 })}
-                <TwoLinesInfo OS={OS} OP={OP} />
 
-                {rows < 12 && (
+                {!isReadMode && <TwoLinesInfo OS={OS} OP={OP} />}
+
+                {!isReadMode && rows < 12 && (
                   <div className="w-full flex justify-center mt-2 mb-4">
                     <div
                       className={`${
@@ -811,16 +824,16 @@ export default function NewBoletim() {
                   name="abastecimento_1"
                   label="Abast. 1 (L)"
                   value={boletim?.abastecimento_1}
-                  // suffix="L"
                   className="!w-[114px]"
+                  disabled={isReadMode}
                 />
                 <InputValue
                   type="IM"
                   name="abastecimento_2"
                   label="Abast. 2 (L)"
                   value={boletim?.abastecimento_2}
-                  // suffix="L"
                   className="!w-[114px]"
+                  disabled={isReadMode}
                 />
               </Row>
               <Row className="!gap-3">
@@ -828,17 +841,19 @@ export default function NewBoletim() {
                   label="Manutenção"
                   name="manutencao"
                   value={boletim?.manutencao}
-                  disabled={boletim?.manutencao}
+                  disabled={boletim?.manutencao || isReadMode}
                 />
                 <Checkbox
                   label="Lubrificação"
                   name="lubrificacao"
                   value={boletim?.lubrificacao}
+                  disabled={isReadMode}
                 />
                 <Checkbox
                   label="Limpeza"
                   name="limpeza"
                   value={boletim?.limpeza}
+                  disabled={isReadMode}
                 />
               </Row>
               <Row className="mt-2">
@@ -847,6 +862,7 @@ export default function NewBoletim() {
                   label="Descrição da Manutenção"
                   defaultValue={boletim?.descricao_manutencao}
                   error={actionData?.errors?.descricao_manutencao}
+                  disabled={isReadMode}
                 />
               </Row>
               {files && (
@@ -854,7 +870,7 @@ export default function NewBoletim() {
                   <FileList files={files} path="boletim" />
                 </Row>
               )}
-              {boletim && (
+              {!isReadMode && boletim && (
                 <Row>
                   <FileUploader
                     onChange={handleFileUpload}
@@ -862,7 +878,7 @@ export default function NewBoletim() {
                   />
                 </Row>
               )}
-              {boletim && boletimToExport && (
+              {isReadMode && boletim && boletimToExport && (
                 <Row className="mt-6">
                   <div className="w-full h-full justify-end flex">
                     <CSVLink
@@ -890,22 +906,24 @@ export default function NewBoletim() {
         />
       }
       footerActions={
-        <Button
-          variant={boletim ? 'grey' : 'blue'}
-          icon={
-            isSubmitting ? (
-              <SpinnerIcon />
-            ) : boletim ? (
-              <PencilIcon />
-            ) : (
-              <PlusCircleIcon />
-            )
-          }
-          text={boletim ? 'Editar' : 'Adicionar'}
-          name="_action"
-          value={boletim ? 'edit' : 'create'}
-          disabled={!isFormValid}
-        />
+        isReadMode ? null : (
+          <Button
+            variant={boletim ? 'grey' : 'blue'}
+            icon={
+              isSubmitting ? (
+                <SpinnerIcon />
+              ) : boletim ? (
+                <PencilIcon />
+              ) : (
+                <PlusCircleIcon />
+              )
+            }
+            text={boletim ? 'Editar' : 'Adicionar'}
+            name="_action"
+            value={boletim ? 'edit' : 'create'}
+            disabled={!isFormValid}
+          />
+        )
       }
     />
   );

@@ -40,6 +40,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
+import ReadIcon from '~/components/icons/ReadIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -224,9 +225,9 @@ export default function BoletinsPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`./${selectedRow}`}
+                to={`./${selectedRow}?read=true`}
                 variant="blue"
-                icon={<ServiceIcon />}
+                icon={<ReadIcon />}
               >
                 Visualizar
               </LinkButton>
