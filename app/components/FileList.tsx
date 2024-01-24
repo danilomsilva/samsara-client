@@ -63,15 +63,19 @@ export default function FileList({
       {files.length > 0 && <label>Anexos</label>}
       <div className="flex flex-wrap gap-x-4 gap-y-1">
         {files.map((item: FileTypes) => {
+          const splitName = item?.name?.split('.');
           return (
-            <div key={item?.id} className="flex gap-2 items-center">
+            <div key={item?.id} className="flex gap-2 items-center over">
               <DocumentIcon className="h-4 w-4" />
-              <p
-                className="hover:text-blue cursor-pointer"
-                onClick={() => handleDownloadFile(item)}
-              >
-                {item?.name}
-              </p>
+              <div className="truncate overflow-hidden flex">
+                <div
+                  className="hover:text-blue cursor-pointer max-w-[165px] truncate"
+                  onClick={() => handleDownloadFile(item)}
+                >
+                  {splitName[0]}
+                </div>
+                <div>{`.${splitName[1]}`}</div>
+              </div>
               {isRemovingFile && removingFile === item.id ? (
                 <SpinnerIcon className="h-3 w-3" />
               ) : (
