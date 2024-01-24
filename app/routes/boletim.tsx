@@ -21,6 +21,7 @@ import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
 import Textarea from '~/components/Textarea';
+import ServiceIcon from '~/components/icons/ServiceIcon';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -222,6 +223,13 @@ export default function BoletinsPage() {
         <div className="flex gap-4">
           {selectedRow ? (
             <>
+              <LinkButton
+                to={`./${selectedRow}`}
+                variant="blue"
+                icon={<ServiceIcon />}
+              >
+                Visualizar
+              </LinkButton>
               <LinkButton
                 to={`./${selectedRow}`}
                 variant="grey"
