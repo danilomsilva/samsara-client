@@ -328,7 +328,7 @@ export async function action({ params, request }: ActionArgs) {
       return json({ error: boletim.data });
     }
     setToastMessage(session, 'Sucesso', 'Boletim adicionado!', 'success');
-    return redirect('/boletim', {
+    return redirect(`/boletim/${boletim.id}`, {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -943,7 +943,7 @@ export default function NewBoletim() {
                 <PlusCircleIcon />
               )
             }
-            text={boletim ? 'Editar' : 'Concluir'}
+            text={boletim ? 'Concluir' : 'Avançar'}
             name="_action"
             value={boletim ? 'edit' : 'create'}
             disabled={!isFormValid}
