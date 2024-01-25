@@ -21,7 +21,7 @@ import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
 import Textarea from '~/components/Textarea';
-import ListIcon from '~/components/icons/ListIcon';
+import ServiceIcon from '~/components/icons/ServiceIcon';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -185,7 +185,7 @@ export default function EquipamentoPage() {
               <LinkButton
                 to={`/manutencao?param=${selectedRow}`}
                 variant="blue"
-                icon={<ListIcon />}
+                icon={<ServiceIcon />}
               >
                 Histórico de manutenção
               </LinkButton>
