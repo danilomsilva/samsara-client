@@ -61,6 +61,7 @@ import { CSVLink } from 'react-csv';
 import FileUploader from '~/components/FileUploader';
 import FileList from '~/components/FileList';
 import { type FileTypes, getFiles } from '~/models/files.server';
+import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
@@ -560,6 +561,16 @@ export default function NewBoletim() {
     });
   };
 
+  const handleRemoveLastRow = () => {
+    if (rows === 1) return;
+    if (rows > 1) {
+      const newEquipLogs = [...equipLogs];
+      newEquipLogs.pop();
+      setEquipLogs(newEquipLogs);
+      setRows(rows - 1);
+    }
+  };
+
   const handleAddRow = () => {
     if (rows < 13) {
       let isFormValid = true;
@@ -799,6 +810,20 @@ export default function NewBoletim() {
 
                 {!isReadMode && rows < 12 && (
                   <div className="w-full flex justify-center mt-2 mb-4">
+                    <div
+                      className={`${
+                        rows === 1
+                          ? 'cursor-default pointer-events-none'
+                          : 'hover:bg-white rounded-full cursor-pointer'
+                      }`}
+                      onClick={handleRemoveLastRow}
+                    >
+                      <MinusCircleIcon
+                        className={`${
+                          rows === 1 ? 'text-grey' : 'text-blue'
+                        } h-8 w-8`}
+                      />
+                    </div>
                     <div
                       className={`${
                         isFormValid
