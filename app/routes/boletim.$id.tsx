@@ -859,7 +859,7 @@ export default function NewBoletim() {
               <Row className="mt-2">
                 <Textarea
                   name="descricao_manutencao"
-                  label="Descrição da Manutenção"
+                  label="Descrição"
                   defaultValue={boletim?.descricao_manutencao}
                   error={actionData?.errors?.descricao_manutencao}
                   disabled={isReadMode}
@@ -918,7 +918,7 @@ export default function NewBoletim() {
                 <PlusCircleIcon />
               )
             }
-            text={boletim ? 'Editar' : 'Adicionar'}
+            text={boletim ? 'Editar' : 'Concluir'}
             name="_action"
             value={boletim ? 'edit' : 'create'}
             disabled={!isFormValid}
