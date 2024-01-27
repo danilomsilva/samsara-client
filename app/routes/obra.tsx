@@ -46,7 +46,9 @@ export async function loader({ request }: LoaderArgs) {
 
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
-    order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
+    order && sortColumn
+      ? `${order === 'asc' ? '+' : '-'}${sortColumn}`
+      : '-created';
 
   //encarregado do not have access to table Obras
   if (userToken && tipoAcesso !== 'Encarregado') {

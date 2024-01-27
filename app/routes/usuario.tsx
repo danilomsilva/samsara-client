@@ -49,7 +49,9 @@ export async function loader({ request }: LoaderArgs) {
   const filter = searchParams.get('filter');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
-    order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
+    order && sortColumn
+      ? `${order === 'asc' ? '+' : '-'}${sortColumn}`
+      : '-created';
 
   //encarregado do not have access to table usuarios
   if (userToken && tipoAcesso !== 'Encarregado') {
