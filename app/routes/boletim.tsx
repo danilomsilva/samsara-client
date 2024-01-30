@@ -15,13 +15,12 @@ import {
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
-import DropdownMenu from '~/components/DropdownMenu';
+import ExportOptions from '~/components/ExportOptions';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
 import Textarea from '~/components/Textarea';
-import ServiceIcon from '~/components/icons/ServiceIcon';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
@@ -54,7 +53,9 @@ export async function loader({ request }: LoaderArgs) {
   const sortParam = searchParams.get('sort');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
-    order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
+    order && sortColumn
+      ? `${order === 'asc' ? '+' : '-'}${sortColumn}`
+      : '-created';
 
   if (userToken) {
     const allBoletins = await getBoletins(
@@ -212,7 +213,7 @@ export default function BoletinsPage() {
         {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
-            <DropdownMenu
+            <ExportOptions
               tableHeaders={tableHeaders}
               data={boletins}
               filename="boletim"

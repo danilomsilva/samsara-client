@@ -15,7 +15,7 @@ import {
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
-import DropdownMenu from '~/components/DropdownMenu';
+import ExportOptions from '~/components/ExportOptions';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
@@ -49,7 +49,9 @@ export async function loader({ request }: LoaderArgs) {
   const filter = searchParams.get('filter');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
-    order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
+    order && sortColumn
+      ? `${order === 'asc' ? '+' : '-'}${sortColumn}`
+      : '-created';
 
   //encarregado do not have access to table operadores
   if (userToken && tipoAcesso !== 'Encarregado') {
@@ -140,7 +142,7 @@ export default function OperadorPage() {
         {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
-            <DropdownMenu
+            <ExportOptions
               tableHeaders={tableHeaders}
               data={operadores}
               filename="operador"

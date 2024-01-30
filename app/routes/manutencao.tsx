@@ -37,7 +37,7 @@ import {
 import { formatNumberWithDotDelimiter } from '~/utils/utils';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import FilterOptions from '~/components/FilterOptions';
-import DropdownMenu from '~/components/DropdownMenu';
+import ExportOptions from '~/components/ExportOptions';
 import Textarea from '~/components/Textarea';
 
 // page title
@@ -52,7 +52,9 @@ export async function loader({ request }: LoaderArgs) {
   const sortParam = searchParams.get('sort');
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
-    order && sortColumn ? `${order === 'asc' ? '+' : '-'}${sortColumn}` : null;
+    order && sortColumn
+      ? `${order === 'asc' ? '+' : '-'}${sortColumn}`
+      : '-created';
 
   //encarregado do not have access to table manutencao
   if (userToken && tipoAcesso !== 'Encarregado') {
@@ -188,7 +190,7 @@ export default function ManutencaoPage() {
         {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
-            <DropdownMenu
+            <ExportOptions
               tableHeaders={tableHeaders}
               data={formattedManutencoes}
               filename="manutencao"
