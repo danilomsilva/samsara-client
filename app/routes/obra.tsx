@@ -29,7 +29,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
-import DropdownMenu from '~/components/DropdownMenu';
+import ExportOptions from '~/components/ExportOptions';
 import FilterOptions from '~/components/FilterOptions';
 import Textarea from '~/components/Textarea';
 
@@ -133,7 +133,7 @@ export default function ObrasPage() {
         {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
-            <DropdownMenu
+            <ExportOptions
               tableHeaders={tableHeaders}
               data={obras}
               filename="obra"

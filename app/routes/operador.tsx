@@ -15,7 +15,7 @@ import {
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
-import DropdownMenu from '~/components/DropdownMenu';
+import ExportOptions from '~/components/ExportOptions';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
@@ -142,7 +142,7 @@ export default function OperadorPage() {
         {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
-            <DropdownMenu
+            <ExportOptions
               tableHeaders={tableHeaders}
               data={operadores}
               filename="operador"

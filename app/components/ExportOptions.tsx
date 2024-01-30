@@ -17,7 +17,7 @@ type PropTypes = {
   includesData?: any; //TODO: improve on this!!
 };
 
-export default function DropdownMenu({
+export default function ExportOptions({
   tableHeaders,
   data,
   filename,

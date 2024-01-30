@@ -37,7 +37,7 @@ import {
 import { formatNumberWithDotDelimiter } from '~/utils/utils';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import FilterOptions from '~/components/FilterOptions';
-import DropdownMenu from '~/components/DropdownMenu';
+import ExportOptions from '~/components/ExportOptions';
 import Textarea from '~/components/Textarea';
 
 // page title
@@ -190,7 +190,7 @@ export default function ManutencaoPage() {
         {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
-            <DropdownMenu
+            <ExportOptions
               tableHeaders={tableHeaders}
               data={formattedManutencoes}
               filename="manutencao"
