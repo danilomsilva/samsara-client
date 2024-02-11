@@ -22,7 +22,7 @@ export async function getObras(
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
 
-  queryParams.set('perPage', '200'); //set max items per page when querying db
+  queryParams.set('perPage', '200'); //TODO: set max items per page when querying db
   queryParams.set('filter', filter ?? '');
   // (data_inicio>='1999-01-02' && data_inicio<='2005-01-02')
 
