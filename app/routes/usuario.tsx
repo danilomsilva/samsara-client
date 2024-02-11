@@ -36,6 +36,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
+import ReadIcon from '~/components/icons/ReadIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -155,6 +156,13 @@ export default function UsuarioPage() {
         <div className="flex gap-4">
           {selectedRow ? (
             <>
+              <LinkButton
+                to={`./${selectedRow}?read=true`}
+                variant="green"
+                icon={<ReadIcon />}
+              >
+                Visualizar
+              </LinkButton>
               <LinkButton
                 to={`./${selectedRow}`}
                 variant="grey"

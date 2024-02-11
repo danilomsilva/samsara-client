@@ -15,7 +15,7 @@ export type Obra = {
 export async function getObras(
   userToken: User['token'],
   sortingBy: string | null,
-  filter: string
+  filter?: string
 ) {
   let url = `${process.env.BASE_API_URL}/collections/obra/records`;
 
@@ -34,7 +34,7 @@ export async function getObras(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -63,7 +63,7 @@ export async function getObra(userToken: User['token'], obraId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -82,7 +82,7 @@ export async function createObra(userToken: User['token'], body: Obra) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -106,7 +106,7 @@ export async function updateObra(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -126,7 +126,7 @@ export async function deleteObra(userToken: User['token'], obraId: string) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

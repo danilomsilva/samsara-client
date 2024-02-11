@@ -4,7 +4,12 @@ import {
   redirect,
   json,
 } from '@remix-run/node';
-import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import {
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
@@ -266,6 +271,8 @@ export default function NewEquipamento() {
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
+  const [searchParams] = useSearchParams();
+  const isReadMode = searchParams.get('read');
   const [selectedGrupo, setSelectedGrupo] = useState<Option | null>(null);
   const [codigoPrefix, setCodigoPrefix] = useState<string | null>(null);
   const [equipNumero, setEquipNumero] = useState<string | null>(null);
@@ -365,8 +372,10 @@ export default function NewEquipamento() {
 
   return (
     <Modal
-      title={`${equipamento ? 'Editar' : 'Adicionar'} Equipamento`}
-      variant={equipamento ? 'grey' : 'blue'}
+      title={`${
+        isReadMode ? '' : equipamento ? 'Editar' : 'Adicionar'
+      } Equipamento`}
+      variant={isReadMode ? 'green' : equipamento ? 'grey' : 'blue'}
       size="lg"
       content={
         <div className="flex flex-col gap-6">
@@ -379,7 +388,7 @@ export default function NewEquipamento() {
               placeholder="-"
               error={actionData?.errors?.grupo_equipamento}
               onChange={setSelectedGrupo}
-              disabled={equipamento?.grupo_equipamento}
+              disabled={equipamento?.grupo_equipamento || !!isReadMode}
             />
             <Select
               name="tipo_equipamento"
@@ -388,6 +397,7 @@ export default function NewEquipamento() {
               defaultValue={equipamento?.tipo_equipamento}
               placeholder="-"
               error={actionData?.errors?.tipo_equipamento}
+              disabled={!!isReadMode}
             />
             <Input
               type="number"
@@ -397,7 +407,7 @@ export default function NewEquipamento() {
               defaultValue={equipamento?.numero}
               error={actionData?.errors?.numero}
               onChange={setEquipNumero}
-              disabled={equipamento?.numero}
+              disabled={equipamento?.numero || !!isReadMode}
               readOnly={equipamento?.numero}
             />
             <Input
@@ -423,6 +433,7 @@ export default function NewEquipamento() {
               label="Modelo"
               defaultValue={equipamento?.modelo}
               error={actionData?.errors?.modelo}
+              disabled={!!isReadMode}
             />
             <Input
               type="text"
@@ -430,6 +441,7 @@ export default function NewEquipamento() {
               label="Número Série"
               defaultValue={equipamento?.numero_serie}
               error={actionData?.errors?.numero_serie}
+              disabled={!!isReadMode}
             />
             <InputMask
               mask="9999"
@@ -439,6 +451,7 @@ export default function NewEquipamento() {
               defaultValue={equipamento?.ano}
               error={actionData?.errors?.ano}
               className="!w-20"
+              disabled={!!isReadMode}
             />
             <Select
               name="combustivel"
@@ -448,6 +461,7 @@ export default function NewEquipamento() {
               placeholder="-"
               defaultValue={equipamento?.combustivel}
               error={actionData?.errors?.combustivel}
+              disabled={!!isReadMode}
             />
           </Row>
 
@@ -474,6 +488,7 @@ export default function NewEquipamento() {
                   : actionData?.errors?.instrumento_medicao_inicio
               }
               suffix={selectedIMSuffix}
+              disabled={!!isReadMode}
             />
             <Input
               type="IM"
@@ -483,6 +498,7 @@ export default function NewEquipamento() {
               defaultValue={equipamento?.frequencia_revisao}
               error={actionData?.errors?.frequencia_revisao}
               suffix={selectedIMSuffix}
+              disabled={!!isReadMode}
             />
             {equipamento && (
               <Input
@@ -510,6 +526,7 @@ export default function NewEquipamento() {
                 defaultValue={equipamento?.valor_locacao_mensal}
                 error={actionData?.errors?.valor_locacao_mensal}
                 placeholder="Ex.: R$ 1.000,00"
+                disabled={!!isReadMode}
               />
               <Input
                 type="currency"
@@ -519,6 +536,7 @@ export default function NewEquipamento() {
                 defaultValue={equipamento?.valor_locacao_diario}
                 error={actionData?.errors?.valor_locacao_diario}
                 placeholder="Ex.: R$ 100,00"
+                disabled={!!isReadMode}
               />
               <Input
                 type="currency"
@@ -528,6 +546,7 @@ export default function NewEquipamento() {
                 defaultValue={equipamento?.valor_locacao_hora}
                 error={actionData?.errors?.valor_locacao_hora}
                 placeholder="Ex.: R$ 10,00"
+                disabled={!!isReadMode}
               />
             </div>
           </Row>
@@ -539,6 +558,7 @@ export default function NewEquipamento() {
               placeholder="-"
               defaultValue={equipamento?.obra}
               error={actionData?.errors?.obra}
+              disabled={!!isReadMode}
             />
             <Select
               name="encarregado"
@@ -547,26 +567,29 @@ export default function NewEquipamento() {
               defaultValue={equipamento?.encarregado}
               placeholder="-"
               error={actionData?.errors?.encarregado}
+              disabled={!!isReadMode}
             />
           </Row>
         </div>
       }
       footerActions={
-        <Button
-          variant={equipamento ? 'grey' : 'blue'}
-          icon={
-            isSubmitting ? (
-              <SpinnerIcon />
-            ) : equipamento ? (
-              <PencilIcon />
-            ) : (
-              <PlusCircleIcon />
-            )
-          }
-          text={equipamento ? 'Editar' : 'Adicionar'}
-          name="_action"
-          value={equipamento ? 'edit' : 'create'}
-        />
+        isReadMode ? null : (
+          <Button
+            variant={equipamento ? 'grey' : 'blue'}
+            icon={
+              isSubmitting ? (
+                <SpinnerIcon />
+              ) : equipamento ? (
+                <PencilIcon />
+              ) : (
+                <PlusCircleIcon />
+              )
+            }
+            text={equipamento ? 'Editar' : 'Adicionar'}
+            name="_action"
+            value={equipamento ? 'edit' : 'create'}
+          />
+        )
       }
     />
   );

@@ -4,7 +4,12 @@ import {
   redirect,
   json,
 } from '@remix-run/node';
-import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import {
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from '@remix-run/react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import Input from '~/components/Input';
@@ -126,11 +131,13 @@ export default function NewObra() {
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
+  const [searchParams] = useSearchParams();
+  const isReadMode = searchParams.get('read');
 
   return (
     <Modal
-      title={`${obra ? 'Editar' : 'Adicionar'} Obra`}
-      variant={obra ? 'grey' : 'blue'}
+      title={`${isReadMode ? '' : obra ? 'Editar' : 'Adicionar'} Obra`}
+      variant={isReadMode ? 'green' : obra ? 'grey' : 'blue'}
       content={
         <>
           <Row>
@@ -140,7 +147,8 @@ export default function NewObra() {
               label="Nome"
               defaultValue={obra?.nome}
               error={actionData?.errors?.nome}
-              autoFocus
+              autoFocus={!isReadMode}
+              disabled={!!isReadMode}
             />
           </Row>
           <Row>
@@ -150,6 +158,7 @@ export default function NewObra() {
               label="Cidade"
               defaultValue={obra?.cidade}
               error={actionData?.errors?.cidade}
+              disabled={!!isReadMode}
             />
           </Row>
           <Row>
@@ -163,6 +172,7 @@ export default function NewObra() {
                 actionData?.errors?.data_inicio ||
                 actionData?.errors?.invalidDate
               }
+              disabled={!!isReadMode}
             />
             <InputMask
               mask="99/99/9999"
@@ -172,28 +182,31 @@ export default function NewObra() {
               defaultValue={convertISOToDate(obra?.data_final_previsto)}
               error={
                 actionData?.errors?.data_final_previsto ||
-                actionData?.errors?.invalidDate // TODO: convert this into toast message!
+                actionData?.errors?.invalidDate
               }
+              disabled={!!isReadMode}
             />
           </Row>
         </>
       }
       footerActions={
-        <Button
-          variant={obra ? 'grey' : 'blue'}
-          icon={
-            isSubmitting ? (
-              <SpinnerIcon />
-            ) : obra ? (
-              <PencilIcon />
-            ) : (
-              <PlusCircleIcon />
-            )
-          }
-          text={obra ? 'Editar' : 'Adicionar'}
-          name="_action"
-          value={obra ? 'edit' : 'create'}
-        />
+        isReadMode ? null : (
+          <Button
+            variant={obra ? 'grey' : 'blue'}
+            icon={
+              isSubmitting ? (
+                <SpinnerIcon />
+              ) : obra ? (
+                <PencilIcon />
+              ) : (
+                <PlusCircleIcon />
+              )
+            }
+            text={obra ? 'Editar' : 'Adicionar'}
+            name="_action"
+            value={obra ? 'edit' : 'create'}
+          />
+        )
       }
     ></Modal>
   );

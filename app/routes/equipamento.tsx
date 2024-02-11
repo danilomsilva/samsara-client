@@ -38,6 +38,7 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { formatCurrency, formatNumberWithDotDelimiter } from '~/utils/utils';
+import ReadIcon from '~/components/icons/ReadIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -190,6 +191,13 @@ export default function EquipamentoPage() {
                 icon={<ServiceIcon />}
               >
                 Histórico de manutenção
+              </LinkButton>
+              <LinkButton
+                to={`./${selectedRow}?read=true`}
+                variant="green"
+                icon={<ReadIcon />}
+              >
+                Visualizar
               </LinkButton>
               <LinkButton
                 to={`./${selectedRow}`}

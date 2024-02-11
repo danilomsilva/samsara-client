@@ -227,7 +227,7 @@ export default function BoletinsPage() {
             <>
               <LinkButton
                 to={`./${selectedRow}?read=true`}
-                variant="blue"
+                variant="green"
                 icon={<ReadIcon />}
               >
                 Visualizar

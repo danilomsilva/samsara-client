@@ -49,7 +49,9 @@ export default function Input({
       {type === 'currency' ? (
         <NumericFormat
           name={name}
-          className="rounded-lg p-2 px-4 focus:outline-blue h-9"
+          className={`${
+            disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
+          } rounded-lg p-2 px-4 focus:outline-blue h-9`}
           thousandSeparator="."
           decimalSeparator=","
           prefix="R$ "
@@ -58,6 +60,7 @@ export default function Input({
           decimalScale={2}
           defaultValue={defaultValue}
           placeholder={placeholder}
+          disabled={disabled}
           isAllowed={(values: any) => {
             const { formattedValue, floatValue } = values;
             return formattedValue === '' || floatValue <= 9999999;
