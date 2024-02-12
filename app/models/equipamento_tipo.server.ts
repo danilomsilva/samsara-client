@@ -26,7 +26,7 @@ export async function getEquipamentoTipos(
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
-  queryParams.set('perPage', '200'); //set max items per page when querying db
+  queryParams.set('perPage', '2000'); //set max items per page when querying db
 
   queryParams.set('expand', 'grupo_nome');
   if (queryParams.toString()) {
@@ -37,7 +37,7 @@ export async function getEquipamentoTipos(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -69,7 +69,7 @@ export async function getEquipamentoTipo(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -91,7 +91,7 @@ export async function getEquipamentoGrupo(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -174,7 +174,7 @@ export async function createEquipamentoTipo(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -198,7 +198,7 @@ export async function updateEquipamentoTipo(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -221,7 +221,7 @@ export async function deleteEquipamentoTipo(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

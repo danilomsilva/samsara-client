@@ -68,9 +68,9 @@ export async function getGruposEquipamento(
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
+    url += `?${queryParams.toString()}&perPage=2000`;
   } else {
-    url += `?perPage=100`;
+    url += `?perPage=2000`;
   }
 
   try {
@@ -78,7 +78,7 @@ export async function getGruposEquipamento(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -102,16 +102,16 @@ export async function getTiposEquipamento(
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
   if (queryParams.toString()) {
-    url += `?${queryParams.toString()}&perPage=100`;
+    url += `?${queryParams.toString()}&perPage=200`;
   } else {
-    url += `?perPage=100`;
+    url += `?perPage=200`;
   }
   try {
     const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -139,7 +139,7 @@ export async function getEquipamentos(
     'expand',
     'obra,encarregado,tipo_equipamento,grupo_equipamento'
   );
-  queryParams.set('perPage', '200'); //set max items per page when querying db
+  queryParams.set('perPage', '2000'); //set max items per page when querying db
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
@@ -150,7 +150,7 @@ export async function getEquipamentos(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -201,7 +201,7 @@ export async function getEquipamento(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -266,7 +266,7 @@ export async function createEquipamento(
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${userToken}`,
+            Authorization: `Bearer ${userToken}`,
           },
           body: JSON.stringify(body),
         }
@@ -339,7 +339,7 @@ export async function updateEquipamento(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -362,7 +362,7 @@ export async function deleteEquipamento(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

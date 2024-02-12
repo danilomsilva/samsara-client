@@ -39,7 +39,7 @@ export async function getUsuarios(
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra');
   queryParams.set('filter', filter ?? '');
-  queryParams.set('perPage', '200'); //set max items per page when querying db
+  queryParams.set('perPage', '2000'); //set max items per page when querying db
 
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;

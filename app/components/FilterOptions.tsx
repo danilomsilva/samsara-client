@@ -111,7 +111,7 @@ export default function FilterOptions({ filterDateBy = 'created' }: PropTypes) {
         <ChevronDownIcon className="h-4 w-4 text-orange" />
       </div>
       {open && (
-        <div className="absolute top-12 left-0 z-50 bg-white shadow-lg rounded-lg pb-2 w-72 border-2 border-orange">
+        <div className="absolute top-12 right-0 z-50 bg-white shadow-lg rounded-lg pb-2 w-72 border-2 border-orange">
           <Link
             to={handleSetOnlyActiveItems()}
             className="h-10 border-b border-orange px-3 py-2 hover:bg-grey/10 cursor-pointer flex justify-between items-center"

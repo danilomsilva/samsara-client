@@ -18,7 +18,7 @@ export async function getFiles(userToken: User['token'], path: string) {
   let url = `${process.env.BASE_API_URL}/collections/${path}_files/records`;
 
   const queryParams = new URLSearchParams();
-  queryParams.set('perPage', '200'); //set max items per page when querying db
+  queryParams.set('perPage', '2000'); //set max items per page when querying db
 
   if (queryParams.toString()) url += `?${queryParams.toString()}`;
 
