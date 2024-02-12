@@ -161,7 +161,7 @@ export async function loader({ params, request }: LoaderArgs) {
     const findBoletim = boletins?.find(
       (boletim: Boletim) => boletim.codigo === params.id
     )?.id;
-    return redirect(`/boletim/${findBoletim}`);
+    return redirect(`/boletim/${findBoletim}?read=true`);
   } else {
     const boletim = await getBoletim(userToken, params.id as string);
     let boletimToExport;
@@ -630,10 +630,10 @@ export default function NewBoletim() {
   return (
     <Modal
       size="xxl"
-      title={`${
-        isReadMode ? 'Visualizar' : boletim ? 'Editar' : 'Adicionar'
-      } Boletim`}
-      variant={boletim ? 'grey' : 'blue'}
+      title={`${isReadMode ? '' : boletim ? 'Editar' : 'Adicionar'} Boletim ${
+        isReadMode && boletim.codigo
+      }`}
+      variant={isReadMode ? 'green' : boletim ? 'grey' : 'blue'}
       content={
         showSpinner ? (
           <div className="flex justify-center flex-col items-center gap-4">
@@ -656,7 +656,7 @@ export default function NewBoletim() {
                   }
                   className="!w-[132px]"
                   error={actionData?.errors?.data_boletim}
-                  disabled={isReadMode}
+                  disabled={!!isReadMode}
                 />
                 <Select
                   name="equipamento"
@@ -667,7 +667,7 @@ export default function NewBoletim() {
                   error={actionData?.errors?.equipamento}
                   onChange={handleSelectEquipamento}
                   className="!w-[132px]"
-                  disabled={isReadMode}
+                  disabled={!!isReadMode}
                 />
                 <InputValue
                   type="text"
@@ -687,7 +687,7 @@ export default function NewBoletim() {
                   placeholder="-"
                   error={actionData?.errors?.operador}
                   className="!w-[280px]"
-                  disabled={isReadMode}
+                  disabled={!!isReadMode}
                 />
               </Row>
               <input hidden name="obra" value={loggedInUser?.obra} />
@@ -710,7 +710,7 @@ export default function NewBoletim() {
                         noLabel={index !== 0}
                         onChange={(value) => handleChange('OP', value, index)}
                         onClick={() => handleClickedRow(index)}
-                        disabled={isReadMode}
+                        disabled={!!isReadMode}
                       />
                       <Select
                         name={`OS_${index}`}
@@ -724,7 +724,7 @@ export default function NewBoletim() {
                         noLabel={index !== 0}
                         onChange={(value) => handleChange('OS', value, index)}
                         onClick={() => handleClickedRow(index)}
-                        disabled={isReadMode}
+                        disabled={!!isReadMode}
                       />
                       <InputValue
                         type="time"
@@ -739,7 +739,7 @@ export default function NewBoletim() {
                           handleChange('hora_inicio', value, index)
                         }
                         onClick={() => handleClickedRow(index)}
-                        disabled={index !== 0 || isReadMode}
+                        disabled={index !== 0 || !!isReadMode}
                       />
                       <InputValue
                         type="time"
@@ -758,7 +758,7 @@ export default function NewBoletim() {
                             ? 'Hora inválida!'
                             : '' || actionData?.errors?.[`hora_final_${index}`]
                         }
-                        disabled={isReadMode}
+                        disabled={!!isReadMode}
                       />
                       <InputValue
                         type="IM"
@@ -800,7 +800,7 @@ export default function NewBoletim() {
                             ? 'IM inválido!'
                             : '' || actionData?.errors?.[`IM_final_${index}`]
                         }
-                        disabled={isReadMode}
+                        disabled={!!isReadMode}
                       />
                     </Row>
                   );
@@ -850,7 +850,7 @@ export default function NewBoletim() {
                   label="Abast. 1 (L)"
                   value={boletim?.abastecimento_1}
                   className="!w-[114px]"
-                  disabled={isReadMode}
+                  disabled={!!isReadMode}
                 />
                 <InputValue
                   type="IM"
@@ -858,7 +858,7 @@ export default function NewBoletim() {
                   label="Abast. 2 (L)"
                   value={boletim?.abastecimento_2}
                   className="!w-[114px]"
-                  disabled={isReadMode}
+                  disabled={!!isReadMode}
                 />
               </Row>
               <Row className="!gap-3">
@@ -872,13 +872,13 @@ export default function NewBoletim() {
                   label="Lubrificação"
                   name="lubrificacao"
                   value={boletim?.lubrificacao}
-                  disabled={isReadMode}
+                  disabled={!!isReadMode}
                 />
                 <Checkbox
                   label="Limpeza"
                   name="limpeza"
                   value={boletim?.limpeza}
-                  disabled={isReadMode}
+                  disabled={!!isReadMode}
                 />
               </Row>
               <Row className="mt-2">
@@ -887,7 +887,7 @@ export default function NewBoletim() {
                   label="Descrição"
                   defaultValue={boletim?.descricao_manutencao}
                   error={actionData?.errors?.descricao_manutencao}
-                  disabled={isReadMode}
+                  disabled={!!isReadMode}
                 />
               </Row>
               {files && (
@@ -921,7 +921,7 @@ export default function NewBoletim() {
       }
       footerSummary={
         <FooterSummary
-          codigoBoletim={boletim?.codigo}
+          boletim={boletim}
           loggedInUser={loggedInUser}
           equipamento={equipamento}
           firstHour={equipLogs[0]?.hora_inicio}

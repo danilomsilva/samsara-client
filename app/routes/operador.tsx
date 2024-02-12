@@ -36,6 +36,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
+import ReadIcon from '~/components/icons/ReadIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -139,7 +140,7 @@ export default function OperadorPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Operadores</h1>
-        {!selectedRow && (
+        {/* {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
             <ExportOptions
@@ -148,10 +149,17 @@ export default function OperadorPage() {
               filename="operador"
             />
           </div>
-        )}
+        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
+              <LinkButton
+                to={`./${selectedRow}?read=true`}
+                variant="green"
+                icon={<ReadIcon />}
+              >
+                Visualizar
+              </LinkButton>
               <LinkButton
                 to={`./${selectedRow}`}
                 variant="grey"

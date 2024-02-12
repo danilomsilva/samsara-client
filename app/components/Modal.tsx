@@ -12,7 +12,7 @@ type VariantStyle = {
 
 type PropTypes = {
   title: string;
-  variant?: 'blue' | 'grey' | 'red';
+  variant?: 'blue' | 'grey' | 'red' | 'green';
   size?: 'sm' | 'md' | 'lg' | 'xxl';
   content: ReactNode;
   footerSummary?: ReactNode;
@@ -44,6 +44,11 @@ export default function Modal({
       borderTop: 'border-t-red',
       title: 'text-red',
       iconColor: 'text-red',
+    },
+    green: {
+      borderTop: 'border-t-green',
+      title: 'text-green',
+      iconColor: 'text-green',
     },
   };
   return (

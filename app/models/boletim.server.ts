@@ -70,7 +70,7 @@ export async function getBoletins(
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
 
-  queryParams.set('perPage', '200'); //set max items per page when querying db
+  queryParams.set('perPage', '2000'); //set max items per page when querying db
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
@@ -81,7 +81,7 @@ export async function getBoletins(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -131,7 +131,7 @@ export async function getBoletim(userToken: User['token'], boletimId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -203,7 +203,7 @@ export async function createBoletim(userToken: User['token'], body: Boletim) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -300,7 +300,7 @@ export async function updateBoletim(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -323,7 +323,7 @@ export async function deleteBoletim(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

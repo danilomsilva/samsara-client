@@ -2,8 +2,8 @@ export function PairLabelValue({
   label,
   value,
 }: {
-  label: string;
-  value: string;
+  label?: string;
+  value?: string;
 }) {
   return (
     <div>

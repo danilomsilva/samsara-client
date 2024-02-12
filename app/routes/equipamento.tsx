@@ -38,6 +38,7 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { formatCurrency, formatNumberWithDotDelimiter } from '~/utils/utils';
+import ReadIcon from '~/components/icons/ReadIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -171,7 +172,7 @@ export default function EquipamentoPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Equipamentos</h1>
-        {!selectedRow && (
+        {/* {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions filterDateBy="updated" />
             <ExportOptions
@@ -180,7 +181,7 @@ export default function EquipamentoPage() {
               filename="equipamento"
             />
           </div>
-        )}
+        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -190,6 +191,13 @@ export default function EquipamentoPage() {
                 icon={<ServiceIcon />}
               >
                 Histórico de manutenção
+              </LinkButton>
+              <LinkButton
+                to={`./${selectedRow}?read=true`}
+                variant="green"
+                icon={<ReadIcon />}
+              >
+                Visualizar
               </LinkButton>
               <LinkButton
                 to={`./${selectedRow}`}

@@ -179,6 +179,7 @@ export default function NewOperador() {
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
   const equip = searchParams.get('equip');
+  const isReadMode = searchParams.get('read');
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
   const [selectedEquipamento, setSelectedEquipamento] = useState<Option | null>(
@@ -257,10 +258,10 @@ export default function NewOperador() {
 
   return (
     <Modal
-      title={`${manutencao ? 'Editar' : 'Adicionar'} ${
+      title={`${isReadMode ? '' : manutencao ? 'Editar' : 'Adicionar'} ${
         equip ? 'Revisão' : 'Manutenção'
       }`}
-      variant={manutencao ? 'grey' : 'blue'}
+      variant={isReadMode ? 'green' : manutencao ? 'grey' : 'blue'}
       size={files ? 'lg' : 'md'}
       content={
         <>
@@ -277,7 +278,10 @@ export default function NewOperador() {
                     label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
                     options={TIPOS_REVISAO}
                     defaultValue="Revisão"
-                    disabled={manutencao && manutencao?.boletim !== '-'}
+                    disabled={
+                      (manutencao && manutencao?.boletim !== '-') ||
+                      !!isReadMode
+                    }
                   />
                 ) : (
                   <RadioOptions
@@ -371,6 +375,7 @@ export default function NewOperador() {
                   label="Descrição"
                   defaultValue={manutencao?.descricao}
                   error={actionData?.errors?.descricao}
+                  disabled={!!isReadMode}
                 />
               </Row>
             </div>
@@ -411,21 +416,23 @@ export default function NewOperador() {
         </>
       }
       footerActions={
-        <Button
-          variant={manutencao ? 'grey' : 'blue'}
-          icon={
-            isSubmitting ? (
-              <SpinnerIcon />
-            ) : manutencao ? (
-              <PencilIcon />
-            ) : (
-              <PlusCircleIcon />
-            )
-          }
-          text={manutencao ? 'Editar' : 'Adicionar'}
-          name="_action"
-          value={manutencao ? 'edit' : 'create'}
-        />
+        isReadMode ? null : (
+          <Button
+            variant={manutencao ? 'grey' : 'blue'}
+            icon={
+              isSubmitting ? (
+                <SpinnerIcon />
+              ) : manutencao ? (
+                <PencilIcon />
+              ) : (
+                <PlusCircleIcon />
+              )
+            }
+            text={manutencao ? 'Editar' : 'Adicionar'}
+            name="_action"
+            value={manutencao ? 'edit' : 'create'}
+          />
+        )
       }
     ></Modal>
   );

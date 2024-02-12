@@ -4,7 +4,12 @@ import {
   redirect,
   json,
 } from '@remix-run/node';
-import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import {
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from '@remix-run/react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import Input from '~/components/Input';
@@ -133,6 +138,8 @@ export default function NewOperador() {
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
+  const [searchParams] = useSearchParams();
+  const isReadMode = searchParams.get('read');
 
   const sortedObras: Option[] = obras
     ?.filter((item: Obra) => !item?.inativo)
@@ -149,8 +156,8 @@ export default function NewOperador() {
 
   return (
     <Modal
-      title={`${operador ? 'Editar' : 'Adicionar'} Operador`}
-      variant={operador ? 'grey' : 'blue'}
+      title={`${isReadMode ? '' : operador ? 'Editar' : 'Adicionar'} Operador`}
+      variant={isReadMode ? 'green' : operador ? 'grey' : 'blue'}
       content={
         <>
           <Row>
@@ -169,7 +176,8 @@ export default function NewOperador() {
               label="Nome completo"
               defaultValue={operador?.nome_completo}
               error={actionData?.errors?.nome_completo}
-              autoFocus
+              autoFocus={!isReadMode}
+              disabled={!!isReadMode}
             />
           </Row>
           <Row>
@@ -181,6 +189,7 @@ export default function NewOperador() {
               placeholder="-"
               error={actionData?.errors?.obra}
               className="w-60"
+              disabled={!!isReadMode}
             />
           </Row>
           <Row>
@@ -191,6 +200,7 @@ export default function NewOperador() {
               defaultValue={operador?.atividade}
               placeholder="-"
               error={actionData?.errors?.atividade}
+              disabled={!!isReadMode}
             />
             <Select
               name="encarregado"
@@ -199,26 +209,29 @@ export default function NewOperador() {
               defaultValue={operador?.encarregado}
               placeholder="-"
               error={actionData?.errors?.encarregado}
+              disabled={!!isReadMode}
             />
           </Row>
         </>
       }
       footerActions={
-        <Button
-          variant={operador ? 'grey' : 'blue'}
-          icon={
-            isSubmitting ? (
-              <SpinnerIcon />
-            ) : operador ? (
-              <PencilIcon />
-            ) : (
-              <PlusCircleIcon />
-            )
-          }
-          text={operador ? 'Editar' : 'Adicionar'}
-          name="_action"
-          value={operador ? 'edit' : 'create'}
-        />
+        isReadMode ? null : (
+          <Button
+            variant={operador ? 'grey' : 'blue'}
+            icon={
+              isSubmitting ? (
+                <SpinnerIcon />
+              ) : operador ? (
+                <PencilIcon />
+              ) : (
+                <PlusCircleIcon />
+              )
+            }
+            text={operador ? 'Editar' : 'Adicionar'}
+            name="_action"
+            value={operador ? 'edit' : 'create'}
+          />
+        )
       }
     ></Modal>
   );

@@ -46,7 +46,7 @@ export async function getManutencoes(
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'encarregado,equipamento');
-  queryParams.set('perPage', '200'); //set max items per page when querying db
+  queryParams.set('perPage', '2000'); //set max items per page when querying db
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
@@ -57,7 +57,7 @@ export async function getManutencoes(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -94,7 +94,7 @@ export async function getManutencao(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );
@@ -148,7 +148,7 @@ export async function createManutencao(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -201,7 +201,7 @@ export async function updateManutencao(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -235,7 +235,7 @@ export async function deleteManutencao(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${userToken}`,
+          Authorization: `Bearer ${userToken}`,
         },
       }
     );

@@ -39,6 +39,7 @@ import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import FilterOptions from '~/components/FilterOptions';
 import ExportOptions from '~/components/ExportOptions';
 import Textarea from '~/components/Textarea';
+import ReadIcon from '~/components/icons/ReadIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -187,7 +188,7 @@ export default function ManutencaoPage() {
               : 'Lista de Manutenções'}
           </h1>
         </div>
-        {!selectedRow && (
+        {/* {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
             <ExportOptions
@@ -196,10 +197,17 @@ export default function ManutencaoPage() {
               filename="manutencao"
             />
           </div>
-        )}
+        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
+              <LinkButton
+                to={`./${selectedRow}?read=true`}
+                variant="green"
+                icon={<ReadIcon />}
+              >
+                Visualizar
+              </LinkButton>
               <LinkButton
                 to={`./${selectedRow}`}
                 variant="grey"

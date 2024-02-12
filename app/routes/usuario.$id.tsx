@@ -4,7 +4,12 @@ import {
   redirect,
   json,
 } from '@remix-run/node';
-import { useActionData, useLoaderData, useNavigation } from '@remix-run/react';
+import {
+  useActionData,
+  useLoaderData,
+  useNavigation,
+  useSearchParams,
+} from '@remix-run/react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import ErrorMessage from '~/components/ErrorMessage';
@@ -123,6 +128,8 @@ export default function NewUsuario() {
   const navigation = useNavigation();
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
+  const [searchParams] = useSearchParams();
+  const isReadMode = searchParams.get('read');
 
   const emailAlreadyExists =
     actionData?.error?.email?.message ===
@@ -143,8 +150,8 @@ export default function NewUsuario() {
 
   return (
     <Modal
-      title={`${usuario ? 'Editar' : 'Adicionar'} Usuário`}
-      variant={usuario ? 'grey' : 'blue'}
+      title={`${isReadMode ? '' : usuario ? 'Editar' : 'Adicionar'} Usuário`}
+      variant={isReadMode ? 'green' : usuario ? 'grey' : 'blue'}
       content={
         <>
           <Row>
@@ -163,7 +170,8 @@ export default function NewUsuario() {
               label="Nome completo"
               defaultValue={usuario?.nome_completo}
               error={actionData?.errors?.nome_completo}
-              autoFocus
+              autoFocus={!isReadMode}
+              disabled={!!isReadMode}
             />
           </Row>
           <Row>
@@ -174,7 +182,7 @@ export default function NewUsuario() {
                 label="Email"
                 defaultValue={usuario?.email}
                 error={actionData?.errors?.email}
-                disabled={usuario}
+                disabled={usuario || !!isReadMode}
                 className="w-60"
               />
               {emailAlreadyExists && (
@@ -189,7 +197,7 @@ export default function NewUsuario() {
               label="Senha"
               defaultValue={usuario?.email}
               error={actionData?.errors?.password}
-              disabled={usuario}
+              disabled={usuario || !!isReadMode}
               className="w-40"
             />
           </Row>
@@ -202,6 +210,7 @@ export default function NewUsuario() {
               placeholder="-"
               error={actionData?.errors?.obra}
               className="w-60"
+              disabled={!!isReadMode}
             />
             <Select
               name="tipo_acesso"
@@ -210,26 +219,29 @@ export default function NewUsuario() {
               defaultValue={usuario?.tipo_acesso}
               placeholder="-"
               error={actionData?.errors?.tipo_acesso}
+              disabled={!!isReadMode}
             />
           </Row>
         </>
       }
       footerActions={
-        <Button
-          variant={usuario ? 'grey' : 'blue'}
-          icon={
-            isSubmitting ? (
-              <SpinnerIcon />
-            ) : usuario ? (
-              <PencilIcon />
-            ) : (
-              <PlusCircleIcon />
-            )
-          }
-          text={usuario ? 'Editar' : 'Adicionar'}
-          name="_action"
-          value={usuario ? 'edit' : 'create'}
-        />
+        isReadMode ? null : (
+          <Button
+            variant={usuario ? 'grey' : 'blue'}
+            icon={
+              isSubmitting ? (
+                <SpinnerIcon />
+              ) : usuario ? (
+                <PencilIcon />
+              ) : (
+                <PlusCircleIcon />
+              )
+            }
+            text={usuario ? 'Editar' : 'Adicionar'}
+            name="_action"
+            value={usuario ? 'edit' : 'create'}
+          />
+        )
       }
     ></Modal>
   );

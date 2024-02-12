@@ -1,9 +1,10 @@
 import { type Usuario } from '~/models/usuario.server';
 import { PairLabelValue } from './PairLabelValue';
 import { type Equipamento } from '~/models/equipamento.server';
+import { type Boletim } from '~/models/boletim.server';
 
 type PropTypes = {
-  codigoBoletim: string;
+  boletim: Boletim;
   loggedInUser?: Usuario;
   equipamento?: Equipamento;
   firstHour?: string;
@@ -13,7 +14,7 @@ type PropTypes = {
 };
 
 export default function FooterSummary({
-  codigoBoletim,
+  boletim,
   loggedInUser,
   equipamento,
   firstHour,
@@ -29,13 +30,16 @@ export default function FooterSummary({
 
   return (
     <div className="flex gap-10 -mt-1">
-      {codigoBoletim && (
-        <PairLabelValue label="Boletim" value={codigoBoletim ?? ''} />
+      {boletim && (
+        <PairLabelValue label="Boletim" value={boletim?.codigo ?? ''} />
       )}
-      <PairLabelValue label="Obra" value={loggedInUser?.obraX ?? ''} />
+      <PairLabelValue
+        label="Obra"
+        value={boletim ? boletim?.obraX : loggedInUser?.obraX}
+      />
       <PairLabelValue
         label="Encarregado"
-        value={loggedInUser?.nome_completo ?? ''}
+        value={boletim ? boletim?.encarregadoX : loggedInUser?.nome_completo}
       />
       <PairLabelValue
         label="Horário"

@@ -6,7 +6,7 @@ type PropTypes = {
   children: ReactNode;
   className?: string;
   icon?: ReactNode;
-  variant?: 'blue' | 'grey' | 'red';
+  variant?: 'blue' | 'grey' | 'red' | 'green';
 };
 
 export default function LinkButton({
@@ -20,6 +20,7 @@ export default function LinkButton({
     blue: 'bg-blue hover:bg-blue/50',
     grey: 'bg-grey-dark hover:bg-grey-dark/50',
     red: 'bg-red hover:bg-red/50',
+    green: 'bg-green hover:bg-green/50',
   };
 
   return (
