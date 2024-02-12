@@ -143,7 +143,7 @@ export default function UsuarioPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Usuários</h1>
-        {!selectedRow && (
+        {/* {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
             <ExportOptions
@@ -152,7 +152,7 @@ export default function UsuarioPage() {
               filename="usuario"
             />
           </div>
-        )}
+        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>

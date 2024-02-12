@@ -1,3 +1,5 @@
+// TODO: PREVIOUS TABLE, PRESERVE IT UNTIL SEARCH IS PROPERTLY TESTED
+
 // import Cel from './DataTableCel';
 // import Column from './DataTableColumn';
 // import ExclamationTriangle from './icons/ExclamationTriangle';
@@ -237,6 +239,7 @@
 //   }
 // }
 
+// TODO: test search table properly and export options
 import React, { useState, useEffect } from 'react';
 import Cel from './DataTableCel';
 import Column from './DataTableColumn';
@@ -247,6 +250,9 @@ import CogIcon from './icons/CogIcon';
 import { Link } from '@remix-run/react';
 import TooltipDisabled from './TooltipDisabled';
 import ExclamationTriangle from './icons/ExclamationTriangle';
+import { SearchIcon } from './icons/SearchIcon';
+import FilterOptions from './FilterOptions';
+import ExportOptions from './ExportOptions';
 
 type ColumnType = {
   key: string;
@@ -296,15 +302,30 @@ export default function DataTable({
         className="overflow-y-auto h-full  scrollbar-thin scrollbar-thumb-grey/30 rounded scrollbar-thumb-rounded"
         style={{ scrollbarGutter: 'stable' }}
       >
-        <div className="flex justify-end">
-          {/* Search Input */}
-          <input
-            type="text"
-            placeholder="Search..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        {/* Search Input */}
+        <div className="flex justify-between mb-px bg-white p-2">
+          <div className="relative flex">
+            <SearchIcon className="absolute top-3 left-2 h-4 w-4" />
+            <input
+              type="text"
+              placeholder="Pesquisar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="py-2 focus:outline-blue pl-8 border-grey/50 border rounded-lg w-[500px]"
+            />
+          </div>
+          {!selectedRow && (
+            <div className="flex gap-2">
+              <FilterOptions />
+              <ExportOptions
+                tableHeaders={columns}
+                data={rows}
+                filename="obra"
+              />
+            </div>
+          )}
         </div>
+
         {/* Table */}
         <table className="bg-white w-full text-sm" id={id}>
           {/* Table Header */}

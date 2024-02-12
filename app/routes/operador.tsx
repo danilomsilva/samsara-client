@@ -140,7 +140,7 @@ export default function OperadorPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Operadores</h1>
-        {!selectedRow && (
+        {/* {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
             <ExportOptions
@@ -149,7 +149,7 @@ export default function OperadorPage() {
               filename="operador"
             />
           </div>
-        )}
+        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>

@@ -172,7 +172,7 @@ export default function EquipamentoPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Equipamentos</h1>
-        {!selectedRow && (
+        {/* {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions filterDateBy="updated" />
             <ExportOptions
@@ -181,7 +181,7 @@ export default function EquipamentoPage() {
               filename="equipamento"
             />
           </div>
-        )}
+        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>

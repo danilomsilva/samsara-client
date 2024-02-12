@@ -188,7 +188,7 @@ export default function ManutencaoPage() {
               : 'Lista de Manutenções'}
           </h1>
         </div>
-        {!selectedRow && (
+        {/* {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
             <ExportOptions
@@ -197,7 +197,7 @@ export default function ManutencaoPage() {
               filename="manutencao"
             />
           </div>
-        )}
+        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>

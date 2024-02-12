@@ -210,7 +210,7 @@ export default function BoletinsPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Boletins</h1>
-        {!selectedRow && (
+        {/* {!selectedRow && (
           <div className="flex gap-2">
             <FilterOptions />
             <ExportOptions
@@ -221,7 +221,7 @@ export default function BoletinsPage() {
               includesData={newBoletinsToExport}
             />
           </div>
-        )}
+        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
