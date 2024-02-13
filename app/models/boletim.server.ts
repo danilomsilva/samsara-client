@@ -158,6 +158,12 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
     );
     const { nome } = await getObra(userToken, boletim.obra);
 
+    const abastecimento_1 =
+      Number(body?.abastecimento_1?.replace('.', '')?.replace(',', '.')) || 0;
+    const abastecimento_2 =
+      Number(body?.abastecimento_2?.replace('.', '')?.replace(',', '.')) || 0;
+    const total_abastecimento = abastecimento_1 + abastecimento_2;
+
     const editBody = {
       obraX: nome,
       encarregadoX: encarregado,
@@ -167,10 +173,7 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
         ?.IM_inicio,
       IM_finalX:
         body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
-      total_abastecimento: `${
-        Number(body?.abastecimento_1?.replace(' L', '')) +
-          Number(body?.abastecimento_2?.replace(' L', '')) || '0'
-      } L`,
+      total_abastecimento: `${total_abastecimento} L`,
     };
 
     await updateBoletim(userToken, boletim.id, editBody);
@@ -221,6 +224,8 @@ export async function _updateBoletim(
   body: Boletim
 ) {
   const boletim = await updateBoletim(userToken, boletimId, body);
+  const isSameData = boletim.created === new Date().toISOString();
+
   if (boletim.data) {
     return boletim;
   } else {
@@ -235,6 +240,12 @@ export async function _updateBoletim(
     );
     const { nome } = await getObra(userToken, boletim.obra);
 
+    const abastecimento_1 =
+      Number(body?.abastecimento_1?.replace('.', '')?.replace(',', '.')) || 0;
+    const abastecimento_2 =
+      Number(body?.abastecimento_2?.replace('.', '')?.replace(',', '.')) || 0;
+    const total_abastecimento = abastecimento_1 + abastecimento_2;
+
     const editBody = {
       obraX: nome,
       encarregadoX: encarregado,
@@ -244,20 +255,24 @@ export async function _updateBoletim(
         ?.IM_inicio,
       IM_finalX:
         body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
-      total_abastecimento: `${
-        Number(body?.abastecimento_1?.replace(' L', '')) +
-          Number(body?.abastecimento_2?.replace(' L', '')) || '0'
-      } L`,
+      total_abastecimento: `${total_abastecimento} L`,
       manutencao: body.manutencao,
     };
 
     await updateBoletim(userToken, boletim.id, editBody);
-    await updateEquipamento(userToken, boletim.equipamento, {
-      instrumento_medicao_atual: removeIMSuffix(body?.lastRowIMFinal as string),
-      revisao_status:
-        Number(equipamento?.proxima_revisao) -
-        Number(removeIMSuffix(body?.lastRowIMFinal as string)),
-    } as Equipamento);
+
+    // if today's date is the same as the created date, then it's a new boletim so update the equipamento, otw don't update
+    // to prevent retroactive updates unnecessarily
+    if (isSameData) {
+      await updateEquipamento(userToken, boletim.equipamento, {
+        instrumento_medicao_atual: removeIMSuffix(
+          body?.lastRowIMFinal as string
+        ),
+        revisao_status:
+          Number(equipamento?.proxima_revisao) -
+          Number(removeIMSuffix(body?.lastRowIMFinal as string)),
+      } as Equipamento);
+    }
 
     const manutencoes = await getManutencoes(userToken, 'created', '');
     const findManutencao = manutencoes.find(
