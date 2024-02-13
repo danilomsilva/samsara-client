@@ -64,6 +64,9 @@ export default function FooterSummary({
             ? `${(Number(IMFinal) - Number(IMInicio)).toFixed(2)} ${suffix}`
             : '-'
         }
+        tooltip={
+          !!(IMInicio && IMFinal && Number(IMFinal) - Number(IMInicio) > 9)
+        }
       />
     </div>
   );

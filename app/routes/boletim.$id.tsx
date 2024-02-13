@@ -631,7 +631,7 @@ export default function NewBoletim() {
     <Modal
       size="xxl"
       title={`${isReadMode ? '' : boletim ? 'Editar' : 'Adicionar'} Boletim ${
-        isReadMode && boletim.codigo
+        boletim.codigo ? boletim.codigo : ''
       }`}
       variant={isReadMode ? 'green' : boletim ? 'grey' : 'blue'}
       content={
