@@ -688,8 +688,16 @@ export default function NewBoletim() {
                   disabled={!!isReadMode}
                 />
               </Row>
-              <input hidden name="obra" value={loggedInUser?.obra} />
-              <input hidden name="encarregado" value={loggedInUser?.id} />
+              <input
+                hidden
+                name="obra"
+                value={boletim ? boletim.obra : loggedInUser?.obra}
+              />
+              <input
+                hidden
+                name="encarregado"
+                value={boletim ? boletim.encarregado : loggedInUser?.id}
+              />
               <input hidden name="newCode" value={newCode} />
               <input hidden name="rows" value={rows} />
               <div className="mt-4 h-full scrollbar-thin scrollbar-thumb-grey/30 scrollbar-thumb-rounded pr-2">
