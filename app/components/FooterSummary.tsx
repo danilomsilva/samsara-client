@@ -65,6 +65,7 @@ export default function FooterSummary({
             : '-'
         }
         tooltip={
+          equipamento?.instrumento_medicao === 'Horímetro' &&
           !!(IMInicio && IMFinal && Number(IMFinal) - Number(IMInicio) > 9)
         }
       />
