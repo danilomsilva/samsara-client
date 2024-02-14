@@ -630,9 +630,7 @@ export default function NewBoletim() {
   return (
     <Modal
       size="xxl"
-      title={`${isReadMode ? '' : boletim ? 'Editar' : 'Adicionar'} Boletim ${
-        boletim.codigo ? boletim.codigo : ''
-      }`}
+      title={`${isReadMode ? '' : boletim ? 'Editar' : 'Adicionar'} Boletim`}
       variant={isReadMode ? 'green' : boletim ? 'grey' : 'blue'}
       content={
         showSpinner ? (
