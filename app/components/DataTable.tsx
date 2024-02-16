@@ -303,15 +303,15 @@ export default function DataTable({
         style={{ scrollbarGutter: 'stable' }}
       >
         {/* Search Input */}
-        <div className="flex justify-between mb-px bg-white p-2">
-          <div className="relative flex">
+        <div className="flex justify-between mb-px bg-white p-2 gap-2">
+          <div className="relative flex w-full">
             <SearchIcon className="absolute top-3 left-2 h-4 w-4" />
             <input
               type="text"
               placeholder="Pesquisar..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="py-2 focus:outline-blue pl-8 border-grey/50 border rounded-lg w-[500px]"
+              className="py-2 focus:outline-blue pl-8 border-grey/50 border rounded-lg w-full max-w-[500px] min-w-[150px] h-10"
             />
           </div>
           {!selectedRow && (
