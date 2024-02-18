@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 
 type PropTypes = {
   to: string;
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
   icon?: ReactNode;
   variant?: 'blue' | 'grey' | 'red' | 'green';

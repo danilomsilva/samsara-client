@@ -5,19 +5,11 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
-import ExportOptions from '~/components/ExportOptions';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
-import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
 import Textarea from '~/components/Textarea';
@@ -101,8 +93,6 @@ export default function UsuarioPage() {
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
   const { usuarios }: { usuarios: Usuario[] } = useLoaderData();
-  const [searchParams] = useSearchParams();
-  const filter = searchParams.get('filter');
   const navigate = useNavigate();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
 
@@ -143,16 +133,6 @@ export default function UsuarioPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Usuários</h1>
-        {/* {!selectedRow && (
-          <div className="flex gap-2">
-            <FilterOptions />
-            <ExportOptions
-              tableHeaders={tableHeaders}
-              data={formattedUsuario}
-              filename="usuario"
-            />
-          </div>
-        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -193,11 +173,6 @@ export default function UsuarioPage() {
         columns={tableHeaders}
         rows={formattedUsuario}
         path="/usuario"
-        placeholder={
-          filter
-            ? 'Nenhum usuário cadastrado no período selecionado!'
-            : 'Nenhum usuário cadastrado.'
-        }
       />
       <Outlet />
 

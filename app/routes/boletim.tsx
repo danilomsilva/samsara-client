@@ -15,9 +15,7 @@ import {
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
-import ExportOptions from '~/components/ExportOptions';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
-import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
 import Textarea from '~/components/Textarea';
@@ -167,10 +165,7 @@ export default function BoletinsPage() {
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
-  const { boletins, newBoletinsToExport }: { boletins: Boletim[] } =
-    useLoaderData(); //TODO: create a type for newBoletinsToExport
-  const [searchParams] = useSearchParams();
-  const filter = searchParams.get('filter');
+  const { boletins }: { boletins: Boletim[] } = useLoaderData();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const navigate = useNavigate();
 
@@ -210,18 +205,6 @@ export default function BoletinsPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Boletins</h1>
-        {/* {!selectedRow && (
-          <div className="flex gap-2">
-            <FilterOptions />
-            <ExportOptions
-              tableHeaders={tableHeaders}
-              data={boletins}
-              filename="boletim"
-              includes={['relatorio_completo']}
-              includesData={newBoletinsToExport}
-            />
-          </div>
-        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -262,11 +245,6 @@ export default function BoletinsPage() {
         columns={tableHeaders}
         rows={boletins}
         path="/boletim"
-        placeholder={
-          filter
-            ? 'Nenhum boletim iniciado no período selecionado!'
-            : 'Nenhum boletim cadastrado.'
-        }
       />
       <Outlet />
 

@@ -5,13 +5,7 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
@@ -21,7 +15,7 @@ import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import { type Obra, getObras, updateObra } from '~/models/obra.server';
+import { getObras, updateObra } from '~/models/obra.server';
 import {
   commitSession,
   getSession,
@@ -29,8 +23,6 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
-import ExportOptions from '~/components/ExportOptions';
-import FilterOptions from '~/components/FilterOptions';
 import Textarea from '~/components/Textarea';
 import ReadIcon from '~/components/icons/ReadIcon';
 
@@ -97,10 +89,8 @@ export default function ObrasPage() {
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
-  const { obras }: { obras: Obra[] } = useLoaderData();
+  const { obras } = useLoaderData<typeof loader>();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
-  const [searchParams] = useSearchParams();
-  const filter = searchParams.get('filter');
   const navigate = useNavigate();
 
   const handleCloseModalDesativar = () => {
@@ -117,7 +107,7 @@ export default function ObrasPage() {
     setMotivo(value);
   };
 
-  const selectedObra = obras.find((obra) => obra?.id === selectedRow);
+  const selectedObra = obras.items.find((obra) => obra?.id === selectedRow);
 
   const tableHeaders = [
     { key: 'created', label: 'Data de criação' },
@@ -131,16 +121,6 @@ export default function ObrasPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Obras</h1>
-        {/* {!selectedRow && (
-          <div className="flex gap-2">
-            <FilterOptions />
-            <ExportOptions
-              tableHeaders={tableHeaders}
-              data={obras}
-              filename="obra"
-            />
-          </div>
-        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -181,13 +161,14 @@ export default function ObrasPage() {
       <DataTable
         id="table-obra"
         columns={tableHeaders}
-        rows={obras}
+        rows={obras.items}
+        pagination={{
+          page: obras.page,
+          perPage: obras.perPage,
+          totalItems: obras.totalItems,
+          totalPages: obras.totalPages,
+        }}
         path="/obra"
-        placeholder={
-          filter
-            ? 'Nenhuma obra iniciada no período selecionado!'
-            : 'Nenhuma obra cadastrada.'
-        }
       />
       <Outlet />
 

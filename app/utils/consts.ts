@@ -36,3 +36,10 @@ export const TIPOS_REVISAO: Option[] = [
 ];
 
 export const CAMPO_OBRIGATORIO = { message: 'Campo obrigatório' };
+
+export type PaginationType = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+};

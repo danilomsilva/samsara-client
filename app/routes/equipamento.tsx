@@ -5,19 +5,11 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
-import ExportOptions from '~/components/ExportOptions';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
-import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
 import Textarea from '~/components/Textarea';
@@ -133,8 +125,6 @@ export default function EquipamentoPage() {
   const [motivo, setMotivo] = useState('');
   const { equipamentos }: { equipamentos: Equipamento[] } = useLoaderData();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
-  const [searchParams] = useSearchParams();
-  const filter = searchParams.get('filter');
   const navigate = useNavigate();
 
   const handleCloseModalDesativar = () => {
@@ -158,8 +148,6 @@ export default function EquipamentoPage() {
     { key: 'codigo', label: 'Código' },
     { key: 'modelo', label: 'Modelo' },
     { key: 'ano', label: 'Ano' },
-    // { key: 'combustivel', label: 'Combustível' },
-    // { key: 'instrumento_medicao', label: 'Tipo IM' },
     { key: 'instrumento_medicao_inicio', label: 'IM Início' },
     { key: 'instrumento_medicao_atual', label: 'IM Atual' },
     { key: 'proxima_revisao', label: 'Próx. Revisão' },
@@ -172,16 +160,6 @@ export default function EquipamentoPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Equipamentos</h1>
-        {/* {!selectedRow && (
-          <div className="flex gap-2">
-            <FilterOptions filterDateBy="updated" />
-            <ExportOptions
-              tableHeaders={tableHeaders}
-              data={equipamentos}
-              filename="equipamento"
-            />
-          </div>
-        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -237,11 +215,6 @@ export default function EquipamentoPage() {
         columns={tableHeaders}
         rows={equipamentos}
         path="/equipamento"
-        placeholder={
-          filter
-            ? 'Nenhum equipamento cadastrado no período selecionado!'
-            : 'Nenhum equipamento cadastrado.'
-        }
       />
       <Outlet />
 

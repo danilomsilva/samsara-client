@@ -1,6 +1,14 @@
 import type { User } from '~/session.server';
 import { formatDate, formatDateTime } from '~/utils/utils';
 
+export type ObraResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: Obra[];
+};
+
 export type Obra = {
   created?: string;
   cidade?: string;
@@ -16,7 +24,7 @@ export async function getObras(
   userToken: User['token'],
   sortingBy: string | null,
   filter?: string
-) {
+): Promise<ObraResponse> {
   let url = `${process.env.BASE_API_URL}/collections/obra/records`;
 
   const queryParams = new URLSearchParams();
@@ -49,7 +57,7 @@ export async function getObras(
       inativo: item?.inativo,
       motivo: item?.motivo,
     }));
-    return transformedData;
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting obras');
   }

@@ -36,8 +36,6 @@ import {
 } from '~/session.server';
 import { formatNumberWithDotDelimiter } from '~/utils/utils';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
-import FilterOptions from '~/components/FilterOptions';
-import ExportOptions from '~/components/ExportOptions';
 import Textarea from '~/components/Textarea';
 import ReadIcon from '~/components/icons/ReadIcon';
 
@@ -188,16 +186,6 @@ export default function ManutencaoPage() {
               : 'Lista de Manutenções'}
           </h1>
         </div>
-        {/* {!selectedRow && (
-          <div className="flex gap-2">
-            <FilterOptions />
-            <ExportOptions
-              tableHeaders={tableHeaders}
-              data={formattedManutencoes}
-              filename="manutencao"
-            />
-          </div>
-        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -238,11 +226,6 @@ export default function ManutencaoPage() {
         columns={tableHeaders}
         rows={formattedManutencoes}
         path="/manutencao"
-        placeholder={
-          filter
-            ? 'Nenhuma manutenção iniciada no período selecionado!'
-            : 'Nenhuma manutenção cadastrada.'
-        }
       />
       <Outlet />
 

@@ -5,19 +5,11 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import {
-  Form,
-  Outlet,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from '@remix-run/react';
+import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
 import DataTable from '~/components/DataTable';
-import ExportOptions from '~/components/ExportOptions';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
-import FilterOptions from '~/components/FilterOptions';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
 import Textarea from '~/components/Textarea';
@@ -104,8 +96,6 @@ export default function OperadorPage() {
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
   const { operadores }: { operadores: Operador[] } = useLoaderData();
-  const [searchParams] = useSearchParams();
-  const filter = searchParams.get('filter');
   const navigate = useNavigate();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
 
@@ -140,16 +130,6 @@ export default function OperadorPage() {
     <>
       <div className="flex justify-between items-end">
         <h1 className="font-semibold">Lista de Operadores</h1>
-        {/* {!selectedRow && (
-          <div className="flex gap-2">
-            <FilterOptions />
-            <ExportOptions
-              tableHeaders={tableHeaders}
-              data={operadores}
-              filename="operador"
-            />
-          </div>
-        )} */}
         <div className="flex gap-4">
           {selectedRow ? (
             <>
@@ -190,11 +170,6 @@ export default function OperadorPage() {
         columns={tableHeaders}
         rows={operadores}
         path="/operador"
-        placeholder={
-          filter
-            ? 'Nenhum operador cadastrado no período selecionado!'
-            : 'Nenhum operador cadastrado.'
-        }
       />
       <Outlet />
 

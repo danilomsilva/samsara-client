@@ -170,7 +170,6 @@ export default function EquipamentoTipo() {
         columns={tableHeaders}
         rows={equipamentoTipos}
         path="/equipamento_tipo"
-        placeholder="Nenhum tipo de equipamento cadastrado."
       />
       <Outlet />
 

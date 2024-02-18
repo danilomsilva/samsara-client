@@ -140,7 +140,6 @@ export default function OperacaoPage() {
         columns={tableHeaders}
         rows={operacoes}
         path="/operacao"
-        placeholder="Nenhuma Operação cadastrada"
       />
       <Outlet />
 

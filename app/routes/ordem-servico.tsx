@@ -133,12 +133,7 @@ export default function OSPage() {
         </div>
       </div>
 
-      <DataTable
-        columns={tableHeaders}
-        rows={OSs}
-        path="/ordem-servico"
-        placeholder="Nenhuma ordem de serviço cadastrada"
-      />
+      <DataTable columns={tableHeaders} rows={OSs} path="/ordem-servico" />
       <Outlet />
 
       {/* delete modal */}
