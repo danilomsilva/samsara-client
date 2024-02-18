@@ -1,12 +1,13 @@
 import { Link } from '@remix-run/react';
 import type { ReactNode } from 'react';
+import { cn } from '~/utils/utils';
 
 type PropTypes = {
   to: string;
   children?: ReactNode;
   className?: string;
   icon?: ReactNode;
-  variant?: 'blue' | 'grey' | 'red' | 'green';
+  variant?: 'blue' | 'grey' | 'red' | 'green' | 'outlineBlue';
 };
 
 export default function LinkButton({
@@ -18,6 +19,7 @@ export default function LinkButton({
 }: PropTypes) {
   const variantStyle = {
     blue: 'bg-blue hover:bg-blue/50',
+    outlineBlue: 'bg-white border border-blue text-blue',
     grey: 'bg-grey-dark hover:bg-grey-dark/50',
     red: 'bg-red hover:bg-red/50',
     green: 'bg-green hover:bg-green/50',
@@ -26,11 +28,17 @@ export default function LinkButton({
   return (
     <Link
       to={to}
-      className={`${className} ${
-        variant && variantStyle[variant]
-      } flex px-4 rounded-lg justify-center h-10 items-center`}
+      className={cn(
+        `${className} ${
+          variant && variantStyle[variant]
+        } flex px-4 rounded-lg justify-center h-10 items-center`
+      )}
     >
-      <div className="flex items-center text-white font-semibold uppercase text-xs gap-2">
+      <div
+        className={`${
+          variant === 'outlineBlue' ? 'text-blue' : ' text-white'
+        } flex items-center font-semibold uppercase text-xs gap-2`}
+      >
         {children}
         {icon}
       </div>

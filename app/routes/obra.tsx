@@ -36,6 +36,7 @@ export async function loader({ request }: LoaderArgs) {
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
   const filter = searchParams.get('filter');
+  const page = searchParams.get('page');
 
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
@@ -45,7 +46,12 @@ export async function loader({ request }: LoaderArgs) {
 
   //encarregado do not have access to table Obras
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const obras = await getObras(userToken, sortingBy, filter as string);
+    const obras = await getObras(
+      userToken,
+      sortingBy,
+      filter as string,
+      page as string
+    );
     return json({ obras });
   } else {
     throw json('Acesso proibido', { status: 403 });

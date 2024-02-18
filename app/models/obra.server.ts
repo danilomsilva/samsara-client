@@ -23,16 +23,17 @@ export type Obra = {
 export async function getObras(
   userToken: User['token'],
   sortingBy: string | null,
-  filter?: string
+  filter?: string,
+  page?: string
 ): Promise<ObraResponse> {
   let url = `${process.env.BASE_API_URL}/collections/obra/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
 
-  queryParams.set('perPage', '2000'); //TODO: set max items per page when querying db
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', '50');
   queryParams.set('filter', filter ?? '');
-  // (data_inicio>='1999-01-02' && data_inicio<='2005-01-02')
 
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;

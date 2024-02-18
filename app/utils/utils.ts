@@ -12,6 +12,8 @@ import {
   parseISO,
 } from 'date-fns';
 import jsPDF from 'jspdf';
+import clsx, { type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 //codigo
 export const generateCodigo = (prefix: string, array: unknown) => {
@@ -173,3 +175,7 @@ export const exportPDF = (title: string, tableName: string) => {
   });
   doc.save(`${tableName}_${getCurrentDate()}`);
 };
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
