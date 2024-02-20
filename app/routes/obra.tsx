@@ -36,7 +36,8 @@ export async function loader({ request }: LoaderArgs) {
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
   const filter = searchParams.get('filter');
-  const page = searchParams.get('page');
+  const page = searchParams.get('page' || '1');
+  const perPage = searchParams.get('perPage' || '20');
 
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
@@ -50,7 +51,8 @@ export async function loader({ request }: LoaderArgs) {
       userToken,
       sortingBy,
       filter as string,
-      page as string
+      page as string,
+      perPage as string
     );
     return json({ obras });
   } else {

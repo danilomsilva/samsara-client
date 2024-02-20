@@ -22,7 +22,7 @@ type ColumnType = {
 
 type PropTypes = {
   columns: ColumnType[];
-  pagination?: PaginationType;
+  pagination: PaginationType;
   rows: { [key: string]: string }[] | any;
   path: string;
   id?: string;

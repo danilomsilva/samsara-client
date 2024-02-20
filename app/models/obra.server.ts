@@ -24,7 +24,8 @@ export async function getObras(
   userToken: User['token'],
   sortingBy: string | null,
   filter?: string,
-  page?: string
+  page?: string,
+  perPage?: string
 ): Promise<ObraResponse> {
   let url = `${process.env.BASE_API_URL}/collections/obra/records`;
 
@@ -32,7 +33,7 @@ export async function getObras(
   if (sortingBy) queryParams.set('sort', sortingBy);
 
   queryParams.set('page', page ?? '1');
-  queryParams.set('perPage', '50');
+  queryParams.set('perPage', perPage ?? '20');
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
