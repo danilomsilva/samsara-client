@@ -7,7 +7,7 @@ type PropTypes = {
   children?: ReactNode;
   className?: string;
   icon?: ReactNode;
-  variant?: 'blue' | 'grey' | 'red' | 'green' | 'outlineBlue';
+  variant?: 'blue' | 'grey' | 'red' | 'green' | 'outlineNone';
 };
 
 export default function LinkButton({
@@ -19,7 +19,7 @@ export default function LinkButton({
 }: PropTypes) {
   const variantStyle = {
     blue: 'bg-blue hover:bg-blue/50',
-    outlineBlue: 'bg-white border border-blue text-blue',
+    outlineNone: 'bg-white text-blue',
     grey: 'bg-grey-dark hover:bg-grey-dark/50',
     red: 'bg-red hover:bg-red/50',
     green: 'bg-green hover:bg-green/50',
@@ -36,7 +36,7 @@ export default function LinkButton({
     >
       <div
         className={`${
-          variant === 'outlineBlue' ? 'text-blue' : ' text-white'
+          variant === 'outlineNone' ? 'text-blue' : ' text-white'
         } flex items-center font-semibold uppercase text-xs gap-2`}
       >
         {children}

@@ -102,9 +102,7 @@ export default function FilterOptions({ filterDateBy = 'created' }: PropTypes) {
   return (
     <div className="flex flex-col relative">
       <div
-        className={`${
-          open ? 'border-2' : 'border'
-        } bg-white border border-orange px-4 py-2 h-10 rounded-lg flex gap-2 items-center text-xs uppercase font-semibold cursor-pointer hover:bg-grey/10`}
+        className={`bg-white px-4 py-2 h-10 rounded-lg flex gap-2 items-center text-xs uppercase font-semibold cursor-pointer hover:bg-grey/10 text-blue`}
         onClick={() => setOpen(!open)}
       >
         <p>Filtro</p>

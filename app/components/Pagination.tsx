@@ -3,6 +3,7 @@ import LinkButton from './LinkButton';
 import DoubleLeftArrowIcon from './icons/DoubleLeftArrowIcon';
 import DoubleRightArrowIcon from './icons/DoubleRightArrowIcon';
 import { useLocation, useNavigate, useSearchParams } from '@remix-run/react';
+import ListboxMenu from './ListboxMenu';
 
 export type PropTypes = {
   pagination: PaginationType;
@@ -64,8 +65,7 @@ export default function Pagination({ pagination }: PropTypes) {
     return handleChangePage(newPage);
   };
 
-  const handleChangePerPage = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value;
+  const handleChangePerPage = (value: string) => {
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set('perPage', value);
     navigate(`${location.pathname}?${newSearchParams.toString()}`);
@@ -75,7 +75,7 @@ export default function Pagination({ pagination }: PropTypes) {
     const start = (page - 1) * perPage + 1;
     const end = Math.min(page * perPage, totalItems);
     return (
-      <div className="text-xs">{`Exibindo itens ${start}-${end} de ${totalItems}`}</div>
+      <div className="text-xs">{`Exibindo ${start}-${end} de ${totalItems}`}</div>
     );
   };
 
@@ -86,21 +86,17 @@ export default function Pagination({ pagination }: PropTypes) {
       </div>
       <div className="flex gap-2">
         <div className="flex gap-2 items-center">
-          <p className="text-xs">Itens por página:</p>
-          <select
-            className="rounded-lg border border-blue bg-white px-2 accent-orange text-xs outline-none flex items-center h-8 font-semibold text-blue"
-            onChange={handleChangePerPage}
-          >
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
+          <p className="text-xs">Resultados por página:</p>
+          <ListboxMenu
+            handleChangePerPage={handleChangePerPage}
+            perPage={perPage}
+          />
         </div>
         <div className="flex gap-1">
           <LinkButton
             to={goToPreviousPage(page)}
             icon={<DoubleLeftArrowIcon />}
-            variant="outlineBlue"
+            variant="outlineNone"
             className={`${
               page === 1 ? 'opacity-50 pointer-events-none' : ''
             } !h-8 w-8`}
@@ -113,7 +109,7 @@ export default function Pagination({ pagination }: PropTypes) {
               <LinkButton
                 key={index}
                 to={handleChangePage(item)}
-                variant={item === page ? 'blue' : 'outlineBlue'}
+                variant={item === page ? 'blue' : 'outlineNone'}
                 className="!h-8 w-8"
               >
                 {item}
@@ -123,7 +119,7 @@ export default function Pagination({ pagination }: PropTypes) {
           <LinkButton
             to={goToNextPage(page)}
             icon={<DoubleRightArrowIcon />}
-            variant="outlineBlue"
+            variant="outlineNone"
             className={`${
               page === totalPages ? 'opacity-50 pointer-events-none' : ''
             } !h-8 w-8`}

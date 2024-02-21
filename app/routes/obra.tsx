@@ -37,7 +37,7 @@ export async function loader({ request }: LoaderArgs) {
   const sortParam = searchParams.get('sort');
   const filter = searchParams.get('filter');
   const page = searchParams.get('page' || '1');
-  const perPage = searchParams.get('perPage' || '20');
+  const perPage = searchParams.get('perPage' || '30');
 
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =

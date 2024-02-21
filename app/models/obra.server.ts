@@ -33,7 +33,7 @@ export async function getObras(
   if (sortingBy) queryParams.set('sort', sortingBy);
 
   queryParams.set('page', page ?? '1');
-  queryParams.set('perPage', perPage ?? '20');
+  queryParams.set('perPage', perPage ?? '30');
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
