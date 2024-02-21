@@ -8,13 +8,13 @@ import CogIcon from './icons/CogIcon';
 import { Link } from '@remix-run/react';
 import TooltipDisabled from './TooltipDisabled';
 import ExclamationTriangle from './icons/ExclamationTriangle';
-import { SearchIcon } from './icons/SearchIcon';
 import FilterOptions from './FilterOptions';
 import ExportOptions from './ExportOptions';
 import Pagination from './Pagination';
 import { type PaginationType } from '~/utils/consts';
+import FilterOptions2 from './FilterOptions2';
 
-type ColumnType = {
+export type ColumnType = {
   key: string;
   label: string;
   disabledSort?: boolean;
@@ -67,6 +67,7 @@ export default function DataTable({
           <div />
           {!selectedRow && (
             <div className="flex gap-2">
+              <FilterOptions2 columns={columns} />
               <FilterOptions />
               <ExportOptions
                 tableHeaders={columns}

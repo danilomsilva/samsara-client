@@ -13,7 +13,7 @@ type PropTypes = {
   onChange?: (e: Event) => void;
 };
 
-export default function InputMaskValue({
+export default function fInputMaskValue({
   name,
   label,
   className,
@@ -25,8 +25,10 @@ export default function InputMaskValue({
   onChange,
 }: PropTypes) {
   return (
-    <div className={`${className} flex flex-col gap-1 text-sm w-full`}>
-      <label htmlFor={name} className=" text-grey-dark ml-1">
+    <div
+      className={`${className} flex flex-col gap-px text-sm w-full relative`}
+    >
+      <label htmlFor={name} className=" text-white ml-1 text-xs font-normal">
         {label}
       </label>
       <ReactInputMask
@@ -35,7 +37,7 @@ export default function InputMaskValue({
         type={type}
         className={`${
           disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
-        } rounded-lg p-2 px-4 focus:outline-blue border border-orange`}
+        } rounded-lg pt-2 p-2 px-4 focus:outline-blue text-grey-dark`}
         value={value}
         autoFocus={autoFocus}
         autoComplete="off"
