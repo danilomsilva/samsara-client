@@ -224,7 +224,6 @@ export async function _updateBoletim(
   body: Boletim
 ) {
   const boletim = await updateBoletim(userToken, boletimId, body);
-  const isSameData = boletim.created === new Date().toISOString();
 
   if (boletim.data) {
     return boletim;
