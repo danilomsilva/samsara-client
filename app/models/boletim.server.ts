@@ -81,7 +81,7 @@ export async function getBoletins(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -131,7 +131,7 @@ export async function getBoletim(userToken: User['token'], boletimId: string) {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -206,7 +206,7 @@ export async function createBoletim(userToken: User['token'], body: Boletim) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -261,18 +261,12 @@ export async function _updateBoletim(
 
     await updateBoletim(userToken, boletim.id, editBody);
 
-    // if today's date is the same as the created date, then it's a new boletim so update the equipamento, otw don't update
-    // to prevent retroactive updates unnecessarily
-    if (isSameData) {
-      await updateEquipamento(userToken, boletim.equipamento, {
-        instrumento_medicao_atual: removeIMSuffix(
-          body?.lastRowIMFinal as string
-        ),
-        revisao_status:
-          Number(equipamento?.proxima_revisao) -
-          Number(removeIMSuffix(body?.lastRowIMFinal as string)),
-      } as Equipamento);
-    }
+    await updateEquipamento(userToken, boletim.equipamento, {
+      instrumento_medicao_atual: removeIMSuffix(body?.lastRowIMFinal as string),
+      revisao_status:
+        Number(equipamento?.proxima_revisao) -
+        Number(removeIMSuffix(body?.lastRowIMFinal as string)),
+    } as Equipamento);
 
     const manutencoes = await getManutencoes(userToken, 'created', '');
     const findManutencao = manutencoes.find(
@@ -315,7 +309,7 @@ export async function updateBoletim(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -338,7 +332,7 @@ export async function deleteBoletim(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
