@@ -5,7 +5,7 @@ type PropTypes = {
   icon: ReactNode;
   name?: string;
   value?: string;
-  variant: 'blue' | 'grey' | 'red' | 'green';
+  variant: 'blue' | 'grey' | 'red' | 'green' | 'outlined';
   onClick?: () => void;
   disabled?: boolean;
   children?: ReactNode;
@@ -28,6 +28,9 @@ export default function Button({
     }`,
     red: `${disabled ? 'bg-red/50' : 'bg-red hover:bg-red/50'}`,
     green: `${disabled ? 'bg-green/50' : 'bg-green hover:bg-green/50'}`,
+    outlined: `${
+      disabled ? 'bg-white' : 'bg-white hover:bg-blue/50'
+    } text-blue`,
   };
 
   return (
@@ -41,7 +44,11 @@ export default function Button({
       }  flex gap-2 p-2 px-4 rounded-lg justify-center h-10 items-center`}
       onClick={onClick}
     >
-      <div className="flex items-center text-white font-semibold uppercase text-xs gap-4">
+      <div
+        className={`${
+          variant === 'outlined' ? 'text-blue' : 'text-white'
+        } flex items-center font-semibold uppercase text-xs gap-2`}
+      >
         {text}
         {icon}
         {children}

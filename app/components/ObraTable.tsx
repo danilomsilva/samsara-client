@@ -10,6 +10,7 @@ type PropTypes = {
   rows: any[];
   path: string;
   id: string;
+  isFilterVisible?: boolean;
 };
 
 const columns = [
@@ -20,7 +21,12 @@ const columns = [
   { key: 'data_final_previsto', label: 'Data final prevista' },
 ];
 
-export default function ObraTable({ pagination, rows, id }: PropTypes) {
+export default function ObraTable({
+  pagination,
+  rows,
+  id,
+  isFilterVisible,
+}: PropTypes) {
   const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
 
   useEffect(() => {
@@ -34,13 +40,18 @@ export default function ObraTable({ pagination, rows, id }: PropTypes) {
         style={{ scrollbarGutter: 'stable' }}
       >
         <table className="bg-white w-full text-sm" id={id}>
-          <thead className="sticky top-0 bg-white shadow-md z-10">
+          <thead
+            className={`${
+              isFilterVisible ? '' : 'shadow-md'
+            } sticky top-0 bg-white z-10`}
+          >
             <tr className="text-left h-10">
               {columns.map((col: ColumnType, i: number) => (
                 <Column
                   column={col.key}
                   key={i}
                   disabledSort={col.disabledSort ?? false}
+                  isFilterVisible={isFilterVisible}
                 >
                   {col.label}
                 </Column>

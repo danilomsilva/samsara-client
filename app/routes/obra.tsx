@@ -8,7 +8,6 @@ import {
 import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
 import { useState } from 'react';
 import Button from '~/components/Button';
-import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
@@ -26,6 +25,7 @@ import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import Textarea from '~/components/Textarea';
 import ReadIcon from '~/components/icons/ReadIcon';
 import ObraTable from '~/components/ObraTable';
+import FilterIcon from '~/components/icons/FilterIcon';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -95,6 +95,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function ObrasPage() {
+  const [isFilterVisible, setFilterVisible] = useState(false);
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
@@ -114,6 +115,10 @@ export default function ObrasPage() {
 
   const handleChangeMotivo = (value: string) => {
     setMotivo(value);
+  };
+
+  const handleToggleFilters = () => {
+    setFilterVisible(!isFilterVisible);
   };
 
   const selectedObra = obras.items.find((obra) => obra?.id === selectedRow);
@@ -153,9 +158,25 @@ export default function ObrasPage() {
               />
             </>
           ) : (
-            <LinkButton to="./new" variant="blue" icon={<Add />}>
-              Adicionar
-            </LinkButton>
+            <>
+              <Button
+                variant={isFilterVisible ? 'blue' : 'outlined'}
+                name="filters"
+                icon={
+                  <FilterIcon
+                    className={`${
+                      isFilterVisible ? 'text-white' : 'text-blue'
+                    } h-4 w-4`}
+                  />
+                }
+                onClick={handleToggleFilters}
+              >
+                Filtros
+              </Button>
+              <LinkButton to="./new" variant="blue" icon={<Add />}>
+                Adicionar
+              </LinkButton>
+            </>
           )}
         </div>
       </div>
@@ -169,6 +190,7 @@ export default function ObrasPage() {
           totalPages: obras.totalPages,
         }}
         path="/obra"
+        isFilterVisible={isFilterVisible}
       />
       <Outlet />
 

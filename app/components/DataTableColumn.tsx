@@ -1,14 +1,21 @@
 import { Link, useLocation } from '@remix-run/react';
 import ChrevronDownIcon from './icons/ChrevronDownIcon';
 import clsx from 'clsx';
+import Input from './InputValue';
 
 type PropTypes = {
   children: string;
   column: string;
   disabledSort?: boolean;
+  isFilterVisible?: boolean;
 };
 
-export default function Column({ column, children, disabledSort }: PropTypes) {
+export default function Column({
+  column,
+  children,
+  disabledSort,
+  isFilterVisible,
+}: PropTypes) {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
@@ -24,14 +31,14 @@ export default function Column({ column, children, disabledSort }: PropTypes) {
 
   return (
     <th
-      className={`${
-        disabledSort && 'pointer-events-none'
-      } pl-2 font-semibold cursor-pointer truncate`}
+      className={`${disabledSort && 'pointer-events-none'} ${
+        isFilterVisible ? 'bg-grey-light' : ''
+      } font-semibold cursor-pointer truncate `}
     >
       <Link
         to={{ pathname: location.pathname, search: searchParams.toString() }}
       >
-        <div className="flex items-center gap-1 group">
+        <div className="flex items-center gap-1 group pl-2">
           {children}
           <ChrevronDownIcon
             className={clsx(
@@ -47,6 +54,11 @@ export default function Column({ column, children, disabledSort }: PropTypes) {
           />
         </div>
       </Link>
+      {isFilterVisible && (
+        <div className="mb-2">
+          <Input type="text" name="test" label="" className="!w-36" />
+        </div>
+      )}
     </th>
   );
 }
