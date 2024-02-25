@@ -25,6 +25,7 @@ import {
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import Textarea from '~/components/Textarea';
 import ReadIcon from '~/components/icons/ReadIcon';
+import ObraTable from '~/components/ObraTable';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -117,14 +118,6 @@ export default function ObrasPage() {
 
   const selectedObra = obras.items.find((obra) => obra?.id === selectedRow);
 
-  const tableHeaders = [
-    { key: 'created', label: 'Data de criação' },
-    { key: 'nome', label: 'Nome da obra' },
-    { key: 'cidade', label: 'Cidade' },
-    { key: 'data_inicio', label: 'Data de início' },
-    { key: 'data_final_previsto', label: 'Data final prevista' },
-  ];
-
   return (
     <>
       <div className="flex justify-between items-end">
@@ -166,9 +159,8 @@ export default function ObrasPage() {
           )}
         </div>
       </div>
-      <DataTable
+      <ObraTable
         id="table-obra"
-        columns={tableHeaders}
         rows={obras.items}
         pagination={{
           page: obras.page,

@@ -182,7 +182,6 @@ export default function FilterOptions2({ columns }: { columns: ColumnType[] }) {
               </Menu.Item>
             ))}
           </Menu.Items>
-          <div>test</div>
         </>
       )}
     </Menu>
