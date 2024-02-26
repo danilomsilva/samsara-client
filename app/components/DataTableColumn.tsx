@@ -1,7 +1,7 @@
 import { Link, useLocation } from '@remix-run/react';
 import ChrevronDownIcon from './icons/ChrevronDownIcon';
 import clsx from 'clsx';
-import Input from './InputValue';
+import Filters from './Filters';
 
 type PropTypes = {
   children: string;
@@ -54,11 +54,7 @@ export default function Column({
           />
         </div>
       </Link>
-      {isFilterVisible && (
-        <div className="mb-2">
-          <Input type="text" name="test" label="" className="!w-36" />
-        </div>
-      )}
+      {isFilterVisible && <Filters column={column} />}
     </th>
   );
 }
