@@ -11,6 +11,8 @@ type PropTypes = {
   path: string;
   id: string;
   isFilterVisible?: boolean;
+  activeFilters: { [key: string]: string };
+  setActiveFilters: (filters: { [key: string]: string }) => void;
 };
 
 const columns = [
@@ -26,6 +28,8 @@ export default function ObraTable({
   rows,
   id,
   isFilterVisible,
+  activeFilters,
+  setActiveFilters,
 }: PropTypes) {
   const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
 
@@ -52,6 +56,8 @@ export default function ObraTable({
                   key={i}
                   disabledSort={col.disabledSort ?? false}
                   isFilterVisible={isFilterVisible}
+                  activeFilters={activeFilters}
+                  setActiveFilters={setActiveFilters}
                 >
                   {col.label}
                 </Column>

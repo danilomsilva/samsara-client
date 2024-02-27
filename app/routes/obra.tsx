@@ -5,8 +5,15 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
-import { useState } from 'react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import Button from '~/components/Button';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
@@ -99,9 +106,29 @@ export default function ObrasPage() {
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
+  const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>(
+    {}
+  );
   const { obras } = useLoaderData<typeof loader>();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    const timeout = setTimeout(() => {
+      let newFilters = '';
+      Object.entries(activeFilters).forEach(([key, value]) => {
+        newFilters += `(${key}~'${value}')`;
+      });
+      const splitFilters = newFilters.split(')(');
+      const joinedFilters = splitFilters.join(')&&(');
+      newSearchParams.set('filter', joinedFilters);
+      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [activeFilters]);
 
   const handleCloseModalDesativar = () => {
     navigate('/obra');
@@ -191,6 +218,8 @@ export default function ObrasPage() {
         }}
         path="/obra"
         isFilterVisible={isFilterVisible}
+        setActiveFilters={setActiveFilters}
+        activeFilters={activeFilters}
       />
       <Outlet />
 

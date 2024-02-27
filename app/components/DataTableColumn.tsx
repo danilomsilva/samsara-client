@@ -8,6 +8,8 @@ type PropTypes = {
   column: string;
   disabledSort?: boolean;
   isFilterVisible?: boolean;
+  activeFilters: { [key: string]: string };
+  setActiveFilters: (filters: { [key: string]: string }) => void;
 };
 
 export default function Column({
@@ -15,6 +17,8 @@ export default function Column({
   children,
   disabledSort,
   isFilterVisible,
+  activeFilters,
+  setActiveFilters,
 }: PropTypes) {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -55,7 +59,13 @@ export default function Column({
           />
         </div>
       </Link>
-      {isFilterVisible && <Filters column={column} />}
+      {isFilterVisible && (
+        <Filters
+          column={column}
+          activeFilters={activeFilters}
+          setActiveFilters={setActiveFilters}
+        />
+      )}
     </th>
   );
 }
