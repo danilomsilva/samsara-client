@@ -37,6 +37,7 @@ export default function Column({
     >
       <Link
         to={{ pathname: location.pathname, search: searchParams.toString() }}
+        tabIndex={-1}
       >
         <div className="flex items-center gap-1 group pl-2">
           {children}
