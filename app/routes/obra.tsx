@@ -33,6 +33,7 @@ import Textarea from '~/components/Textarea';
 import ReadIcon from '~/components/icons/ReadIcon';
 import ObraTable from '~/components/ObraTable';
 import FilterIcon from '~/components/icons/FilterIcon';
+import { checkDateValid } from '~/utils/utils';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -120,7 +121,22 @@ export default function ObrasPage() {
     const timeout = setTimeout(() => {
       let newFilters = '';
       Object.entries(activeFilters).forEach(([key, value]) => {
-        newFilters += `(${key}~'${value}')`;
+        if (
+          key === 'created' ||
+          key === 'data_inicio' ||
+          key === 'data_final_previsto'
+        ) {
+          // check if length of value is 10
+          if (value.length === 10 && checkDateValid(value)) {
+            const [day, month, year] = value.split('/');
+            const date = `${year}-${month}-${day}`;
+            if (Date.parse(date)) {
+              newFilters += `(${key}>'${date}')`;
+            }
+          }
+        } else {
+          newFilters += `(${key}~'${value}')`;
+        }
       });
       const splitFilters = newFilters.split(')(');
       const joinedFilters = splitFilters.join(')&&(');
@@ -218,6 +234,7 @@ export default function ObrasPage() {
         }}
         path="/obra"
         isFilterVisible={isFilterVisible}
+        setFilterVisible={setFilterVisible}
         setActiveFilters={setActiveFilters}
         activeFilters={activeFilters}
       />

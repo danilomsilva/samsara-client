@@ -4,6 +4,8 @@ import Column from './DataTableColumn';
 import Pagination from './Pagination';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { useEffect } from 'react';
+import Button from './Button';
+import XIcon from './icons/XIcon';
 
 type PropTypes = {
   pagination: PaginationType;
@@ -11,6 +13,7 @@ type PropTypes = {
   path: string;
   id: string;
   isFilterVisible?: boolean;
+  setFilterVisible: (visible: boolean) => void;
   activeFilters: { [key: string]: string };
   setActiveFilters: (filters: { [key: string]: string }) => void;
 };
@@ -28,6 +31,7 @@ export default function ObraTable({
   rows,
   id,
   isFilterVisible,
+  setFilterVisible,
   activeFilters,
   setActiveFilters,
 }: PropTypes) {
@@ -82,6 +86,20 @@ export default function ObraTable({
             ))}
           </tbody>
         </table>
+        {!rows.length && (
+          <div className="flex justify-center items-center text-sm h-60 flex-col gap-4">
+            <p>Nenhum resultado encontrado!</p>
+            <Button
+              icon={<XIcon className="w-4 h-4 ml-2" />}
+              variant="blue"
+              text="Limpar filtros"
+              onClick={() => {
+                setActiveFilters({});
+                setFilterVisible(false);
+              }}
+            />
+          </div>
+        )}
       </div>
       <Pagination pagination={pagination} />
     </div>
