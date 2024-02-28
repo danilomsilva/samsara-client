@@ -212,7 +212,7 @@ export default function ObrasPage() {
                   { key: 'data_final_previsto', label: 'Data final prevista' },
                 ]}
                 data={obras.items}
-                filename="obras"
+                filename="obra"
               />
               <Button
                 variant={isFilterVisible ? 'blue' : 'outlined'}
