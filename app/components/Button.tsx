@@ -29,7 +29,7 @@ export default function Button({
     red: `${disabled ? 'bg-red/50' : 'bg-red hover:bg-red/50'}`,
     green: `${disabled ? 'bg-green/50' : 'bg-green hover:bg-green/50'}`,
     outlined: `${
-      disabled ? 'bg-white' : 'bg-white hover:bg-blue/50'
+      disabled ? 'bg-white' : 'bg-white hover:bg-grey/10'
     } text-blue`,
   };
 

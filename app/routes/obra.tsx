@@ -34,6 +34,7 @@ import ReadIcon from '~/components/icons/ReadIcon';
 import ObraTable from '~/components/ObraTable';
 import FilterIcon from '~/components/icons/FilterIcon';
 import { checkDateValid } from '~/utils/utils';
+import ExportOptions from '~/components/ExportOptions';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -202,6 +203,17 @@ export default function ObrasPage() {
             </>
           ) : (
             <>
+              <ExportOptions
+                tableHeaders={[
+                  { key: 'created', label: 'Data de criação' },
+                  { key: 'nome', label: 'Nome da obra' },
+                  { key: 'cidade', label: 'Cidade' },
+                  { key: 'data_inicio', label: 'Data de início' },
+                  { key: 'data_final_previsto', label: 'Data final prevista' },
+                ]}
+                data={obras.items}
+                filename="obras"
+              />
               <Button
                 variant={isFilterVisible ? 'blue' : 'outlined'}
                 name="filters"
