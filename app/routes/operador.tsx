@@ -5,10 +5,16 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
-import { useState } from 'react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import Button from '~/components/Button';
-import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
@@ -16,11 +22,7 @@ import Textarea from '~/components/Textarea';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import {
-  type Operador,
-  getOperadores,
-  updateOperador,
-} from '~/models/operador.server';
+import { getOperadores, updateOperador } from '~/models/operador.server';
 import {
   commitSession,
   getSession,
@@ -29,6 +31,10 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import ReadIcon from '~/components/icons/ReadIcon';
+import { checkDateValid } from '~/utils/utils';
+import ExportOptions from '~/components/ExportOptions';
+import FilterIcon from '~/components/icons/FilterIcon';
+import OperadorTable from '~/components/OperadorTable';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -40,6 +46,9 @@ export async function loader({ request }: LoaderArgs) {
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
   const filter = searchParams.get('filter');
+  const page = searchParams.get('page' || '1');
+  const perPage = searchParams.get('perPage' || '30');
+
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn
@@ -51,7 +60,9 @@ export async function loader({ request }: LoaderArgs) {
     const operadores = await getOperadores(
       userToken,
       sortingBy,
-      filter as string
+      filter as string,
+      page as string,
+      perPage as string
     );
     return json({ operadores });
   } else {
@@ -92,12 +103,48 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function OperadorPage() {
+  const [isFilterVisible, setFilterVisible] = useState(false);
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
-  const { operadores }: { operadores: Operador[] } = useLoaderData();
-  const navigate = useNavigate();
+  const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const { operadores } = useLoaderData<typeof loader>();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    const timeout = setTimeout(() => {
+      let newFilters = '';
+      Object.entries(activeFilters).forEach(([key, value]) => {
+        if (
+          key === 'created' ||
+          key === 'data_inicio' ||
+          key === 'data_final_previsto'
+        ) {
+          // check if length of value is 10
+          if (value.length === 10 && checkDateValid(value)) {
+            const [day, month, year] = value.split('/');
+            const date = `${year}-${month}-${day}`;
+            if (Date.parse(date)) {
+              newFilters += `(${key}>'${date}')`;
+            }
+          }
+        } else {
+          newFilters += `(${key}~'${value}')`;
+        }
+      });
+      const splitFilters = newFilters.split(')(');
+      const joinedFilters = splitFilters.join(')&&(');
+      newSearchParams.set('filter', joinedFilters);
+      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [activeFilters]);
 
   const handleCloseModalDesativar = () => {
     navigate('/operador');
@@ -113,18 +160,13 @@ export default function OperadorPage() {
     setMotivo(value);
   };
 
-  const selectedOperador = operadores.find(
+  const handleToggleFilters = () => {
+    setFilterVisible(!isFilterVisible);
+  };
+
+  const selectedOperador = operadores.items.find(
     (operador) => operador?.id === selectedRow
   );
-
-  const tableHeaders = [
-    { key: 'created', label: 'Data de criação' },
-    { key: 'codigo', label: 'Código' },
-    { key: 'nome_completo', label: 'Nome completo' },
-    { key: 'atividade', label: 'Atividade' },
-    { key: 'obraX', label: 'Alocado à obra' },
-    { key: 'encarregadoX', label: 'Encarregado' },
-  ];
 
   return (
     <>
@@ -159,17 +201,53 @@ export default function OperadorPage() {
               />
             </>
           ) : (
-            <LinkButton to="./new" variant="blue" icon={<Add />}>
-              Adicionar
-            </LinkButton>
+            <>
+              <ExportOptions
+                tableHeaders={[
+                  { key: 'created', label: 'Data de criação' },
+                  { key: 'codigo', label: 'Código' },
+                  { key: 'nome_completo', label: 'Nome completo' },
+                  { key: 'atividade', label: 'Atividade' },
+                  { key: 'obraX', label: 'Alocado à obra' },
+                  { key: 'encarregadoX', label: 'Encarregado' },
+                ]}
+                data={operadores.items}
+                filename="operador"
+              />
+              <Button
+                variant={isFilterVisible ? 'blue' : 'outlined'}
+                name="filters"
+                icon={
+                  <FilterIcon
+                    className={`${
+                      isFilterVisible ? 'text-white' : 'text-blue'
+                    } h-4 w-4`}
+                  />
+                }
+                onClick={handleToggleFilters}
+              >
+                Filtros
+              </Button>
+              <LinkButton to="./new" variant="blue" icon={<Add />}>
+                Adicionar
+              </LinkButton>
+            </>
           )}
         </div>
       </div>
-      <DataTable
+      <OperadorTable
         id="table-operador"
-        columns={tableHeaders}
-        rows={operadores}
-        path="/operador"
+        rows={operadores.items}
+        pagination={{
+          page: operadores.page,
+          perPage: operadores.perPage,
+          totalItems: operadores.totalItems,
+          totalPages: operadores.totalPages,
+        }}
+        isFilterVisible={isFilterVisible}
+        setFilterVisible={setFilterVisible}
+        setActiveFilters={setActiveFilters}
+        activeFilters={activeFilters}
       />
       <Outlet />
 

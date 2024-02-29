@@ -3,6 +3,14 @@ import { formatDateTime } from '~/utils/utils';
 import { type Obra, getObra } from './obra.server';
 import { type Usuario, getUsuario } from './usuario.server';
 
+export type OperadorResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: Operador[];
+};
+
 export type Operador = {
   id?: string;
   created?: string;
@@ -28,15 +36,18 @@ export type Operador = {
 export async function getOperadores(
   userToken: User['token'],
   sortingBy: string | null,
-  filter: string
-) {
+  filter?: string,
+  page?: string,
+  perPage?: string
+): Promise<OperadorResponse> {
   let url = `${process.env.BASE_API_URL}/collections/operador/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra,encarregado');
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', perPage ?? '30');
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
@@ -64,7 +75,7 @@ export async function getOperadores(
       inativo: item?.inativo,
       motivo: item?.motivo,
     }));
-    return transformedData;
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting operadores');
   }
