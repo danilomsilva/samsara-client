@@ -5,10 +5,16 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
-import { useState } from 'react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import Button from '~/components/Button';
-import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
@@ -16,11 +22,7 @@ import Textarea from '~/components/Textarea';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import {
-  type Usuario,
-  getUsuarios,
-  updateUsuario,
-} from '~/models/usuario.server';
+import { getUsuarios, updateUsuario } from '~/models/usuario.server';
 import {
   commitSession,
   getSession,
@@ -29,6 +31,10 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import ReadIcon from '~/components/icons/ReadIcon';
+import { checkDateValid } from '~/utils/utils';
+import ExportOptions from '~/components/ExportOptions';
+import FilterIcon from '~/components/icons/FilterIcon';
+import UsuarioTable from '~/components/UsuarioTable';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -40,6 +46,9 @@ export async function loader({ request }: LoaderArgs) {
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
   const filter = searchParams.get('filter');
+  const page = searchParams.get('page' || '1');
+  const perPage = searchParams.get('perPage' || '30');
+
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn
@@ -48,7 +57,13 @@ export async function loader({ request }: LoaderArgs) {
 
   //encarregado do not have access to table usuarios
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const usuarios = await getUsuarios(userToken, sortingBy, filter as string);
+    const usuarios = await getUsuarios(
+      userToken,
+      sortingBy,
+      filter as string,
+      page as string,
+      perPage as string
+    );
     return json({ usuarios });
   } else {
     throw json('Acesso proibido', { status: 403 });
@@ -89,12 +104,48 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function UsuarioPage() {
+  const [isFilterVisible, setFilterVisible] = useState(false);
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
-  const { usuarios }: { usuarios: Usuario[] } = useLoaderData();
-  const navigate = useNavigate();
+  const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const { usuarios } = useLoaderData<typeof loader>();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    const timeout = setTimeout(() => {
+      let newFilters = '';
+      Object.entries(activeFilters).forEach(([key, value]) => {
+        if (
+          key === 'created' ||
+          key === 'data_inicio' ||
+          key === 'data_final_previsto'
+        ) {
+          // check if length of value is 10
+          if (value.length === 10 && checkDateValid(value)) {
+            const [day, month, year] = value.split('/');
+            const date = `${year}-${month}-${day}`;
+            if (Date.parse(date)) {
+              newFilters += `(${key}>'${date}')`;
+            }
+          }
+        } else {
+          newFilters += `(${key}~'${value}')`;
+        }
+      });
+      const splitFilters = newFilters.split(')(');
+      const joinedFilters = splitFilters.join(')&&(');
+      newSearchParams.set('filter', joinedFilters);
+      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [activeFilters]);
 
   const handleCloseModalDesativar = () => {
     navigate('/usuario');
@@ -110,24 +161,13 @@ export default function UsuarioPage() {
     setMotivo(value);
   };
 
-  const selectedUsuario = usuarios.find(
+  const handleToggleFilters = () => {
+    setFilterVisible(!isFilterVisible);
+  };
+
+  const selectedUsuario = usuarios.items.find(
     (usuario) => usuario?.id === selectedRow
   );
-
-  const formattedUsuario = usuarios.map((item) => ({
-    ...item,
-    tipo_acesso: item.tipo_acesso?.replaceAll('_', ' '),
-  }));
-
-  const tableHeaders = [
-    { key: 'created', label: 'Data de criação' },
-    { key: 'codigo', label: 'Código' },
-    { key: 'nome_completo', label: 'Nome completo' },
-    { key: 'email', label: 'Email' },
-    { key: 'tipo_acesso', label: 'Tipo de acesso' },
-    { key: 'obraX', label: 'Alocado à obra' },
-    // pocketbase do not allow to sort by indirect attributes such as expand.obra.nome
-  ];
 
   return (
     <>
@@ -162,17 +202,53 @@ export default function UsuarioPage() {
               />
             </>
           ) : (
-            <LinkButton to="./new" variant="blue" icon={<Add />}>
-              Adicionar
-            </LinkButton>
+            <>
+              <ExportOptions
+                tableHeaders={[
+                  { key: 'created', label: 'Data de criação' },
+                  { key: 'codigo', label: 'Código' },
+                  { key: 'nome_completo', label: 'Nome completo' },
+                  { key: 'email', label: 'Email' },
+                  { key: 'tipo_acesso', label: 'Tipo de acesso' },
+                  { key: 'obraX', label: 'Alocado à obra' },
+                ]}
+                data={usuarios.items}
+                filename="usuario"
+              />
+              <Button
+                variant={isFilterVisible ? 'blue' : 'outlined'}
+                name="filters"
+                icon={
+                  <FilterIcon
+                    className={`${
+                      isFilterVisible ? 'text-white' : 'text-blue'
+                    } h-4 w-4`}
+                  />
+                }
+                onClick={handleToggleFilters}
+              >
+                Filtros
+              </Button>
+              <LinkButton to="./new" variant="blue" icon={<Add />}>
+                Adicionar
+              </LinkButton>
+            </>
           )}
         </div>
       </div>
-      <DataTable
+      <UsuarioTable
         id="table-usuario"
-        columns={tableHeaders}
-        rows={formattedUsuario}
-        path="/usuario"
+        rows={usuarios.items}
+        pagination={{
+          page: usuarios.page,
+          perPage: usuarios.perPage,
+          totalItems: usuarios.totalItems,
+          totalPages: usuarios.totalPages,
+        }}
+        isFilterVisible={isFilterVisible}
+        setFilterVisible={setFilterVisible}
+        setActiveFilters={setActiveFilters}
+        activeFilters={activeFilters}
       />
       <Outlet />
 

@@ -4,6 +4,14 @@ import { getObra } from './obra.server';
 
 export type TipoAcesso = 'Administrador' | 'Encarregado' | 'Gerente_de_Frota';
 
+export type UsuarioResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: Usuario[];
+};
+
 export type Usuario = {
   id?: string;
   created?: string;
@@ -30,16 +38,19 @@ export type Usuario = {
 export async function getUsuarios(
   userToken: User['token'],
   sortingBy: string | null,
-  filter?: string
-) {
+  filter?: string,
+  page?: string,
+  perPage?: string
+): Promise<UsuarioResponse> {
   let url = `${process.env.BASE_API_URL}/collections/usuario/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra');
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', perPage ?? '30');
   queryParams.set('filter', filter ?? '');
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
 
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;
@@ -59,12 +70,12 @@ export async function getUsuarios(
       codigo: item.codigo,
       nome_completo: item.nome_completo,
       email: item.email,
-      tipo_acesso: item.tipo_acesso,
+      tipo_acesso: item.tipo_acesso?.replaceAll('_', ' '),
       obraX: item.obraX,
       inativo: item?.inativo,
       motivo: item?.motivo,
     }));
-    return transformedData;
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured when verifying credentials!');
   }
