@@ -1,6 +1,14 @@
 import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
 
+export type OperacaoResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: Operacao[];
+};
+
 export type Operacao = {
   id?: string;
   created?: string;
@@ -13,14 +21,19 @@ export type Operacao = {
 
 export async function getOperacoes(
   userToken: User['token'],
-  sortingBy: string | null
-) {
+  sortingBy: string | null,
+  filter?: string,
+  page?: string,
+  perPage?: string
+): Promise<OperacaoResponse> {
   let url = `${process.env.BASE_API_URL}/collections/operacao/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
 
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', perPage ?? '30');
+  queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;
@@ -44,7 +57,7 @@ export async function getOperacoes(
       ordens_servico: item?.ordens_servico,
       array_ordens_servico: item?.array_ordens_servico,
     }));
-    return transformedData;
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting Operacoes');
   }
