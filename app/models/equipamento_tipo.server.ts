@@ -1,6 +1,14 @@
 import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
 
+export type EquipamentoTipoResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: EquipamentoTipo[];
+};
+
 export type EquipamentoTipo = {
   id?: string;
   created?: string;
@@ -20,13 +28,19 @@ export type EquipamentoTipo = {
 
 export async function getEquipamentoTipos(
   userToken: User['token'],
-  sortingBy: string | null
-) {
+  sortingBy: string | null,
+  filter?: string,
+  page?: string,
+  perPage?: string
+): Promise<EquipamentoTipoResponse> {
   let url = `${process.env.BASE_API_URL}/collections/equipamento_tipo/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
+
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', perPage ?? '30');
+  queryParams.set('filter', filter ?? '');
 
   queryParams.set('expand', 'grupo_nome');
   if (queryParams.toString()) {
@@ -52,7 +66,7 @@ export async function getEquipamentoTipos(
       operacoes: item?.operacoes,
       array_operacoes: item?.array_operacoes,
     }));
-    return transformedData;
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting tipos de equipamento');
   }
