@@ -28,6 +28,14 @@ export type EquipamentoLog = {
   isRowValid?: boolean;
 };
 
+export type BoletimResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: Boletim[];
+};
+
 export type Boletim = {
   created?: string;
   updated?: string;
@@ -43,7 +51,7 @@ export type Boletim = {
   encarregadoX?: string;
   equipamento?: string;
   equipamentoX?: string;
-  equipamento_logs?: EquipamentoLog[];
+  equipamento_logs: EquipamentoLog[];
   limpeza?: boolean;
   lubrificacao?: boolean;
   manutencao?: boolean;
@@ -63,14 +71,17 @@ export type Boletim = {
 export async function getBoletins(
   userToken: User['token'],
   sortingBy: string | null,
-  filter: string
-) {
+  filter?: string,
+  page?: string,
+  perPage?: string
+): Promise<BoletimResponse> {
   let url = `${process.env.BASE_API_URL}/collections/boletim/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
 
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', perPage ?? '30');
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
@@ -117,7 +128,7 @@ export async function getBoletins(
       };
     });
 
-    return transformedData;
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting boletins');
   }
@@ -306,7 +317,7 @@ export async function _updateBoletim(
 export async function updateBoletim(
   userToken: User['token'],
   boletimId: string,
-  body: Boletim
+  body: Partial<Boletim>
 ) {
   try {
     const response = await fetch(

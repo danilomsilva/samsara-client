@@ -9,12 +9,12 @@ import {
   Form,
   Outlet,
   useLoaderData,
+  useLocation,
   useNavigate,
   useSearchParams,
 } from '@remix-run/react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '~/components/Button';
-import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
@@ -22,11 +22,7 @@ import Textarea from '~/components/Textarea';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import {
-  type Boletim,
-  getBoletins,
-  updateBoletim,
-} from '~/models/boletim.server';
+import { getBoletins, updateBoletim } from '~/models/boletim.server';
 import { getEquipamentos } from '~/models/equipamento.server';
 import { getOperacoes } from '~/models/operacao.server';
 import { getOSs } from '~/models/ordem-servico.server';
@@ -38,6 +34,10 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import ReadIcon from '~/components/icons/ReadIcon';
+import { checkDateValid } from '~/utils/utils';
+import ExportOptions from '~/components/ExportOptions';
+import FilterIcon from '~/components/icons/FilterIcon';
+import BoletimTable from '~/components/BoletimTable';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -47,8 +47,11 @@ export const meta: V2_MetaFunction = () => {
 export async function loader({ request }: LoaderArgs) {
   const { userToken, userId, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
-  const filter = searchParams.get('filter');
   const sortParam = searchParams.get('sort');
+  const filter = searchParams.get('filter');
+  const page = searchParams.get('page' || '1');
+  const perPage = searchParams.get('perPage' || '30');
+
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn
@@ -59,18 +62,26 @@ export async function loader({ request }: LoaderArgs) {
     const allBoletins = await getBoletins(
       userToken,
       sortingBy,
-      filter as string
+      filter as string,
+      page as string,
+      perPage as string
     );
+
     const boletins =
       tipoAcesso === 'Encarregado'
-        ? allBoletins?.filter((item: Boletim) => item.encarregado === userId)
+        ? {
+            ...allBoletins,
+            items: allBoletins?.items?.filter(
+              (item) => item.encarregado === userId
+            ),
+          }
         : allBoletins;
 
     const equipamentos = await getEquipamentos(userToken, 'created', '');
     const operacoes = await getOperacoes(userToken, 'created');
     const OSs = await getOSs(userToken, 'created');
 
-    const boletinsToExport = boletins.flatMap((boletim) => {
+    const boletinsToExport = boletins.items.flatMap((boletim) => {
       return boletim.equipamento_logs.map((log) => {
         return {
           ...boletim,
@@ -78,11 +89,11 @@ export async function loader({ request }: LoaderArgs) {
         };
       });
     });
-    const newBoletinsToExport = boletinsToExport?.map((boletim) => {
-      //TODO: move this into relatorios-utils.server.ts
-      const findOS = OSs.find((item) => item.id === boletim.OS);
-      const findOP = operacoes.find((item) => item.id === boletim.OP);
-      const findEquipamento = equipamentos.find(
+
+    const newBoletinsToExport = boletinsToExport.map((boletim) => {
+      const findOS = OSs.items.find((item) => item.id === boletim.OS);
+      const findOP = operacoes.items.find((item) => item.id === boletim.OP);
+      const findEquipamento = equipamentos.items.find(
         (item) => item.id === boletim.equipamento
       );
       return {
@@ -97,7 +108,7 @@ export async function loader({ request }: LoaderArgs) {
         modelo_equipamento: findEquipamento?.modelo,
         ano_equipamento: findEquipamento?.ano,
         combubstivel_equipamento: findEquipamento?.combustivel,
-        IM: findEquipamento.instrumento_medicao,
+        IM: findEquipamento?.instrumento_medicao,
         valor_locacao_diario: findEquipamento?.valor_locacao_diario,
         valor_locacao_mensal: findEquipamento?.valor_locacao_mensal,
         valor_locacao_hora: findEquipamento?.valor_locacao_hora,
@@ -162,12 +173,48 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function BoletinsPage() {
+  const [isFilterVisible, setFilterVisible] = useState(false);
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
-  const { boletins }: { boletins: Boletim[] } = useLoaderData();
+  const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const { boletins } = useLoaderData<typeof loader>();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    const timeout = setTimeout(() => {
+      let newFilters = '';
+      Object.entries(activeFilters).forEach(([key, value]) => {
+        if (
+          key === 'created' ||
+          key === 'data_inicio' ||
+          key === 'data_final_previsto'
+        ) {
+          // check if length of value is 10
+          if (value.length === 10 && checkDateValid(value)) {
+            const [day, month, year] = value.split('/');
+            const date = `${year}-${month}-${day}`;
+            if (Date.parse(date)) {
+              newFilters += `(${key}>'${date}')`;
+            }
+          }
+        } else {
+          newFilters += `(${key}~'${value}')`;
+        }
+      });
+      const splitFilters = newFilters.split(')(');
+      const joinedFilters = splitFilters.join(')&&(');
+      newSearchParams.set('filter', joinedFilters);
+      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [activeFilters]);
 
   const handleCloseModalDesativar = () => {
     navigate('/boletim');
@@ -183,23 +230,13 @@ export default function BoletinsPage() {
     setMotivo(value);
   };
 
-  const selectedBoletim = boletins.find(
+  const handleToggleFilters = () => {
+    setFilterVisible(!isFilterVisible);
+  };
+
+  const selectedBoletim = boletins.items.find(
     (boletim) => boletim?.id === selectedRow
   );
-
-  const tableHeaders = [
-    { key: 'created', label: 'Data criação' },
-    { key: 'data_boletim', label: 'Data' },
-    { key: 'codigo', label: 'Boletim' },
-    { key: 'equipamentoX', label: 'Equip.' },
-    { key: 'obraX', label: 'Obra' },
-    { key: 'IM_inicioX', label: 'IM Início' },
-    { key: 'IM_finalX', label: 'IM Final' },
-    { key: 'total_abastecimento', label: 'Abast.' },
-    { key: 'manutencao', label: 'Manutenção' },
-    { key: 'operadorX', label: 'Operador' },
-    { key: 'encarregadoX', label: 'Criado por' },
-  ];
 
   return (
     <>
@@ -234,17 +271,61 @@ export default function BoletinsPage() {
               />
             </>
           ) : (
-            <LinkButton to="./new" variant="blue" icon={<Add />}>
-              Adicionar
-            </LinkButton>
+            <>
+              <ExportOptions
+                tableHeaders={[
+                  { key: 'created', label: 'Data criação' },
+                  { key: 'data_boletim', label: 'Data' },
+                  { key: 'codigo', label: 'Boletim' },
+                  { key: 'equipamentoX', label: 'Equip.' },
+                  { key: 'obraX', label: 'Obra' },
+                  { key: 'IM_inicioX', label: 'IM Início' },
+                  { key: 'IM_finalX', label: 'IM Final' },
+                  { key: 'total_abastecimento', label: 'Abast.' },
+                  { key: 'manutencao', label: 'Manutenção' },
+                  { key: 'operadorX', label: 'Operador' },
+                  { key: 'encarregadoX', label: 'Criado por' },
+                ]}
+                data={boletins.items}
+                filename="boletim"
+              />
+
+              {/* TODO: when closing filters, make sure to remove all the query params */}
+              <Button
+                variant={isFilterVisible ? 'blue' : 'outlined'}
+                name="filters"
+                icon={
+                  <FilterIcon
+                    className={`${
+                      isFilterVisible ? 'text-white' : 'text-blue'
+                    } h-4 w-4`}
+                  />
+                }
+                onClick={handleToggleFilters}
+              >
+                Filtros
+              </Button>
+              <LinkButton to="./new" variant="blue" icon={<Add />}>
+                Adicionar
+              </LinkButton>
+            </>
           )}
         </div>
       </div>
-      <DataTable
+      {/* TODO: not sorting ASC by boletim - test all the filters */}
+      <BoletimTable
         id="table-boletim"
-        columns={tableHeaders}
-        rows={boletins}
-        path="/boletim"
+        rows={boletins.items}
+        pagination={{
+          page: boletins.page,
+          perPage: boletins.perPage,
+          totalItems: boletins.totalItems,
+          totalPages: boletins.totalPages,
+        }}
+        isFilterVisible={isFilterVisible}
+        setFilterVisible={setFilterVisible}
+        setActiveFilters={setActiveFilters}
+        activeFilters={activeFilters}
       />
       <Outlet />
 
