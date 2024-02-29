@@ -1,5 +1,9 @@
 import type { User } from '~/session.server';
-import { formatDateTime } from '~/utils/utils';
+import {
+  formatCurrency,
+  formatDateTime,
+  formatNumberWithDotDelimiter,
+} from '~/utils/utils';
 import { type Obra, getObra } from './obra.server';
 import { type Usuario, getUsuario } from './usuario.server';
 import { getEquipamentoTipo } from './equipamento_tipo.server';
@@ -14,6 +18,14 @@ export type TipoEquipamento = {
   id?: string;
   created?: string;
   tipo_nome?: string;
+};
+
+export type EquipamentoResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: Equipamento[];
 };
 
 export type Equipamento = {
@@ -129,8 +141,10 @@ export async function getTiposEquipamento(
 export async function getEquipamentos(
   userToken: User['token'],
   sortingBy: string | null,
-  filter: string
-) {
+  filter?: string,
+  page?: string,
+  perPage?: string
+): Promise<EquipamentoResponse> {
   let url = `${process.env.BASE_API_URL}/collections/equipamento/records`;
 
   const queryParams = new URLSearchParams();
@@ -139,7 +153,8 @@ export async function getEquipamentos(
     'expand',
     'obra,encarregado,tipo_equipamento,grupo_equipamento'
   );
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', perPage ?? '30');
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
@@ -155,36 +170,52 @@ export async function getEquipamentos(
     });
     const data = await response.json();
 
-    const transformedData = data.items.map((item: Equipamento) => ({
-      id: item.id,
-      created: item?.created && formatDateTime(item.created),
-      codigo: item.codigo,
-      obra: item?.obra,
-      obraX: item.obraX,
-      valor_locacao_diario: item.valor_locacao_diario,
-      valor_locacao_mensal: item.valor_locacao_mensal,
-      valor_locacao_hora: item.valor_locacao_hora,
-      tipo_equipamento: item.tipo_equipamento,
-      tipo_equipamentoX: item?.tipo_equipamentoX,
-      grupo_equipamento: item.grupo_equipamento,
-      grupo_equipamentoX: item?.expand?.grupo_equipamento?.grupo_nome,
-      numero_serie: item.numero_serie,
-      modelo: item.modelo,
-      ano: item.ano,
-      combustivel: item.combustivel,
-      encarregado: item?.encarregado,
-      encarregadoX: item.encarregadoX,
-      instrumento_medicao: item.instrumento_medicao,
-      instrumento_medicao_inicio: item.instrumento_medicao_inicio,
-      instrumento_medicao_atual: item.instrumento_medicao_atual,
-      frequencia_revisao: item.frequencia_revisao,
-      proxima_revisao: item.proxima_revisao,
-      revisao_status: Number(item.revisao_status).toFixed(2),
-      inativo: item?.inativo,
-      motivo: item?.motivo,
-    }));
+    const transformedData = data.items.map((item: Equipamento) => {
+      const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
+      const suffix = isHorimetro ? ' h' : ' Km';
 
-    return transformedData;
+      return {
+        id: item.id,
+        created: item?.created && formatDateTime(item.created),
+        codigo: item.codigo,
+        obra: item?.obra,
+        obraX: item.obraX,
+        valor_locacao_diario: formatCurrency(Number(item.valor_locacao_diario)),
+        valor_locacao_mensal: formatCurrency(Number(item.valor_locacao_mensal)),
+        valor_locacao_hora: formatCurrency(Number(item.valor_locacao_hora)),
+        tipo_equipamento: item.tipo_equipamento,
+        tipo_equipamentoX: item?.tipo_equipamentoX,
+        grupo_equipamento: item.grupo_equipamento,
+        grupo_equipamentoX: item?.expand?.grupo_equipamento?.grupo_nome,
+        numero_serie: item.numero_serie,
+        modelo: item.modelo,
+        ano: item.ano,
+        combustivel: item.combustivel?.replaceAll('_', ' '),
+        encarregado: item?.encarregado,
+        encarregadoX: item.encarregadoX,
+        instrumento_medicao: item.instrumento_medicao,
+        instrumento_medicao_inicio: `${
+          item.instrumento_medicao_inicio &&
+          formatNumberWithDotDelimiter(Number(item.instrumento_medicao_inicio))
+        } ${suffix}`,
+        instrumento_medicao_atual: `${
+          item.instrumento_medicao_atual &&
+          formatNumberWithDotDelimiter(Number(item.instrumento_medicao_atual))
+        } ${suffix}`,
+        frequencia_revisao: `${
+          item.frequencia_revisao &&
+          formatNumberWithDotDelimiter(Number(item.frequencia_revisao))
+        } ${suffix}`,
+        proxima_revisao: `${
+          item.proxima_revisao &&
+          formatNumberWithDotDelimiter(Number(item.proxima_revisao))
+        } ${suffix}`,
+        revisao_status: Number(item.revisao_status).toFixed(2),
+        inativo: item?.inativo,
+        motivo: item?.motivo,
+      };
+    });
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting equipamentos');
   }

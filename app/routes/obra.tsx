@@ -244,7 +244,6 @@ export default function ObrasPage() {
           totalItems: obras.totalItems,
           totalPages: obras.totalPages,
         }}
-        path="/obra"
         isFilterVisible={isFilterVisible}
         setFilterVisible={setFilterVisible}
         setActiveFilters={setActiveFilters}

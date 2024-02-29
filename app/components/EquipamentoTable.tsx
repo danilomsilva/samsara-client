@@ -6,6 +6,9 @@ import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { useEffect } from 'react';
 import Button from './Button';
 import XIcon from './icons/XIcon';
+import Tooltip from './Tooltip';
+import InfoIcon from './icons/InfoIcon';
+import { Link } from '@remix-run/react';
 
 type PropTypes = {
   pagination: PaginationType;
@@ -18,14 +21,19 @@ type PropTypes = {
 };
 
 const columns = [
-  { key: 'created', label: 'Data de criação' },
-  { key: 'nome', label: 'Nome da obra' },
-  { key: 'cidade', label: 'Cidade' },
-  { key: 'data_inicio', label: 'Data de início' },
-  { key: 'data_final_previsto', label: 'Data final prevista' },
+  { key: 'tipo_equipamentoX', label: 'Tipo Equipamento' },
+  { key: 'codigo', label: 'Código' },
+  { key: 'modelo', label: 'Modelo' },
+  { key: 'ano', label: 'Ano' },
+  { key: 'instrumento_medicao_inicio', label: 'IM Início' },
+  { key: 'instrumento_medicao_atual', label: 'IM Atual' },
+  { key: 'proxima_revisao', label: 'Próx. Revisão' },
+  { key: 'revisao_status', label: 'Restante' },
+  { key: 'encarregadoX', label: 'Encarregado' },
+  { key: 'obraX', label: 'Obra' },
 ];
 
-export default function ObraTable({
+export default function EquipamentoTable({
   pagination,
   rows,
   id,
@@ -76,11 +84,53 @@ export default function ObraTable({
                 } h-10 border-b border-grey/10`}
                 onClick={() => setSelectedRow(row.id)}
               >
-                {columns.map((col: ColumnType, colIndex: number) => (
-                  <td key={colIndex} className="px-2 whitespace-nowrap">
-                    {row[col.key]}
-                  </td>
-                ))}
+                {columns.map((col: ColumnType, colIndex: number) => {
+                  const colorsConditions =
+                    row.grupo_equipamentoX === 'Máquina' ||
+                    row.grupo_equipamentoX === 'Motocicleta'
+                      ? 100
+                      : row.grupo_equipamentoX === 'Caminhão' ||
+                        row.grupo_equipamentoX === 'Automóvel'
+                      ? 1000
+                      : 100;
+
+                  const revisaoStatusColor =
+                    col.key === 'revisao_status' && row[col.key] <= 0
+                      ? 'red'
+                      : row[col.key] > 0 && row[col.key] <= colorsConditions
+                      ? 'orange'
+                      : 'green';
+
+                  return (
+                    <td key={colIndex} className="px-2 whitespace-nowrap">
+                      {col.key === 'codigo' ? (
+                        <div className="flex justify-between items-center w-full mr-1 gap-1">
+                          <div className="whitespace-nowrap">
+                            {row[col.key]}
+                          </div>
+                          <Tooltip
+                            contentClassName="z-50"
+                            content={`Número de série: ${row.numero_serie}`}
+                          >
+                            <InfoIcon className="h-6 w-6 text-orange" />
+                          </Tooltip>
+                        </div>
+                      ) : col.key === 'revisao_status' ? (
+                        <Link
+                          to={`/manutencao/new?equip=${row.codigo}`}
+                          className={`bg-${revisaoStatusColor} w-fit rounded-lg px-2 py-1 text-white font-semibold items-center justify-center mr-1 whitespace-nowrap`}
+                        >
+                          {row[col.key]}{' '}
+                          {`${
+                            row.instrumento_medicao === 'Horímetro' ? 'h' : 'km'
+                          }`}
+                        </Link>
+                      ) : (
+                        row[col.key]
+                      )}
+                    </td>
+                  );
+                })}
               </tr>
             ))}
           </tbody>

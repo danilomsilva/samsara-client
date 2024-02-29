@@ -5,10 +5,16 @@ import {
   type ActionArgs,
   redirect,
 } from '@remix-run/node';
-import { Form, Outlet, useLoaderData, useNavigate } from '@remix-run/react';
-import { useState } from 'react';
+import {
+  Form,
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from '@remix-run/react';
+import { useEffect, useState } from 'react';
 import Button from '~/components/Button';
-import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
@@ -18,7 +24,6 @@ import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
 import {
-  type Equipamento,
   getEquipamentos,
   updateEquipamento,
 } from '~/models/equipamento.server';
@@ -29,8 +34,11 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
-import { formatCurrency, formatNumberWithDotDelimiter } from '~/utils/utils';
+import { checkDateValid } from '~/utils/utils';
 import ReadIcon from '~/components/icons/ReadIcon';
+import FilterIcon from '~/components/icons/FilterIcon';
+import ExportOptions from '~/components/ExportOptions';
+import EquipamentoTable from '~/components/EquipamentoTable';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -42,6 +50,9 @@ export async function loader({ request }: LoaderArgs) {
   const searchParams = new URL(request.url).searchParams;
   const sortParam = searchParams.get('sort');
   const filter = searchParams.get('filter');
+  const page = searchParams.get('page' || '1');
+  const perPage = searchParams.get('perPage' || '30');
+
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn
@@ -50,37 +61,14 @@ export async function loader({ request }: LoaderArgs) {
 
   //encarregado do not have access to table usuarios
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const allEquipamentos = await getEquipamentos(
+    const equipamentos = await getEquipamentos(
       userToken,
       sortingBy,
-      filter as string
+      filter as string,
+      page as string,
+      perPage as string
     );
-    const equipamentos: Equipamento[] = allEquipamentos.map((item) => {
-      const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
-      const suffix = isHorimetro ? ' h' : ' Km';
 
-      return {
-        ...item,
-        combustivel: item.combustivel?.replaceAll('_', ' '),
-        valor_locacao: formatCurrency(Number(item.valor_locacao)), //TODO: possibly wrong!!
-        instrumento_medicao_inicio: `${
-          item.instrumento_medicao_inicio &&
-          formatNumberWithDotDelimiter(Number(item.instrumento_medicao_inicio))
-        } ${suffix}`,
-        instrumento_medicao_atual: `${
-          item.instrumento_medicao_atual &&
-          formatNumberWithDotDelimiter(Number(item.instrumento_medicao_atual))
-        } ${suffix}`,
-        frequencia_revisao: `${
-          item.frequencia_revisao &&
-          formatNumberWithDotDelimiter(Number(item.frequencia_revisao))
-        } ${suffix}`,
-        proxima_revisao: `${
-          item.proxima_revisao &&
-          formatNumberWithDotDelimiter(Number(item.proxima_revisao))
-        } ${suffix}`,
-      };
-    });
     return json({ equipamentos });
   } else {
     throw json('Acesso proibido', { status: 403 });
@@ -120,12 +108,44 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function EquipamentoPage() {
+  const [isFilterVisible, setFilterVisible] = useState(false);
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
-  const { equipamentos }: { equipamentos: Equipamento[] } = useLoaderData();
+  const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const { equipamentos } = useLoaderData<typeof loader>();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const newSearchParams = new URLSearchParams(searchParams);
+    const timeout = setTimeout(() => {
+      let newFilters = '';
+      Object.entries(activeFilters).forEach(([key, value]) => {
+        if (key === 'created') {
+          // check if length of value is 10
+          if (value.length === 10 && checkDateValid(value)) {
+            const [day, month, year] = value.split('/');
+            const date = `${year}-${month}-${day}`;
+            if (Date.parse(date)) {
+              newFilters += `(${key}>'${date}')`;
+            }
+          }
+        } else {
+          newFilters += `(${key}~'${value}')`;
+        }
+      });
+      const splitFilters = newFilters.split(')(');
+      const joinedFilters = splitFilters.join(')&&(');
+      newSearchParams.set('filter', joinedFilters);
+      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [activeFilters]);
 
   const handleCloseModalDesativar = () => {
     navigate('/equipamento');
@@ -141,20 +161,13 @@ export default function EquipamentoPage() {
     setMotivo(value);
   };
 
-  const selectedEquipamento = equipamentos.find((eq) => eq?.id === selectedRow);
+  const handleToggleFilters = () => {
+    setFilterVisible(!isFilterVisible);
+  };
 
-  const tableHeaders = [
-    { key: 'tipo_equipamentoX', label: 'Tipo Equipamento' },
-    { key: 'codigo', label: 'Código' },
-    { key: 'modelo', label: 'Modelo' },
-    { key: 'ano', label: 'Ano' },
-    { key: 'instrumento_medicao_inicio', label: 'IM Início' },
-    { key: 'instrumento_medicao_atual', label: 'IM Atual' },
-    { key: 'proxima_revisao', label: 'Próx. Revisão' },
-    { key: 'revisao_status', label: 'Restante' },
-    { key: 'encarregadoX', label: 'Encarregado' },
-    { key: 'obraX', label: 'Obra' },
-  ];
+  const selectedEquipamento = equipamentos.items.find(
+    (eq) => eq?.id === selectedRow
+  );
 
   return (
     <>
@@ -204,17 +217,57 @@ export default function EquipamentoPage() {
               />
             </>
           ) : (
-            <LinkButton to="./new" variant="blue" icon={<Add />}>
-              Adicionar
-            </LinkButton>
+            <>
+              <ExportOptions
+                tableHeaders={[
+                  { key: 'tipo_equipamentoX', label: 'Tipo Equipamento' },
+                  { key: 'codigo', label: 'Código' },
+                  { key: 'modelo', label: 'Modelo' },
+                  { key: 'ano', label: 'Ano' },
+                  { key: 'instrumento_medicao_inicio', label: 'IM Início' },
+                  { key: 'instrumento_medicao_atual', label: 'IM Atual' },
+                  { key: 'proxima_revisao', label: 'Próx. Revisão' },
+                  { key: 'revisao_status', label: 'Restante' },
+                  { key: 'encarregadoX', label: 'Encarregado' },
+                  { key: 'obraX', label: 'Obra' },
+                ]}
+                data={equipamentos.items}
+                filename="equipamento"
+              />
+              <Button
+                variant={isFilterVisible ? 'blue' : 'outlined'}
+                name="filters"
+                icon={
+                  <FilterIcon
+                    className={`${
+                      isFilterVisible ? 'text-white' : 'text-blue'
+                    } h-4 w-4`}
+                  />
+                }
+                onClick={handleToggleFilters}
+              >
+                Filtros
+              </Button>
+              <LinkButton to="./new" variant="blue" icon={<Add />}>
+                Adicionar
+              </LinkButton>
+            </>
           )}
         </div>
       </div>
-      <DataTable
+      <EquipamentoTable
         id="table-equipamento"
-        columns={tableHeaders}
-        rows={equipamentos}
-        path="/equipamento"
+        rows={equipamentos.items}
+        pagination={{
+          page: equipamentos.page,
+          perPage: equipamentos.perPage,
+          totalItems: equipamentos.totalItems,
+          totalPages: equipamentos.totalPages,
+        }}
+        isFilterVisible={isFilterVisible}
+        setFilterVisible={setFilterVisible}
+        setActiveFilters={setActiveFilters}
+        activeFilters={activeFilters}
       />
       <Outlet />
 

@@ -26,7 +26,7 @@ export default function Filters({
   };
 
   return (
-    <div className="my-2 ml-1 relative">
+    <div className="my-2 ml-1 relative min-w-[110px]">
       <input
         type="text"
         name={column}
