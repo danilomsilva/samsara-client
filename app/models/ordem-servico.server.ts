@@ -1,6 +1,14 @@
 import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
 
+export type OSResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: OS[];
+};
+
 export type OS = {
   id?: string;
   created?: string;
@@ -11,13 +19,19 @@ export type OS = {
 
 export async function getOSs(
   userToken: User['token'],
-  sortingBy: string | null
-) {
+  sortingBy: string | null,
+  filter?: string,
+  page?: string,
+  perPage?: string
+): Promise<OSResponse> {
   let url = `${process.env.BASE_API_URL}/collections/ordem_servico/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
+
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', perPage ?? '30');
+  queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;
@@ -38,7 +52,7 @@ export async function getOSs(
       descricao: item.descricao,
       inativo: item?.inativo,
     }));
-    return transformedData;
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting OSs');
   }

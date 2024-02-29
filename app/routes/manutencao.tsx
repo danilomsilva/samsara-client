@@ -241,7 +241,7 @@ export default function ManutencaoPage() {
                   { key: 'encarregadoX', label: 'Encarregado' },
                 ]}
                 data={manutencoes.items}
-                filename="obra"
+                filename="manutencao"
               />
               <Button
                 variant={isFilterVisible ? 'blue' : 'outlined'}
