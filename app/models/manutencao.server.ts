@@ -1,5 +1,9 @@
 import type { User } from '~/session.server';
-import { formatDate, formatDateTime } from '~/utils/utils';
+import {
+  formatDate,
+  formatDateTime,
+  formatNumberWithDotDelimiter,
+} from '~/utils/utils';
 import { _updateEquipamento, getEquipamento } from './equipamento.server';
 import { getOperador } from './operador.server';
 import {
@@ -8,6 +12,14 @@ import {
   updateBoletim,
   _updateBoletim,
 } from './boletim.server';
+
+export type ManutencaoResponse = {
+  page: number;
+  perPage: number;
+  totalItems: number;
+  totalPages: number;
+  items: Manutencao[];
+};
 
 export type Manutencao = {
   id?: string;
@@ -23,6 +35,8 @@ export type Manutencao = {
   expand?: {
     equipamento: {
       codigo: string;
+      modelo: string;
+      instrumento_medicao: string;
     };
     encarregado?: {
       nome_completo: string;
@@ -33,20 +47,24 @@ export type Manutencao = {
   descricao?: string;
   inativo?: boolean;
   motivo?: string;
+  modelo_equipamento?: string;
 };
 
 export async function getManutencoes(
   userToken: User['token'],
   sortingBy: string | null,
-  filter: string
-) {
+  filter?: string,
+  page?: string,
+  perPage?: string
+): Promise<ManutencaoResponse> {
   let url = `${process.env.BASE_API_URL}/collections/manutencao/records`;
 
   const queryParams = new URLSearchParams();
   if (sortingBy) queryParams.set('sort', sortingBy);
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'encarregado,equipamento');
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
+  queryParams.set('page', page ?? '1');
+  queryParams.set('perPage', perPage ?? '30');
   queryParams.set('filter', filter ?? '');
 
   if (queryParams.toString()) {
@@ -61,23 +79,33 @@ export async function getManutencoes(
       },
     });
     const data = await response.json();
-    const transformedData = data.items.map((item: Manutencao) => ({
-      id: item.id,
-      data_manutencao:
-        item?.data_manutencao && formatDate(item?.data_manutencao),
-      created: item?.created && formatDateTime(item.created),
-      boletim: item.boletim,
-      IM_atual: item.IM_atual,
-      tipo_manutencao: item.tipo_manutencao,
-      feito_porX: item?.feito_porX,
-      equipamento: item?.equipamento,
-      equipamentoX: item.equipamentoX,
-      encarregadoX: item.encarregadoX,
-      modelo_equipamento: item.expand?.equipamento.modelo,
-      inativo: item?.inativo,
-      motivo: item?.motivo,
-    }));
-    return transformedData;
+    const transformedData = data.items.map((item: Manutencao) => {
+      const isHorimetro =
+        item.expand?.equipamento?.instrumento_medicao ===
+        ('Horímetro' as string);
+      const suffix = isHorimetro ? ' h' : ' Km';
+
+      return {
+        id: item.id,
+        data_manutencao:
+          item?.data_manutencao && formatDate(item?.data_manutencao),
+        created: item?.created && formatDateTime(item.created),
+        boletim: item.boletim,
+        IM_atual: `${
+          item.IM_atual && formatNumberWithDotDelimiter(Number(item.IM_atual))
+        } ${suffix}`,
+        tipo_manutencao: item.tipo_manutencao,
+        feito_porX: item?.feito_porX,
+        equipamento: item?.equipamento,
+        equipamentoX: item.equipamentoX,
+        encarregadoX: item.encarregadoX,
+        modelo_equipamento: item.expand?.equipamento.modelo,
+        inativo: item?.inativo,
+        motivo: item?.motivo,
+      };
+    });
+    //TODO: revisit if all the numbers are stored as number without any formatting (prefix, suffix, dot, etc.)
+    return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting manutencoes');
   }

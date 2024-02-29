@@ -10,12 +10,12 @@ import {
   Link,
   Outlet,
   useLoaderData,
+  useLocation,
   useNavigate,
   useSearchParams,
 } from '@remix-run/react';
 import { useEffect, useState } from 'react';
 import Button from '~/components/Button';
-import DataTable from '~/components/DataTable';
 import CustomErrorBoundary from '~/components/ErrorBoundary';
 import LinkButton from '~/components/LinkButton';
 import Modal from '~/components/Modal';
@@ -34,10 +34,13 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import { formatNumberWithDotDelimiter } from '~/utils/utils';
+import { checkDateValid } from '~/utils/utils';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import Textarea from '~/components/Textarea';
 import ReadIcon from '~/components/icons/ReadIcon';
+import ExportOptions from '~/components/ExportOptions';
+import FilterIcon from '~/components/icons/FilterIcon';
+import ManutencaoTable from '~/components/ManutencaoTable';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -47,8 +50,11 @@ export const meta: V2_MetaFunction = () => {
 export async function loader({ request }: LoaderArgs) {
   const { userToken, tipoAcesso } = await getUserSession(request);
   const searchParams = new URL(request.url).searchParams;
-  const filter = searchParams.get('filter');
   const sortParam = searchParams.get('sort');
+  const filter = searchParams.get('filter');
+  const page = searchParams.get('page' || '1');
+  const perPage = searchParams.get('perPage' || '30');
+
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
     order && sortColumn
@@ -60,14 +66,16 @@ export async function loader({ request }: LoaderArgs) {
     const manutencoes = await getManutencoes(
       userToken,
       sortingBy,
-      filter as string
+      filter as string,
+      page as string,
+      perPage as string
     );
     const equipamentos = await getEquipamentos(
       userToken,
       'created',
       filter as string
     );
-    return json({ manutencoes, equipamentos });
+    return json({ manutencoes, equipamentos: equipamentos.items });
   } else {
     throw json('Acesso proibido', { status: 403 });
   }
@@ -108,23 +116,50 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function ManutencaoPage() {
+  const [isFilterVisible, setFilterVisible] = useState(false);
   const [isModalDesativarOpen, setModalDesativarOpen] = useState(false);
   const [isModalAtivarOpen, setModalAtivarOpen] = useState(false);
   const [motivo, setMotivo] = useState('');
-  const {
-    manutencoes,
-    equipamentos,
-  }: { manutencoes: Manutencao[]; equipamentos: Equipamento[] } =
-    useLoaderData();
+  const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>(
+    {}
+  );
+  const { manutencoes, equipamentos } = useLoaderData<typeof loader>();
+  const { selectedRow } = useSelectRow() as UseSelectedRow;
   const navigate = useNavigate();
-  const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
+  const location = useLocation();
+
   const [searchParams] = useSearchParams();
   const param = searchParams.get('param');
-  const filter = searchParams.get('filter');
 
   useEffect(() => {
-    setSelectedRow('');
-  }, [param, filter, setSelectedRow]);
+    const newSearchParams = new URLSearchParams(searchParams);
+    const timeout = setTimeout(() => {
+      let newFilters = '';
+      Object.entries(activeFilters).forEach(([key, value]) => {
+        if (key === 'created') {
+          // check if length of value is 10
+          if (value.length === 10 && checkDateValid(value)) {
+            const [day, month, year] = value.split('/');
+            const date = `${year}-${month}-${day}`;
+            if (Date.parse(date)) {
+              newFilters += `(${key}>'${date}')`;
+            }
+          }
+        } else {
+          newFilters += `(${key}~'${value}')`;
+        }
+      });
+      const splitFilters = newFilters.split(')(');
+      const joinedFilters = splitFilters.join(')&&(');
+      newSearchParams.set('filter', joinedFilters);
+      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+    }, 2000);
+    return () => clearTimeout(timeout);
+  }, [activeFilters]);
+
+  // useEffect(() => {
+  //   setSelectedRow('');
+  // }, [param, filter, setSelectedRow]);
 
   const handleCloseModalDesativar = () => {
     navigate('/manutencao');
@@ -140,39 +175,17 @@ export default function ManutencaoPage() {
     setMotivo(value);
   };
 
-  const formattedManutencoes: Manutencao[] = manutencoes
-    ?.filter((manutencao) => (param ? manutencao?.equipamento === param : true))
-    ?.map((manutencao) => {
-      const isHorimetro =
-        equipamentos.find((equip) => equip.codigo === manutencao.equipamentoX)
-          ?.instrumento_medicao === 'Horímetro';
-      const suffix = isHorimetro ? ' h' : ' km';
-      return {
-        ...manutencao,
-        IM_atual: `${formatNumberWithDotDelimiter(
-          Number(manutencao.IM_atual)
-        )} ${suffix}`,
-      };
-    });
+  const handleToggleFilters = () => {
+    setFilterVisible(!isFilterVisible);
+  };
 
   const equipamento = equipamentos?.find(
     (equip: Equipamento) => equip.id === param
   );
 
-  const selectedManutencao = manutencoes?.find(
+  const selectedManutencao = manutencoes?.items?.find(
     (manutencao: Manutencao) => manutencao.id === selectedRow
   );
-
-  const tableHeaders = [
-    { key: 'created', label: 'Data de criação' },
-    { key: 'boletim', label: 'Boletim' },
-    { key: 'equipamentoX', label: 'Cód. Equip.' },
-    { key: 'modelo_equipamento', label: 'Modelo Equip.' },
-    { key: 'IM_atual', label: 'Horím./Odôm.' },
-    { key: 'tipo_manutencao', label: 'Tipo' },
-    { key: 'feito_porX', label: 'Feito por' },
-    { key: 'encarregadoX', label: 'Encarregado' },
-  ];
 
   return (
     <>
@@ -215,17 +228,55 @@ export default function ManutencaoPage() {
               />
             </>
           ) : (
-            <LinkButton to="./new" variant="blue" icon={<Add />}>
-              Adicionar
-            </LinkButton>
+            <>
+              <ExportOptions
+                tableHeaders={[
+                  { key: 'created', label: 'Data de criação' },
+                  { key: 'boletim', label: 'Boletim' },
+                  { key: 'equipamentoX', label: 'Cód. Equip.' },
+                  { key: 'modelo_equipamento', label: 'Modelo Equip.' },
+                  { key: 'IM_atual', label: 'Horím./Odôm.' },
+                  { key: 'tipo_manutencao', label: 'Tipo' },
+                  { key: 'feito_porX', label: 'Feito por' },
+                  { key: 'encarregadoX', label: 'Encarregado' },
+                ]}
+                data={manutencoes.items}
+                filename="obra"
+              />
+              <Button
+                variant={isFilterVisible ? 'blue' : 'outlined'}
+                name="filters"
+                icon={
+                  <FilterIcon
+                    className={`${
+                      isFilterVisible ? 'text-white' : 'text-blue'
+                    } h-4 w-4`}
+                  />
+                }
+                onClick={handleToggleFilters}
+              >
+                Filtros
+              </Button>
+              <LinkButton to="./new" variant="blue" icon={<Add />}>
+                Adicionar
+              </LinkButton>
+            </>
           )}
         </div>
       </div>
-      <DataTable
+      <ManutencaoTable
         id="table-manutencao"
-        columns={tableHeaders}
-        rows={formattedManutencoes}
-        path="/manutencao"
+        rows={manutencoes.items}
+        pagination={{
+          page: manutencoes.page,
+          perPage: manutencoes.perPage,
+          totalItems: manutencoes.totalItems,
+          totalPages: manutencoes.totalPages,
+        }}
+        isFilterVisible={isFilterVisible}
+        setFilterVisible={setFilterVisible}
+        setActiveFilters={setActiveFilters}
+        activeFilters={activeFilters}
       />
       <Outlet />
 
