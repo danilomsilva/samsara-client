@@ -242,7 +242,7 @@ export default function EquipamentoTipo() {
         </div>
       </div>
       <EquipamentoTipoTable
-        id="table-equipamento-tipo"
+        id="table-equipamento_tipo"
         rows={equipamentoTipos.items}
         pagination={{
           page: equipamentoTipos.page,

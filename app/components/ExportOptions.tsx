@@ -2,6 +2,7 @@ import { Menu } from '@headlessui/react';
 import ChevronDownIcon from './icons/ChrevronDownIcon';
 import { CSVLink } from 'react-csv';
 import { exportPDF, getCurrentDate } from '~/utils/utils';
+import { type Operacao } from '~/models/operacao.server';
 
 type ColumnType = {
   key: string;
@@ -13,17 +14,25 @@ type PropTypes = {
   tableHeaders: ColumnType[];
   data: any[];
   filename: string;
-  includes?: string[];
-  includesData?: any; //TODO: improve on this!!
 };
 
 export default function ExportOptions({
   tableHeaders,
   data,
   filename,
-  includes,
-  includesData,
 }: PropTypes) {
+  if (filename === 'equipamento_tipo') {
+    const formattedData = data.map((item) => {
+      const operacoesCodigo = item.array_operacoes.map(
+        (operacao: Operacao) => operacao.codigo
+      );
+      return {
+        ...item,
+        array_operacoes: operacoesCodigo.join(', '),
+      };
+    });
+    data = formattedData;
+  }
   return (
     <Menu as="div" className="relative  text-sm">
       <Menu.Button className="flex px-4 rounded-lg justify-center h-10 items-center bg-white font-semibold uppercase text-xs gap-2 text-blue hover:bg-grey/10">
@@ -45,20 +54,6 @@ export default function ExportOptions({
             CSV Simples
           </CSVLink>
         </Menu.Item>
-        {includes?.includes('relatorio_completo') && includesData && (
-          <Menu.Item
-            className="h-10 flex justify-center items-center hover:bg-blue-light hover:text-white font-semibold text-xs cursor-pointer gap-2"
-            as="div"
-          >
-            <CSVLink
-              data={includesData}
-              filename={`${filename}_completo_${getCurrentDate()}`}
-              className="w-full px-3 h-8 flex items-center justify-center"
-            >
-              CSV Compl.
-            </CSVLink>
-          </Menu.Item>
-        )}
         <Menu.Item
           className="h-10 flex justify-center items-center hover:bg-blue-light hover:text-white px-3 font-semibold text-xs cursor-pointer gap-2"
           as="div"
