@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent } from 'react';
 import InfoIcon from './icons/InfoIcon';
+import XIcon from './icons/XIcon';
 
 type PropTypes = {
   column: string;
@@ -51,7 +52,18 @@ export default function Filters({
             : 'Mostrará resultados que contenham este texto'
         }
       >
-        <InfoIcon className="w-4 h-4 text-grey/50" />
+        {filterValue.length > 0 ? (
+          <div
+            onClick={() => setFilterValue('')}
+            className="bg-grey-light rounded-full mt-px cursor-pointer"
+          >
+            <XIcon className="w-3.5 h-3.5 text-grey/50" />
+          </div>
+        ) : (
+          <div onClick={() => setFilterValue('')} className="">
+            <InfoIcon className="w-4 h-4 text-grey/50" />
+          </div>
+        )}
       </div>
     </div>
   );
