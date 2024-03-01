@@ -104,7 +104,6 @@ export async function getManutencoes(
         motivo: item?.motivo,
       };
     });
-    //TODO: revisit if all the numbers are stored as number without any formatting (prefix, suffix, dot, etc.)
     return { ...data, items: transformedData };
   } catch (error) {
     throw new Error('An error occured while getting manutencoes');

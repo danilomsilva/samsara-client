@@ -170,7 +170,7 @@ export async function getEquipamentos(
     });
     const data = await response.json();
 
-    const transformedData = data.items.map((item: Equipamento) => {
+    const transformedData = data?.items?.map((item: Equipamento) => {
       const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
       const suffix = isHorimetro ? ' h' : ' Km';
 
