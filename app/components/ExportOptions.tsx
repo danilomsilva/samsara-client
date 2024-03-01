@@ -3,6 +3,7 @@ import ChevronDownIcon from './icons/ChrevronDownIcon';
 import { CSVLink } from 'react-csv';
 import { exportPDF, getCurrentDate } from '~/utils/utils';
 import { type Operacao } from '~/models/operacao.server';
+import { type OS } from '~/models/ordem-servico.server';
 
 type ColumnType = {
   key: string;
@@ -33,6 +34,18 @@ export default function ExportOptions({
     });
     data = formattedData;
   }
+
+  if (filename === 'operacao') {
+    const formattedData = data.map((item) => {
+      const OSsCodigo = item.array_ordens_servico.map((os: OS) => os.codigo);
+      return {
+        ...item,
+        array_ordens_servico: OSsCodigo.join(', '),
+      };
+    });
+    data = formattedData;
+  }
+
   return (
     <Menu as="div" className="relative  text-sm">
       <Menu.Button className="flex px-4 rounded-lg justify-center h-10 items-center bg-white font-semibold uppercase text-xs gap-2 text-blue hover:bg-grey/10">
