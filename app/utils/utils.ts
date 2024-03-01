@@ -78,7 +78,7 @@ export const checkDateValid = (date: string) => {
   }
 
   const startDate = new Date(2000, 0, 1); // January 1, 2000
-  const endDate = new Date(2030, 11, 31); // December 31, 2030
+  const endDate = new Date(2050, 12, 31); // December 31, 2030
 
   return isWithinInterval(parsedDate, { start: startDate, end: endDate });
 };
