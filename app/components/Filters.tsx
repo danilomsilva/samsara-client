@@ -26,6 +26,13 @@ export default function Filters({
     setActiveFilters(updatedFilters);
   };
 
+  const handleClearFilter = () => {
+    setFilterValue('');
+    const updatedFilters = { ...activeFilters };
+    delete updatedFilters[column];
+    setActiveFilters(updatedFilters);
+  };
+
   return (
     <div className="my-2 ml-1 relative min-w-[110px]">
       <input
@@ -61,15 +68,13 @@ export default function Filters({
       >
         {filterValue.length > 0 ? (
           <div
-            onClick={() => setFilterValue('')}
+            onClick={handleClearFilter}
             className="bg-grey-light rounded-full mt-px cursor-pointer"
           >
             <XIcon className="w-3.5 h-3.5 text-grey/50" />
           </div>
         ) : (
-          <div onClick={() => setFilterValue('')} className="">
-            <InfoIcon className="w-4 h-4 text-grey/50" />
-          </div>
+          <InfoIcon className="w-4 h-4 text-grey/50" />
         )}
       </div>
     </div>
