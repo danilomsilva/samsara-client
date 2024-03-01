@@ -172,6 +172,9 @@ export default function EquipamentoTipo() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/equipamento_tipo');
+    }
   };
 
   const selectedTipo = equipamentoTipos.items.find(

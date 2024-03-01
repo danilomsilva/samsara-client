@@ -50,8 +50,8 @@ export default function Button({
         } flex items-center font-semibold uppercase text-xs gap-2`}
       >
         {text}
-        {icon}
         {children}
+        {icon}
       </div>
     </button>
   );

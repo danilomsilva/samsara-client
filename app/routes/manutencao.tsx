@@ -177,6 +177,9 @@ export default function ManutencaoPage() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/manutencao');
+    }
   };
 
   const equipamento = equipamentos?.find(

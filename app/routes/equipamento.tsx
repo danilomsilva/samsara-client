@@ -163,6 +163,9 @@ export default function EquipamentoPage() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/equipamento');
+    }
   };
 
   const selectedEquipamento = equipamentos.items.find(

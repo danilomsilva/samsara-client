@@ -148,6 +148,9 @@ export default function OperacaoPage() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/operacao');
+    }
   };
 
   const selectedOperacao = operacoes.items.find((op) => op?.id === selectedRow);

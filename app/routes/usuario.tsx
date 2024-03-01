@@ -163,6 +163,9 @@ export default function UsuarioPage() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/usuario');
+    }
   };
 
   const selectedUsuario = usuarios.items.find(

@@ -163,6 +163,9 @@ export default function ObrasPage() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/obra');
+    }
   };
 
   const selectedObra = obras.items.find((obra) => obra?.id === selectedRow);
@@ -220,7 +223,7 @@ export default function ObrasPage() {
                 icon={
                   <FilterIcon
                     className={`${
-                      isFilterVisible ? 'text-white' : 'text-blue'
+                      isFilterVisible ? 'text-white' : 'text-orange'
                     } h-4 w-4`}
                   />
                 }

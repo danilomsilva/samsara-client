@@ -232,6 +232,9 @@ export default function BoletinsPage() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/boletim');
+    }
   };
 
   const selectedBoletim = boletins.items.find(

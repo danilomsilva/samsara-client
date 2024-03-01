@@ -162,6 +162,9 @@ export default function OperadorPage() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/operador');
+    }
   };
 
   const selectedOperador = operadores.items.find(

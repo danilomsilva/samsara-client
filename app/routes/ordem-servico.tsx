@@ -24,7 +24,7 @@ import FilterIcon from '~/components/icons/FilterIcon';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import { type OS, deleteOS, getOSs } from '~/models/ordem-servico.server';
+import { deleteOS, getOSs } from '~/models/ordem-servico.server';
 import {
   commitSession,
   getSession,
@@ -150,6 +150,9 @@ export default function OSPage() {
 
   const handleToggleFilters = () => {
     setFilterVisible(!isFilterVisible);
+    if (isFilterVisible) {
+      navigate('/ordem-servico');
+    }
   };
 
   const selectedOS = OSs.items.find((os) => os?.id === selectedRow);
