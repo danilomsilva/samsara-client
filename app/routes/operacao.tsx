@@ -137,7 +137,7 @@ export default function OperacaoPage() {
       const joinedFilters = splitFilters.join(')&&(');
       newSearchParams.set('filter', joinedFilters);
       navigate(`${location.pathname}?${newSearchParams.toString()}`);
-    }, 2000);
+    }, 1000);
     return () => clearTimeout(timeout);
   }, [activeFilters]);
 
