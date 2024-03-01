@@ -145,6 +145,8 @@ export default function ManutencaoPage() {
               newFilters += `(${key}>'${date}')`;
             }
           }
+        } else if (key === 'IM_atual') {
+          newFilters += `(${key}>='${value}')`;
         } else {
           newFilters += `(${key}~'${value}')`;
         }

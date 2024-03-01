@@ -61,7 +61,8 @@ export default function Filters({
             : column === 'instrumento_medicao_inicio' ||
               column === 'instrumento_medicao_atual' ||
               column === 'proxima_revisao' ||
-              column === 'revisao_status'
+              column === 'revisao_status' ||
+              column === 'IM_atual'
             ? 'Maior ou Igual a'
             : 'Contém'
         }
