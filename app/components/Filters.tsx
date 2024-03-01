@@ -45,11 +45,18 @@ export default function Filters({
       <div
         className="absolute top-[6px] right-2 cursor-default"
         title={
-          column === 'created' ||
-          column === 'data_inicio' ||
-          column === 'data_final_previsto'
-            ? 'Mostrará resultados a partir desta data'
-            : 'Mostrará resultados que contenham este texto'
+          filterValue.length > 0
+            ? ''
+            : column === 'created' ||
+              column === 'data_inicio' ||
+              column === 'data_final_previsto'
+            ? 'A partir de'
+            : column === 'instrumento_medicao_inicio' ||
+              column === 'instrumento_medicao_atual' ||
+              column === 'proxima_revisao' ||
+              column === 'revisao_status'
+            ? 'Maior ou Igual a'
+            : 'Contém'
         }
       >
         {filterValue.length > 0 ? (

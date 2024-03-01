@@ -135,6 +135,13 @@ export default function EquipamentoPage() {
               newFilters += `(${key}>'${date}')`;
             }
           }
+        } else if (
+          key === 'instrumento_medicao_inicio' ||
+          key === 'instrumento_medicao_atual' ||
+          key === 'proxima_revisao' ||
+          key === 'revisao_status'
+        ) {
+          newFilters += `(${key}>='${value}')`;
         } else {
           newFilters += `(${key}~'${value}')`;
         }
