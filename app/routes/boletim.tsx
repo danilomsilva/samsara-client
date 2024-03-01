@@ -191,11 +191,7 @@ export default function BoletinsPage() {
     const timeout = setTimeout(() => {
       let newFilters = '';
       Object.entries(activeFilters).forEach(([key, value]) => {
-        if (
-          key === 'created' ||
-          key === 'data_inicio' ||
-          key === 'data_final_previsto'
-        ) {
+        if (key === 'created' || key === 'data_boletim') {
           // check if length of value is 10
           if (value.length === 10 && checkDateValid(value)) {
             const [day, month, year] = value.split('/');
@@ -315,7 +311,6 @@ export default function BoletinsPage() {
           )}
         </div>
       </div>
-      {/* TODO: not sorting ASC by boletim - test all the filters */}
       <BoletimTable
         id="table-boletim"
         rows={boletins.items}

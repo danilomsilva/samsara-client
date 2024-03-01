@@ -56,7 +56,8 @@ export default function Filters({
             ? ''
             : column === 'created' ||
               column === 'data_inicio' ||
-              column === 'data_final_previsto'
+              column === 'data_final_previsto' ||
+              column === 'data_boletim'
             ? 'A partir de'
             : column === 'instrumento_medicao_inicio' ||
               column === 'instrumento_medicao_atual' ||
