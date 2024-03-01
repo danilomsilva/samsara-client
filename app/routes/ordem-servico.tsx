@@ -187,7 +187,7 @@ export default function OSPage() {
                   { key: 'descricao', label: 'Descrição' },
                 ]}
                 data={OSs.items}
-                filename="ordem-servico"
+                filename="ordem_servico"
               />
               <Button
                 variant={isFilterVisible ? 'blue' : 'outlined'}
@@ -211,7 +211,7 @@ export default function OSPage() {
         </div>
       </div>
       <OSTable
-        id="table-obra"
+        id="table-ordem_servico"
         rows={OSs.items}
         pagination={{
           page: OSs.page,
