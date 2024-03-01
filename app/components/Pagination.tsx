@@ -4,6 +4,8 @@ import DoubleLeftArrowIcon from './icons/DoubleLeftArrowIcon';
 import DoubleRightArrowIcon from './icons/DoubleRightArrowIcon';
 import { useLocation, useNavigate, useSearchParams } from '@remix-run/react';
 import ListboxMenu from './ListboxMenu';
+import { useEffect } from 'react';
+import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 
 export type PropTypes = {
   pagination: PaginationType;
@@ -14,6 +16,11 @@ export default function Pagination({ pagination }: PropTypes) {
   const location = useLocation();
   const navigate = useNavigate();
   const { page, perPage, totalItems, totalPages } = pagination;
+  const { setSelectedRow } = useSelectRow() as UseSelectedRow;
+
+  useEffect(() => {
+    setSelectedRow('');
+  }, [page, perPage]);
 
   const renderPaginationButtons = () => {
     // 1,2,3,4,5 (max 5)
