@@ -200,6 +200,15 @@ export default function BoletinsPage() {
               newFilters += `(${key}>'${date}')`;
             }
           }
+        } else if (key === 'manutencao') {
+          // for boolean filters, no need to add single quotes to the value
+          newFilters += `(${key}=${
+            value === 'Sim' || value === 'sim'
+              ? 'true'
+              : value === 'Não' || value === 'não' || value === 'nao'
+              ? 'false'
+              : ''
+          })`;
         } else {
           newFilters += `(${key}~'${value}')`;
         }
