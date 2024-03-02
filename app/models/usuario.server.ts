@@ -45,7 +45,13 @@ export async function getUsuarios(
   let url = `${process.env.BASE_API_URL}/collections/usuario/records`;
 
   const queryParams = new URLSearchParams();
-  if (sortingBy) queryParams.set('sort', sortingBy);
+  if (sortingBy === '+codigo') {
+    queryParams.set('sort', '+created');
+  } else if (sortingBy === '-codigo') {
+    queryParams.set('sort', '-created');
+  } else {
+    queryParams.set('sort', sortingBy ?? '');
+  }
   //Auto expand record relations. Ex.: ?expand=relField1,relField2.subRelField - From Pocketbase Docs
   queryParams.set('expand', 'obra');
   queryParams.set('page', page ?? '1');
