@@ -59,8 +59,8 @@ export type Boletim = {
   operadorX?: string;
   obra?: string;
   obraX?: string;
-  IM_inicioX?: string;
-  IM_finalX?: string;
+  IM_inicioX?: number;
+  IM_finalX?: number;
   lastRowIMFinal?: string;
   total_abastecimento?: string;
   descricao_manutencao?: string;
@@ -285,11 +285,11 @@ export async function _updateBoletim(
     } as Equipamento);
 
     const manutencoes = await getManutencoes(userToken, 'created', '');
-    const findManutencao = manutencoes.find(
+    const findManutencao = manutencoes?.items?.find(
       (item: Manutencao) => item.boletim === boletim.codigo
     );
     if (findManutencao) {
-      await _updateManutencao(userToken, findManutencao.id, {
+      await _updateManutencao(userToken, findManutencao.id as string, {
         tipo_manutencao: 'Simples',
         data_manutencao: body?.data_boletim,
         feito_por: body?.operador,

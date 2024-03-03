@@ -1,9 +1,5 @@
 import type { User } from '~/session.server';
-import {
-  formatCurrency,
-  formatDateTime,
-  formatNumberWithDotDelimiter,
-} from '~/utils/utils';
+import { formatCurrency, formatDateTime } from '~/utils/utils';
 import { type Obra, getObra } from './obra.server';
 import { type Usuario, getUsuario } from './usuario.server';
 import { getEquipamentoTipo } from './equipamento_tipo.server';
@@ -171,9 +167,6 @@ export async function getEquipamentos(
     const data = await response.json();
 
     const transformedData = data?.items?.map((item: Equipamento) => {
-      const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
-      const suffix = isHorimetro ? ' h' : ' Km';
-
       return {
         id: item.id,
         created: item?.created && formatDateTime(item.created),
@@ -194,22 +187,10 @@ export async function getEquipamentos(
         encarregado: item?.encarregado,
         encarregadoX: item.encarregadoX,
         instrumento_medicao: item.instrumento_medicao,
-        instrumento_medicao_inicio: `${
-          item.instrumento_medicao_inicio &&
-          formatNumberWithDotDelimiter(Number(item.instrumento_medicao_inicio))
-        } ${suffix}`,
-        instrumento_medicao_atual: `${
-          item.instrumento_medicao_atual &&
-          formatNumberWithDotDelimiter(Number(item.instrumento_medicao_atual))
-        } ${suffix}`,
-        frequencia_revisao: `${
-          item.frequencia_revisao &&
-          formatNumberWithDotDelimiter(Number(item.frequencia_revisao))
-        } ${suffix}`,
-        proxima_revisao: `${
-          item.proxima_revisao &&
-          formatNumberWithDotDelimiter(Number(item.proxima_revisao))
-        } ${suffix}`,
+        instrumento_medicao_inicio: item.instrumento_medicao_inicio,
+        instrumento_medicao_atual: item.instrumento_medicao_atual,
+        frequencia_revisao: item.frequencia_revisao,
+        proxima_revisao: item.proxima_revisao,
         revisao_status: Number(item.revisao_status).toFixed(2),
         inativo: item?.inativo,
         motivo: item?.motivo,
