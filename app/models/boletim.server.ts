@@ -209,7 +209,7 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
     } as Equipamento);
     if (body?.manutencao) {
       await _createManutencao(userToken, {
-        boletim: `BOL-${body?.newCode}`,
+        boletim: body?.newCode,
         tipo_manutencao: 'Simples',
         data_manutencao: body?.data_boletim,
         feito_por: body?.operador,

@@ -312,7 +312,7 @@ export async function action({ params, request }: ActionArgs) {
   if (formData._action === 'create') {
     const body = {
       ...formData,
-      codigo: `BOL-${formData?.newCode}`,
+      codigo: formData?.newCode,
       data_boletim: convertDateToISO(formData?.data_boletim as string),
       equipamento_logs,
       obra: formData.obra,
