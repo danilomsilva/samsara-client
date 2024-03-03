@@ -34,7 +34,7 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import ReadIcon from '~/components/icons/ReadIcon';
-import { checkDateValid } from '~/utils/utils';
+import { checkDateValid, formatNumberWithDotDelimiter } from '~/utils/utils';
 import ExportOptions from '~/components/ExportOptions';
 import FilterIcon from '~/components/icons/FilterIcon';
 import BoletimTable from '~/components/BoletimTable';
@@ -59,23 +59,45 @@ export async function loader({ request }: LoaderArgs) {
       : '-created';
 
   if (userToken) {
-    const allBoletins = await getBoletins(
+    const boletinsResponse = await getBoletins(
       userToken,
       sortingBy,
       filter as string,
       page as string,
-      perPage as string
+      perPage as string,
+      tipoAcesso,
+      userId
     );
 
+    const transformedItems = boletinsResponse?.items?.map((item) => {
+      const isHorimetro = item.instrumento_medicao === 'Horímetro';
+      const suffix = isHorimetro ? ' h' : ' Km';
+      return {
+        ...item,
+        IM_inicioX: `${
+          item.IM_inicioX &&
+          formatNumberWithDotDelimiter(Number(item.IM_inicioX))
+        } ${suffix}`,
+        IM_finalX: `${
+          item.IM_finalX && formatNumberWithDotDelimiter(Number(item.IM_finalX))
+        } ${suffix}`,
+        total_abastecimento: `${item.total_abastecimento} L`,
+      };
+    });
+
+    const transformedBoletins = {
+      ...boletinsResponse,
+      items: transformedItems,
+    };
     const boletins =
       tipoAcesso === 'Encarregado'
         ? {
-            ...allBoletins,
-            items: allBoletins?.items?.filter(
+            ...boletinsResponse,
+            items: transformedBoletins?.items?.filter(
               (item) => item.encarregado === userId
             ),
           }
-        : allBoletins;
+        : transformedBoletins;
 
     const equipamentos = await getEquipamentos(userToken, 'created', '');
     const operacoes = await getOperacoes(userToken, 'created');

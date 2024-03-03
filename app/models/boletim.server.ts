@@ -66,6 +66,12 @@ export type Boletim = {
   descricao_manutencao?: string;
   inativo?: boolean;
   motivo?: string;
+  instrumento_medicao?: string;
+  expand?: {
+    equipamento: {
+      instrumento_medicao: string;
+    };
+  };
 };
 
 export async function getBoletins(
@@ -73,7 +79,9 @@ export async function getBoletins(
   sortingBy: string | null,
   filter?: string,
   page?: string,
-  perPage?: string
+  perPage?: string,
+  tipoAcesso?: string,
+  userId?: string
 ): Promise<BoletimResponse> {
   let url = `${process.env.BASE_API_URL}/collections/boletim/records`;
 
@@ -89,6 +97,11 @@ export async function getBoletins(
   queryParams.set('page', page ?? '1');
   queryParams.set('perPage', perPage ?? '30');
   queryParams.set('filter', filter ?? '');
+  queryParams.set('expand', 'equipamento');
+
+  if (tipoAcesso === 'Encarregado') {
+    queryParams.set('filter', `(encarregado='${userId}')`);
+  }
 
   if (queryParams.toString()) {
     url += `?${queryParams.toString()}`;
@@ -131,6 +144,7 @@ export async function getBoletins(
         limpeza: item?.limpeza,
         inativo: item?.inativo,
         motivo: item?.motivo,
+        instrumento_medicao: item?.expand?.equipamento?.instrumento_medicao,
       };
     });
 

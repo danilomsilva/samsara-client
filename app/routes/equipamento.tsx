@@ -69,7 +69,7 @@ export async function loader({ request }: LoaderArgs) {
       perPage as string
     );
 
-    const transformedResponse = equipamentosResponse.items.map((item) => {
+    const transformedItems = equipamentosResponse.items.map((item) => {
       const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
       const suffix = isHorimetro ? ' h' : ' Km';
 
@@ -97,7 +97,7 @@ export async function loader({ request }: LoaderArgs) {
 
     const equipamentos = {
       ...equipamentosResponse,
-      items: transformedResponse,
+      items: transformedItems,
     };
 
     return json({ equipamentos });
