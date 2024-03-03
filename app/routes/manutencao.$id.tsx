@@ -67,8 +67,8 @@ export async function loader({ params, request }: LoaderArgs) {
     const operadores = await getOperadores(userToken, 'created', '');
     const equipamentos = await getEquipamentos(userToken, 'created', '');
     if (equipCodigo) {
-      const findEquip = equipamentos.find(
-        (item: Equipamento) => item.codigo === equipCodigo
+      const findEquip = equipamentos?.items?.find(
+        (item) => item.codigo === equipCodigo
       );
       return json({
         operadores,
@@ -86,7 +86,7 @@ export async function loader({ params, request }: LoaderArgs) {
     const equipamentos = await getEquipamentos(userToken, 'created', '');
     const manutencao = await getManutencao(userToken, params.id as string);
     const allFiles = await getFiles(userToken, 'manutencao');
-    const files = allFiles?.items?.filter(
+    const files = allFiles?.filter(
       (item: FileTypes) => item.manutencao === params.id
     );
 
@@ -174,7 +174,7 @@ export default function NewOperador() {
     equipamentos,
     equipamento: paramEquipamento,
     files,
-  } = useLoaderData();
+  } = useLoaderData<typeof loader>();
   const actionData = useActionData();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
@@ -209,34 +209,34 @@ export default function NewOperador() {
   useEffect(() => {
     if (selectedEquipamento) {
       setEquipamento(
-        equipamentos.find(
-          (equip: Equipamento) => equip.id === selectedEquipamento.name
-        )
+        equipamentos?.items?.find(
+          (equip) => equip.id === selectedEquipamento.name
+        ) || {}
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEquipamento]);
 
-  const sortedOperadores: Option[] = operadores
-    ?.filter((item: Equipamento) => !item?.inativo)
-    ?.map((item: Operador) => {
+  const sortedOperadores: Option[] = operadores?.items
+    ?.filter((item) => !item?.inativo)
+    ?.map((item) => {
       const { id, nome_completo } = item;
       return {
-        name: id,
-        displayName: nome_completo,
+        name: id || '',
+        displayName: nome_completo || '',
       };
     })
     ?.sort((a: Option, b: Option) =>
       a.displayName.localeCompare(b.displayName)
     );
 
-  const sortedEquipamentos: Option[] = equipamentos
-    ?.filter((item: Equipamento) => !item?.inativo)
-    ?.map((item: Equipamento) => {
+  const sortedEquipamentos: Option[] = equipamentos?.items
+    ?.filter((item) => !item?.inativo)
+    ?.map((item) => {
       const { id, codigo, tipo_equipamentoX, modelo } = item;
       return {
-        name: id,
-        displayName: `${codigo} - ${tipo_equipamentoX} - ${modelo}`,
+        name: id || '',
+        displayName: `${codigo} - ${tipo_equipamentoX} - ${modelo}` || '',
       };
     })
     ?.sort((a: Option, b: Option) =>

@@ -14,7 +14,10 @@ export type FileTypes = {
   updated: string;
 };
 
-export async function getFiles(userToken: User['token'], path: string) {
+export async function getFiles(
+  userToken: User['token'],
+  path: string
+): Promise<FileTypes[]> {
   let url = `${process.env.BASE_API_URL}/collections/${path}_files/records`;
 
   const queryParams = new URLSearchParams();
@@ -30,7 +33,8 @@ export async function getFiles(userToken: User['token'], path: string) {
         Authorization: `Bearer ${userToken}`,
       },
     });
-    return await response.json();
+    const data = await response.json();
+    return data.items;
   } catch (error) {
     throw new Error('An error occured while getting manutencao files');
   }

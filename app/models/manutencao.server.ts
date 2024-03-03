@@ -119,7 +119,7 @@ export async function getManutencoes(
 export async function getManutencao(
   userToken: User['token'],
   manutencaoId: string
-) {
+): Promise<Manutencao> {
   try {
     const response = await fetch(
       `${process.env.BASE_API_URL}/collections/manutencao/records/${manutencaoId}?expand=equipamento,encarregado`, //expand on usuario tipo encarregado
