@@ -194,7 +194,7 @@ export default function OperacaoPage() {
                 icon={
                   <FilterIcon
                     className={`${
-                      isFilterVisible ? 'text-white' : 'text-blue'
+                      isFilterVisible ? 'text-white' : 'text-orange'
                     } h-4 w-4`}
                   />
                 }

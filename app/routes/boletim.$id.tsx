@@ -21,7 +21,7 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { getEquipamentos, type Equipamento } from '~/models/equipamento.server';
-import { type Usuario, getUsuario } from '~/models/usuario.server';
+import { getUsuario } from '~/models/usuario.server';
 import { CAMPO_OBRIGATORIO, type Option } from '~/utils/consts';
 import {
   commitSession,
@@ -32,7 +32,6 @@ import {
 import {
   convertDateToISO,
   convertISOToDate,
-  genCodigo,
   getCurrentDate,
   isTimeGreater,
   removeIMSuffix,
@@ -40,7 +39,7 @@ import {
 import { useEffect, useState } from 'react';
 import { type Operador, getOperadores } from '~/models/operador.server';
 import { type OS, getOSs } from '~/models/ordem-servico.server';
-import { type Operacao, getOperacoes } from '~/models/operacao.server';
+import { getOperacoes } from '~/models/operacao.server';
 import { z } from 'zod';
 import {
   type Boletim,
@@ -79,7 +78,7 @@ export async function loader({ params, request }: LoaderArgs) {
   const OSs = await getOSs(userToken, 'created', '', '', '500');
   const operacoes = await getOperacoes(userToken, 'created', '', '', '500');
   const boletins = await getBoletins(userToken, 'created', '');
-  const newCode = genCodigo(boletins, 'BOL-');
+  const newCode = `BOL-${boletins.totalItems + 1}`;
 
   const filteredEquipamentos =
     loggedInUser.tipo_acesso === 'Encarregado'

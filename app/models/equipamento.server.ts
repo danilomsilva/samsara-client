@@ -255,7 +255,7 @@ export async function _createEquipamento(
       tipo_equipamentoX: tipoEquipamento.tipo_nome,
     };
 
-    await updateEquipamento(userToken, equipamento.id, editBody);
+    await updateEquipamento(userToken, equipamento.id, editBody as any);
     return equipamento;
   }
 }
@@ -322,7 +322,7 @@ export async function _updateEquipamento(
       tipo_equipamentoX: tipoEquipamento.tipo_nome,
     };
 
-    await updateEquipamento(userToken, equipamento.id, editBody);
+    await updateEquipamento(userToken, equipamento.id, editBody as any);
   } else {
     const editBody = {
       obraX: nome,
@@ -333,7 +333,7 @@ export async function _updateEquipamento(
       revisao_status: diffToRevisao.toFixed(2),
     };
 
-    await updateEquipamento(userToken, equipamento.id, editBody);
+    await updateEquipamento(userToken, equipamento.id, editBody as any);
   }
 
   return equipamento;

@@ -35,7 +35,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type Option, TIPOS_ACESSO, CAMPO_OBRIGATORIO } from '~/utils/consts';
-import { capitalizeWords, genCodigo } from '~/utils/utils';
+import { capitalizeWords } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -43,7 +43,7 @@ export async function loader({ params, request }: LoaderArgs) {
   const obras = await getObras(userToken, 'created');
   if (params.id === 'new') {
     const usuarios = await getUsuarios(userToken, 'created');
-    const newCode = genCodigo(usuarios, 'U-');
+    const newCode = `U-${usuarios.totalItems + 1}`;
     return json({ obras, newCode });
   } else {
     const usuario = await getUsuario(userToken, params.id as string);

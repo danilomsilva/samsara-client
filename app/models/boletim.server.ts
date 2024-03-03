@@ -186,14 +186,21 @@ export async function _createBoletim(userToken: User['token'], body: Boletim) {
       encarregadoX: encarregado,
       operadorX: operador,
       equipamentoX: equipamento.codigo,
-      IM_inicioX: body.equipamento_logs?.find((log) => log.index === 0)
-        ?.IM_inicio,
-      IM_finalX:
-        body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
-      total_abastecimento: `${total_abastecimento} L`,
+      IM_inicioX: Number(
+        body.equipamento_logs
+          ?.find((log) => log.index === 0)
+          ?.IM_inicio?.replaceAll('.', '')
+          ?.replaceAll(',', '.')
+      ),
+      IM_finalX: Number(
+        body?.equipamento_logs?.[
+          body.equipamento_logs.length - 1
+        ]?.IM_final?.replaceAll('.', '')?.replaceAll(',', '.')
+      ),
+      total_abastecimento: total_abastecimento,
     };
 
-    await updateBoletim(userToken, boletim.id, editBody);
+    await updateBoletim(userToken, boletim.id, editBody as any);
     await updateEquipamento(userToken, boletim.equipamento, {
       instrumento_medicao_atual: removeIMSuffix(body?.lastRowIMFinal as string),
       revisao_status:
@@ -267,15 +274,22 @@ export async function _updateBoletim(
       encarregadoX: encarregado,
       operadorX: operador,
       equipamentoX: equipamento.codigo,
-      IM_inicioX: body.equipamento_logs?.find((log) => log.index === 0)
-        ?.IM_inicio,
-      IM_finalX:
-        body?.equipamento_logs?.[body.equipamento_logs.length - 1]?.IM_final,
-      total_abastecimento: `${total_abastecimento} L`,
+      IM_inicioX: Number(
+        body.equipamento_logs
+          ?.find((log) => log.index === 0)
+          ?.IM_inicio?.replaceAll('.', '')
+          ?.replaceAll(',', '.')
+      ),
+      IM_finalX: Number(
+        body?.equipamento_logs?.[
+          body.equipamento_logs.length - 1
+        ]?.IM_final?.replaceAll('.', '')?.replaceAll(',', '.')
+      ),
+      total_abastecimento: total_abastecimento,
       manutencao: body.manutencao,
     };
 
-    await updateBoletim(userToken, boletim.id, editBody);
+    await updateBoletim(userToken, boletim.id, editBody as any);
 
     await updateEquipamento(userToken, boletim.equipamento, {
       instrumento_medicao_atual: removeIMSuffix(body?.lastRowIMFinal as string),

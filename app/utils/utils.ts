@@ -135,15 +135,6 @@ export const removeIMSuffix = (string: string) => {
     .replaceAll(',', '.');
 };
 
-export const genCodigo = (array: any, prefixToOmit: string) => {
-  if (!array.length) return 1;
-  const cleanArray = array.map((item: any) =>
-    Number(item.codigo.replace(prefixToOmit, ''))
-  );
-  const findMaxValue = Math.max(...cleanArray);
-  return findMaxValue + 1;
-};
-
 export function isTimeGreater(time_1: string, time_2: string): boolean {
   const parsedTime_1 = parse(time_1, 'HH:mm', new Date());
   const parsedTime_2 = parse(time_2, 'HH:mm', new Date());

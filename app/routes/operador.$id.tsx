@@ -39,7 +39,7 @@ import {
   OPERADOR_ATIVIDADES,
   CAMPO_OBRIGATORIO,
 } from '~/utils/consts';
-import { capitalizeWords, genCodigo } from '~/utils/utils';
+import { capitalizeWords } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -57,7 +57,7 @@ export async function loader({ params, request }: LoaderArgs) {
 
   if (params.id === 'new') {
     const operadores = await getOperadores(userToken, 'created', '');
-    const newCode = genCodigo(operadores, 'OP-');
+    const newCode = `OP-${operadores.totalItems + 1}`;
     return json({ obras, encarregados, newCode });
   } else {
     const operador = await getOperador(userToken, params.id as string);
