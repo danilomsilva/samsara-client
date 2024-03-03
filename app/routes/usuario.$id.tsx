@@ -40,7 +40,7 @@ import { capitalizeWords, genCodigo } from '~/utils/utils';
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
-  const obras: Obra[] = await getObras(userToken, 'created');
+  const obras = await getObras(userToken, 'created');
   if (params.id === 'new') {
     const usuarios = await getUsuarios(userToken, 'created');
     const newCode = genCodigo(usuarios, 'U-');
@@ -135,7 +135,7 @@ export default function NewUsuario() {
     actionData?.error?.email?.message ===
     'The email is invalid or already in use.';
 
-  const sortedObras: Option[] = obras
+  const sortedObras: Option[] = obras?.items
     ?.filter((item: Obra) => !item?.inativo)
     ?.map((item: Obra) => {
       const { id, nome } = item;

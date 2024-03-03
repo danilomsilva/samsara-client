@@ -284,7 +284,7 @@ export async function createEquipamento(
   body: Equipamento
 ) {
   const equipamentos = await getEquipamentos(userToken, 'created', '');
-  const existingCodigo = equipamentos.some(
+  const existingCodigo = equipamentos.items.some(
     (equip: Equipamento) => equip.codigo === body.codigo
   );
   if (existingCodigo) {
