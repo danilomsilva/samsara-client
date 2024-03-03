@@ -32,7 +32,7 @@ import { CAMPO_OBRIGATORIO } from '~/utils/consts';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
-  const OSs = await getOSs(userToken, 'created');
+  const OSs = await getOSs(userToken, 'created', '', '', '500');
 
   if (params.id === 'new') {
     return json({ OSs });
@@ -100,7 +100,7 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewOS() {
-  const { operacao, OSs } = useLoaderData();
+  const { operacao, OSs } = useLoaderData<typeof loader>();
   const [OSarray, setOSArray] = useState([]);
   const actionData = useActionData();
   const navigation = useNavigation();
@@ -146,7 +146,7 @@ export default function NewOS() {
             <InputTag
               name="ordens_servico"
               label="Ordens de Serviço"
-              data={OSs}
+              data={OSs.items}
               defaultValue={operacao?.array_ordens_servico}
               onChange={handleChangeOSs}
               placeholder="Digite apenas o código da OS e clique + para adicionar"

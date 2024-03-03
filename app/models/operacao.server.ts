@@ -106,7 +106,7 @@ export async function _createOperacao(
 
 export async function createOperacao(userToken: User['token'], body: Operacao) {
   const operacoes = await getOperacoes(userToken, 'created');
-  const existingCodigo = operacoes.some(
+  const existingCodigo = operacoes?.items?.some(
     (op: Operacao) => op.codigo === body.codigo
   );
   if (existingCodigo) {
