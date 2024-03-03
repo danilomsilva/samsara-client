@@ -148,7 +148,7 @@ export default function EquipamentoPage() {
       });
       const splitFilters = newFilters.split(')(');
       const joinedFilters = splitFilters.join(')&&(');
-      newSearchParams.set('filter', joinedFilters);
+      if (joinedFilters) newSearchParams.set('filter', joinedFilters);
       navigate(`${location.pathname}?${newSearchParams.toString()}`);
     }, 1000);
     return () => clearTimeout(timeout);
