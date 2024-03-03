@@ -79,7 +79,9 @@ export async function getOS(userToken: User['token'], osId: string) {
 
 export async function createOS(userToken: User['token'], body: OS) {
   const OSs = await getOSs(userToken, 'created');
-  const existingCodigo = OSs.some((os: OS) => os.codigo === body.codigo);
+  const existingCodigo = OSs?.items?.some(
+    (os: OS) => os.codigo === body.codigo
+  );
   if (existingCodigo) {
     return { data: 'Codigo existente' };
   } else {
