@@ -35,7 +35,7 @@ import {
   getEquipamentoTipos,
 } from '~/models/equipamento_tipo.server';
 import { type Obra, getObras } from '~/models/obra.server';
-import { type Usuario, getUsuarios } from '~/models/usuario.server';
+import { getUsuarios } from '~/models/usuario.server';
 import {
   commitSession,
   getSession,
@@ -52,33 +52,23 @@ import {
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
-  const tiposEquipamento: TipoEquipamento[] = await getEquipamentoTipos(
-    userToken,
-    'created'
-  );
-  const gruposEquipamento: GrupoEquipamento[] = await getGruposEquipamento(
-    userToken,
-    'created'
-  );
+  const tiposEquipamento = await getEquipamentoTipos(userToken, 'created');
+  const gruposEquipamento = await getGruposEquipamento(userToken, 'created');
 
-  const obras: Obra[] = await getObras(userToken, 'created', '');
-  const usuarios: Usuario[] = await getUsuarios(userToken, 'created', '');
-  const encarregados = usuarios
+  const obras = await getObras(userToken, 'created', '');
+  const usuarios = await getUsuarios(userToken, 'created', '');
+  const encarregados: Option[] = usuarios.items
     .filter(
       (usuario) => usuario.tipo_acesso === 'Encarregado' && !usuario?.inativo
     )
     .map((usuario) => ({
-      name: usuario?.id,
-      displayName: usuario?.nome_completo,
+      name: usuario?.id || '',
+      displayName: usuario?.nome_completo || '',
     }));
   if (params.id === 'new') {
     return json({ obras, encarregados, gruposEquipamento, tiposEquipamento });
   } else {
-    const equipamento: Equipamento = await getEquipamento(
-      userToken,
-      params.id as string
-    );
-
+    const equipamento = await getEquipamento(userToken, params.id as string);
     return json({
       obras,
       encarregados,
@@ -261,12 +251,12 @@ export async function action({ params, request }: ActionArgs) {
 
 export default function NewEquipamento() {
   const {
-    gruposEquipamento,
-    tiposEquipamento,
-    equipamento,
     obras,
     encarregados,
-  } = useLoaderData();
+    equipamento,
+    gruposEquipamento,
+    tiposEquipamento,
+  } = useLoaderData<typeof loader>();
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -323,25 +313,24 @@ export default function NewEquipamento() {
     }
   }, [codigoPrefix, equipNumero]);
 
-  const sortedObras: Option[] = obras
-    ?.filter((item: Obra) => !item?.inativo)
-    ?.map((item: Obra) => {
-      const { id, nome } = item;
-      return {
-        name: id,
-        displayName: nome,
-      };
-    })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
+  const sortedObras: Option[] = (
+    obras?.items
+      ?.filter((item: Obra) => !item?.inativo)
+      ?.map((item: Obra) => {
+        const { id, nome } = item;
+        return {
+          name: id || '',
+          displayName: nome || '',
+        };
+      }) || []
+  ).sort((a: Option, b: Option) => a.displayName.localeCompare(b.displayName));
 
-  const filteredTiposEquipamento = equipamento
-    ? tiposEquipamento?.filter(
+  const filteredTiposEquipamento = (equipamento as Equipamento)
+    ? tiposEquipamento?.items?.filter(
         (item: EquipamentoTipo) =>
           item.grupo_nome === equipamento.grupo_equipamento
       )
-    : tiposEquipamento?.filter(
+    : tiposEquipamento?.items?.filter(
         (item: EquipamentoTipo) =>
           item?.grupo_nomeX === selectedGrupo?.displayName
       );
@@ -350,8 +339,8 @@ export default function NewEquipamento() {
     ?.map((item: TipoEquipamento) => {
       const { id, tipo_nome } = item;
       return {
-        name: id,
-        displayName: tipo_nome,
+        name: id || '',
+        displayName: tipo_nome || '',
       };
     })
     ?.sort((a: Option, b: Option) =>
@@ -362,8 +351,8 @@ export default function NewEquipamento() {
     ?.map((item: GrupoEquipamento) => {
       const { id, grupo_nome } = item;
       return {
-        name: id,
-        displayName: grupo_nome,
+        name: id || '',
+        displayName: grupo_nome || '',
       };
     })
     ?.sort((a: Option, b: Option) =>

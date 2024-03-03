@@ -74,7 +74,7 @@ export type Equipamento = {
 export async function getGruposEquipamento(
   userToken: User['token'],
   sortingBy: string | null
-) {
+): Promise<GrupoEquipamento[]> {
   let url = `${process.env.BASE_API_URL}/collections/equipamento_grupo/records`;
 
   const queryParams = new URLSearchParams();
@@ -224,7 +224,7 @@ export async function getEquipamentos(
 export async function getEquipamento(
   userToken: User['token'],
   equipamentoId: string
-) {
+): Promise<Equipamento> {
   try {
     const response = await fetch(
       `${process.env.BASE_API_URL}/collections/equipamento/records/${equipamentoId}?expand=obra`,
