@@ -34,7 +34,7 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
-import { checkDateValid } from '~/utils/utils';
+import { checkDateValid, formatNumberWithDotDelimiter } from '~/utils/utils';
 import ReadIcon from '~/components/icons/ReadIcon';
 import FilterIcon from '~/components/icons/FilterIcon';
 import ExportOptions from '~/components/ExportOptions';
@@ -61,13 +61,44 @@ export async function loader({ request }: LoaderArgs) {
 
   //encarregado do not have access to table usuarios
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const equipamentos = await getEquipamentos(
+    const equipamentosResponse = await getEquipamentos(
       userToken,
       sortingBy,
       filter as string,
       page as string,
       perPage as string
     );
+
+    const transformedResponse = equipamentosResponse.items.map((item) => {
+      const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
+      const suffix = isHorimetro ? ' h' : ' Km';
+
+      return {
+        ...item,
+        combustivel: item.combustivel?.replaceAll('_', ' '),
+        instrumento_medicao_inicio: `${
+          item.instrumento_medicao_inicio &&
+          formatNumberWithDotDelimiter(Number(item.instrumento_medicao_inicio))
+        } ${suffix}`,
+        instrumento_medicao_atual: `${
+          item.instrumento_medicao_atual &&
+          formatNumberWithDotDelimiter(Number(item.instrumento_medicao_atual))
+        } ${suffix}`,
+        frequencia_revisao: `${
+          item.frequencia_revisao &&
+          formatNumberWithDotDelimiter(Number(item.frequencia_revisao))
+        } ${suffix}`,
+        proxima_revisao: `${
+          item.proxima_revisao &&
+          formatNumberWithDotDelimiter(Number(item.proxima_revisao))
+        } ${suffix}`,
+      };
+    });
+
+    const equipamentos = {
+      ...equipamentosResponse,
+      items: transformedResponse,
+    };
 
     return json({ equipamentos });
   } else {
