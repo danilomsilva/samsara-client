@@ -75,7 +75,7 @@ export async function getEquipamentoTipos(
 export async function getEquipamentoTipo(
   userToken: User['token'],
   equipTipoId: string
-) {
+): Promise<EquipamentoTipo> {
   try {
     const response = await fetch(
       `${process.env.BASE_API_URL}/collections/equipamento_tipo/records/${equipTipoId}`,

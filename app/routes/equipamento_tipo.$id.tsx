@@ -18,10 +18,10 @@ import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { getGruposEquipamento } from '~/models/equipamento.server';
 import {
-  type EquipamentoTipo,
   _createEquipamentoTipo,
   getEquipamentoTipo,
   _updateEquipamentoTipo,
+  type EquipamentoTipo,
 } from '~/models/equipamento_tipo.server';
 import { getOperacoes } from '~/models/operacao.server';
 
@@ -41,7 +41,7 @@ export async function loader({ params, request }: LoaderArgs) {
   if (params.id === 'new') {
     return json({ equipamentoGrupos, operacoes });
   } else {
-    const equipamentoTipo: EquipamentoTipo[] = await getEquipamentoTipo(
+    const equipamentoTipo = await getEquipamentoTipo(
       userToken,
       params.id as string
     );
@@ -114,7 +114,8 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewEquipamentoTipo() {
-  const { equipamentoTipo, equipamentoGrupos, operacoes } = useLoaderData();
+  const { equipamentoTipo, equipamentoGrupos, operacoes } =
+    useLoaderData<typeof loader>();
   const [operacoesArray, setOperacoesArray] = useState([]);
   const actionData = useActionData();
   const navigation = useNavigation();
@@ -122,12 +123,12 @@ export default function NewEquipamentoTipo() {
     navigation.state === 'submitting' || navigation.state === 'loading';
 
   const sortedGrupos: Option[] = equipamentoGrupos
-    ?.filter((item: any) => !item?.inativo) //TODO: improve on TS
-    ?.map((item: any) => {
+    ?.filter((item: EquipamentoTipo) => !item?.inativo)
+    ?.map((item: EquipamentoTipo) => {
       const { id, grupo_nome } = item;
       return {
-        name: id,
-        displayName: grupo_nome,
+        name: id || '',
+        displayName: grupo_nome || '',
       };
     })
     ?.sort((a: Option, b: Option) =>
@@ -172,7 +173,7 @@ export default function NewEquipamentoTipo() {
             <InputTag
               name="operacoes"
               label="Operações"
-              data={operacoes}
+              data={operacoes?.items}
               defaultValue={equipamentoTipo?.array_operacoes}
               onChange={handleChangeOperacoes}
               placeholder="Digite apenas o código da operação e clique + para adicionar"
