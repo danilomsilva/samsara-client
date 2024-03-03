@@ -8,6 +8,8 @@ import Button from './Button';
 import XIcon from './icons/XIcon';
 import { Link } from '@remix-run/react';
 import CogIcon from './icons/CogIcon';
+import TooltipDisabled from './TooltipDisabled';
+import InfoIcon from './icons/InfoIcon';
 
 type PropTypes = {
   pagination: PaginationType;
@@ -79,7 +81,7 @@ export default function BoletimTable({
             {rows.map((row: any, rowIndex: number) => (
               <tr
                 key={rowIndex}
-                className={`${
+                className={`${row.inativo && 'text-grey/30'} ${
                   selectedRow === row.id && 'bg-blue/20 text-blue'
                 } h-10 border-b border-grey/10`}
                 onClick={() => setSelectedRow(row.id)}
@@ -107,6 +109,23 @@ export default function BoletimTable({
                     )}
                   </td>
                 ))}
+                {row.inativo && row.motivo.length > 0 && (
+                  <td className="px-2 whitespace-nowrap">
+                    <div className="flex items-center justify-center h-10">
+                      <TooltipDisabled
+                        contentClassName="z-50 -ml-60 w-72"
+                        content={
+                          <>
+                            <p>Motivo da desativação:</p>
+                            <p>{row.motivo}</p>
+                          </>
+                        }
+                      >
+                        <InfoIcon className="h-6 w-6 text-orange" />
+                      </TooltipDisabled>
+                    </div>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
