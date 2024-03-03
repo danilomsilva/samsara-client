@@ -212,12 +212,14 @@ export async function _updateManutencao(
   await updateManutencao(userToken, manutencao.id, editBody);
   if (body.boletim) {
     const boletins = await getBoletins(userToken, 'created', '');
-    const findBoletim = boletins?.find(
-      (item: Boletim) => item.codigo === body.boletim
+    const findBoletim = boletins?.items?.find(
+      (item) => item.codigo === body.boletim
     )?.id;
-    await updateBoletim(userToken, findBoletim, {
-      descricao_manutencao: body?.descricao,
-    });
+    if (findBoletim) {
+      await updateBoletim(userToken, findBoletim, {
+        descricao_manutencao: body?.descricao,
+      });
+    }
   }
   return manutencao;
 }

@@ -62,10 +62,11 @@ export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
   const { searchParams } = new URL(request.url);
   const equipCodigo = searchParams.get('equip');
+  // perPage to be set when need to get all items
+  const operadores = await getOperadores(userToken, 'created', '', '', '500');
+  const equipamentos = await getEquipamentos(userToken, 'created', '');
 
   if (params.id === 'new') {
-    const operadores = await getOperadores(userToken, 'created', '');
-    const equipamentos = await getEquipamentos(userToken, 'created', '');
     if (equipCodigo) {
       const findEquip = equipamentos?.items?.find(
         (item) => item.codigo === equipCodigo
@@ -82,8 +83,6 @@ export async function loader({ params, request }: LoaderArgs) {
     }
     return json({ operadores, equipamentos });
   } else {
-    const operadores = await getOperadores(userToken, 'created', '');
-    const equipamentos = await getEquipamentos(userToken, 'created', '');
     const manutencao = await getManutencao(userToken, params.id as string);
     const allFiles = await getFiles(userToken, 'manutencao');
     const files = allFiles?.filter(
@@ -289,7 +288,10 @@ export default function NewOperador() {
                     label="Tipo de Manutenção:"
                     options={TIPOS_MANUTENCAO}
                     defaultValue={manutencao?.tipo_manutencao}
-                    disabled={manutencao && manutencao?.boletim !== '-'}
+                    disabled={
+                      (manutencao && manutencao?.boletim !== '-') ||
+                      !!isReadMode
+                    }
                   />
                 )}
               </Row>
@@ -305,7 +307,9 @@ export default function NewOperador() {
                       : getCurrentDate()
                   }
                   error={actionData?.errors?.data_manutencao}
-                  disabled={manutencao && manutencao?.boletim !== '-'}
+                  disabled={
+                    (manutencao && manutencao?.boletim !== '-') || !!isReadMode
+                  }
                 />
                 <Select
                   name="feito_por"
@@ -314,7 +318,9 @@ export default function NewOperador() {
                   defaultValue={manutencao?.feito_por}
                   placeholder="-"
                   error={actionData?.errors?.feito_por}
-                  disabled={manutencao && manutencao?.boletim !== '-'}
+                  disabled={
+                    (manutencao && manutencao?.boletim !== '-') || !!isReadMode
+                  }
                 />
               </Row>
               <Row>
@@ -332,7 +338,8 @@ export default function NewOperador() {
                   onChange={setSelectedEquipamento}
                   disabled={
                     (manutencao && manutencao?.boletim !== '-') ||
-                    paramEquipamento
+                    paramEquipamento ||
+                    !!isReadMode
                   }
                 />
                 <Input
@@ -353,7 +360,8 @@ export default function NewOperador() {
                   suffix={selectedIMSuffix}
                   disabled={
                     (manutencao && manutencao?.boletim !== '-') ||
-                    paramEquipamento
+                    paramEquipamento ||
+                    !!isReadMode
                   }
                 />
               </Row>
