@@ -65,79 +65,81 @@ import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken, userId } = await getUserSession(request);
-  const loggedInUser: Usuario = await getUsuario(userToken, userId);
+  const loggedInUser = await getUsuario(userToken, userId);
   const loggedInUserObra: Obra['id'] = loggedInUser?.obra;
-  const equipamentos = await getEquipamentos(userToken, 'created', '');
+  const equipamentos = await getEquipamentos(
+    userToken,
+    'created',
+    '',
+    '',
+    '500'
+  );
   const equipamentoTipos = await getEquipamentoTipos(userToken, 'created');
-  const operadores = await getOperadores(userToken, 'created', '');
-  const OSs = await getOSs(userToken, 'created');
-  const operacoes = await getOperacoes(userToken, 'created');
+  const operadores = await getOperadores(userToken, 'created', '', '', '500');
+  const OSs = await getOSs(userToken, 'created', '', '', '500');
+  const operacoes = await getOperacoes(userToken, 'created', '', '', '500');
   const boletins = await getBoletins(userToken, 'created', '');
   const newCode = genCodigo(boletins, 'BOL-');
 
   const filteredEquipamentos =
     loggedInUser.tipo_acesso === 'Encarregado'
-      ? equipamentos.filter(
+      ? equipamentos?.items?.filter(
           (item: Equipamento) =>
             item.obra === loggedInUserObra &&
             item.encarregado === loggedInUser.id
         )
-      : equipamentos;
+      : equipamentos?.items;
 
   const sortedEquipamentos: Option[] = filteredEquipamentos
-    ?.filter((item: Equipamento) => !item?.inativo)
-    ?.map((item: Equipamento) => {
+    ?.filter((item) => !item?.inativo)
+    ?.map((item) => {
       const { id, codigo, tipo_equipamentoX, modelo } = item;
       return {
-        name: id,
-        displayName: `${codigo} - ${tipo_equipamentoX} - ${modelo}`,
+        name: id || '',
+        displayName: `${codigo} - ${tipo_equipamentoX} - ${modelo}` || '',
       };
     })
-    .sort((a: Option, b: Option) => a.displayName.localeCompare(b.displayName));
+    .sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   const filteredOperadores =
     loggedInUser.tipo_acesso === 'Encarregado'
-      ? operadores.filter(
+      ? operadores?.items?.filter(
           (item: Operador) =>
             item?.encarregado?.id === loggedInUser.id &&
             item?.obra?.id === loggedInUserObra
         )
-      : operadores;
+      : operadores?.items;
 
   const sortedOperadores: Option[] = filteredOperadores
     ?.filter((item: Equipamento) => !item?.inativo)
     ?.map((item: Operador) => {
       const { id, nome_completo } = item;
       return {
-        name: id,
-        displayName: nome_completo,
+        name: id || '',
+        displayName: nome_completo || '',
       };
     })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
+    ?.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-  const sortedOSs: Option[] = OSs?.map((item: OS) => {
-    const { id, codigo } = item;
-    return {
-      name: id,
-      displayName: codigo?.replace('OS-', ''),
-    };
-  })?.sort((a: Option, b: Option) =>
-    a.displayName.localeCompare(b.displayName)
-  );
+  const sortedOSs: Option[] = OSs?.items
+    ?.map((item) => {
+      const { id, codigo } = item;
+      return {
+        name: id || '',
+        displayName: codigo?.replace('OS-', '') || '',
+      };
+    })
+    ?.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
-  const sortedOPs: Option[] = operacoes
+  const sortedOPs: Option[] = operacoes?.items
     ?.map((item: OS) => {
       const { id, codigo } = item;
       return {
-        name: id,
-        displayName: codigo?.replace('OM-', ''),
+        name: id || '',
+        displayName: codigo?.replace('OM-', '') || '',
       };
     })
-    ?.sort((a: Option, b: Option) =>
-      a.displayName.localeCompare(b.displayName)
-    );
+    ?.sort((a, b) => a.displayName.localeCompare(b.displayName));
 
   const commonProperties = {
     equipamentos,
@@ -158,7 +160,7 @@ export async function loader({ params, request }: LoaderArgs) {
     });
   } else if (params.id?.startsWith('BOL-')) {
     const boletins = await getBoletins(userToken, 'created', '');
-    const findBoletim = boletins?.find(
+    const findBoletim = boletins?.items?.find(
       (boletim: Boletim) => boletim.codigo === params.id
     )?.id;
     return redirect(`/boletim/${findBoletim}?read=true`);
@@ -206,7 +208,7 @@ export async function loader({ params, request }: LoaderArgs) {
     }
 
     const allFiles = await getFiles(userToken, 'boletim');
-    const files = allFiles?.items?.filter(
+    const files = allFiles?.filter(
       (item: FileTypes) => item.boletim === params.id
     );
 
@@ -380,7 +382,7 @@ export default function NewBoletim() {
     newCode,
     boletimToExport,
     files,
-  } = useLoaderData();
+  } = useLoaderData<typeof loader>();
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -393,10 +395,10 @@ export default function NewBoletim() {
   const [equipLogs, setEquipLogs] = useState<any>([]);
   const [currentLog, setCurrentLog] = useState<any>({});
   const [isFormValid, setIsFormValid] = useState<boolean>(false);
-  const [arrayOperacoes, setArrayOperacoes] = useState([]);
-  const [OS, setOS] = useState({});
-  const [arrayOSs, setArrayOSs] = useState([]);
-  const [OP, setOP] = useState({});
+  const [arrayOperacoes, setArrayOperacoes] = useState<any>([]);
+  const [OS, setOS] = useState<any>({});
+  const [arrayOSs, setArrayOSs] = useState<any>([]);
+  const [OP, setOP] = useState<any>({});
   const [showSpinner, setShowSpinner] = useState(true);
   const uploadFileFetcher = useFetcher();
   const isUploadingFile =
@@ -406,7 +408,7 @@ export default function NewBoletim() {
   useEffect(() => {
     if (boletim) {
       setRows(boletim.equipamento_logs.length);
-      const findEquip = equipamentos.find(
+      const findEquip = equipamentos?.items?.find(
         (item: Equipamento) => item.id === boletim.equipamento
       );
       setEquipamento(findEquip);
@@ -428,17 +430,20 @@ export default function NewBoletim() {
       setEquipLogs(newEquipLogsMap);
 
       //set operacoes
-      const findEquipTipo = equipamentoTipos?.find(
+      const findEquipTipo = equipamentoTipos?.items?.find(
         (item) => item?.id === findEquip?.tipo_equipamento
       );
-      setArrayOperacoes(
-        findEquipTipo?.array_operacoes?.map((item) => {
-          return {
-            name: item?.id,
-            displayName: item?.codigo?.split('-')[1]?.trim()?.toString(),
-          };
-        })
-      );
+
+      if (Array.isArray(findEquipTipo?.array_operacoes)) {
+        setArrayOperacoes(
+          findEquipTipo?.array_operacoes?.map((item: any) => {
+            return {
+              name: item?.id,
+              displayName: item?.codigo?.split('-')[1]?.trim()?.toString(),
+            };
+          })
+        );
+      }
 
       setArrayOSs(sortedOSs);
 
@@ -458,7 +463,7 @@ export default function NewBoletim() {
   }, [equipLogs]);
 
   const handleSelectEquipamento = (option: Option) => {
-    const equip = equipamentos.find(
+    const equip = equipamentos?.items?.find(
       (equip: Equipamento) => equip.id === option.name
     );
 
@@ -468,10 +473,12 @@ export default function NewBoletim() {
       firstLog.IM_inicio = equip?.instrumento_medicao_atual || '';
       return [firstLog, ...prevLogs.slice(1)];
     });
+    const findEquipTipo = equipamentoTipos?.items?.find(
+      (item) => item.id === equip?.tipo_equipamento
+    );
     setArrayOperacoes(
-      equipamentoTipos
-        .filter((item: any) => item.id === equip.tipo_equipamento)[0]
-        ?.array_operacoes?.map((item) => {
+      Array.isArray(findEquipTipo?.array_operacoes) &&
+        findEquipTipo?.array_operacoes?.map((item) => {
           return {
             name: item.id,
             displayName: item.codigo.split('-')[1].trim().toString(),
@@ -480,27 +487,22 @@ export default function NewBoletim() {
     );
   };
 
-  const handleChange = (
-    name: string,
-    value: Option | string,
-    index: number
-  ) => {
+  const handleChange = (name: string, value: Option, index: number) => {
     if (name === 'OP') {
-      const findOP = operacoes.find(
-        (item: Operacao) => item?.id === value?.name
-      );
+      const findOP = operacoes?.items?.find((item) => item.id === value?.name);
       setArrayOSs(
-        findOP?.array_ordens_servico?.map((item) => {
-          return {
-            name: item.id,
-            displayName: item?.codigo?.split('-')[1]?.trim()?.toString(),
-          };
-        })
+        Array.isArray(findOP?.array_ordens_servico) &&
+          findOP?.array_ordens_servico?.map((item) => {
+            return {
+              name: item.id,
+              displayName: item?.codigo?.split('-')[1]?.trim()?.toString(),
+            };
+          })
       );
       setOP(findOP);
     }
     if (name === 'OS') {
-      const findOS = OSs.find((item: OS) => item?.id === value?.name);
+      const findOS = OSs?.items?.find((item: OS) => item?.id === value?.name);
       setOS(findOS);
     }
     const logToUpdate =
@@ -894,6 +896,7 @@ export default function NewBoletim() {
                   defaultValue={boletim?.descricao_manutencao}
                   error={actionData?.errors?.descricao_manutencao}
                   disabled={!!isReadMode}
+                  //TODO: allow scroll but not edit
                 />
               </Row>
               {files && (

@@ -28,7 +28,8 @@ export default function Textarea({
       <textarea
         name={name}
         className={`${
-          disabled && 'border border-grey/50 bg-grey/10 pointer-events-none'
+          disabled &&
+          'border border-grey/50 bg-grey/10 pointer-events-none scrollbar-thin scrollbar-thumb-grey/30 rounded scrollbar-thumb-rounded'
         } rounded-lg px-4 py-2 focus:outline-blue h-28`}
         defaultValue={defaultValue}
         onChange={(e) => onChange && onChange(e.target.value)}

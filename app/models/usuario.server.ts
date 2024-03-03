@@ -87,7 +87,10 @@ export async function getUsuarios(
   }
 }
 
-export async function getUsuario(userToken: User['token'], userId: string) {
+export async function getUsuario(
+  userToken: User['token'],
+  userId: string
+): Promise<Usuario> {
   try {
     const response = await fetch(
       `${process.env.BASE_API_URL}/collections/usuario/records/${userId}?expand=obra`,
