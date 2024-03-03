@@ -209,7 +209,11 @@ export default function BoletinsPage() {
               ? 'false'
               : ''
           })`;
-        } else if (key === 'IM_inicioX' || key === 'IM_finalX') {
+        } else if (
+          key === 'IM_inicioX' ||
+          key === 'IM_finalX' ||
+          key === 'total_abastecimento'
+        ) {
           newFilters += `(${key}>='${value}')`;
         } else {
           newFilters += `(${key}~'${value}')`;

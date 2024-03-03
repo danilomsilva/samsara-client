@@ -37,6 +37,13 @@ export default function ListboxMenu({
         >
           100
         </Menu.Item>
+        <Menu.Item
+          className="hover:bg-blue/50 font-semibold text-xs cursor-pointer gap-2 hover:text-white p-2"
+          as="div"
+          onClick={() => handleChangePerPage('500')}
+        >
+          500
+        </Menu.Item>
       </Menu.Items>
     </Menu>
   );
