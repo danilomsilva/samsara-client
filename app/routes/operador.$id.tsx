@@ -19,7 +19,7 @@ import Select from '~/components/Select';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
-import { type Obra, getObras } from '~/models/obra.server';
+import { getObras } from '~/models/obra.server';
 import {
   type Operador,
   getOperador,
@@ -27,7 +27,7 @@ import {
   _createOperador,
   _updateOperador,
 } from '~/models/operador.server';
-import { type Usuario, getUsuarios } from '~/models/usuario.server';
+import { getUsuarios } from '~/models/usuario.server';
 import {
   commitSession,
   getSession,
@@ -44,10 +44,10 @@ import { capitalizeWords, genCodigo } from '~/utils/utils';
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
 
-  const obras: Obra[] = await getObras(userToken, 'created', '');
-  const usuarios: Usuario[] = await getUsuarios(userToken, 'created', '');
-  const encarregados = usuarios
-    .filter(
+  const obras = await getObras(userToken, 'created', '');
+  const usuarios = await getUsuarios(userToken, 'created', '');
+  const encarregados = usuarios?.items
+    ?.filter(
       (usuario) => usuario.tipo_acesso === 'Encarregado' && !usuario?.inativo
     )
     .map((usuario) => ({
@@ -133,7 +133,8 @@ export async function action({ params, request }: ActionArgs) {
 }
 
 export default function NewOperador() {
-  const { operador, obras, newCode, encarregados } = useLoaderData();
+  const { operador, obras, newCode, encarregados } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -141,13 +142,13 @@ export default function NewOperador() {
   const [searchParams] = useSearchParams();
   const isReadMode = searchParams.get('read');
 
-  const sortedObras: Option[] = obras
-    ?.filter((item: Obra) => !item?.inativo)
-    ?.map((item: Obra) => {
+  const sortedObras: Option[] = obras?.items
+    ?.filter((item) => !item?.inativo)
+    ?.map((item) => {
       const { id, nome } = item;
       return {
-        name: id,
-        displayName: nome,
+        name: id || '',
+        displayName: nome || '',
       };
     })
     ?.sort((a: Option, b: Option) =>

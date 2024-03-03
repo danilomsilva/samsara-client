@@ -87,7 +87,10 @@ export async function getOperadores(
   }
 }
 
-export async function getOperador(userToken: User['token'], userId: string) {
+export async function getOperador(
+  userToken: User['token'],
+  userId: string
+): Promise<Operador> {
   try {
     const response = await fetch(
       `${process.env.BASE_API_URL}/collections/operador/records/${userId}?expand=obra`, //expand on usuario tipo encarregado
