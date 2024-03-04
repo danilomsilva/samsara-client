@@ -64,11 +64,7 @@ export default function App() {
         <Links />
       </head>
       <body className="text-grey">
-        <main className="flex items-center justify-center h-screen flex-col">
-          <p className="font-semibold">Banco de dados em manutenção!</p>
-          <p>Previsão de retorno 05/03/2024</p>
-        </main>
-        {/* {isNotOnLoginRoute ? (
+        {isNotOnLoginRoute ? (
           <SideMenu user={nomeCompleto} tipoAcesso={tipoAcesso}>
             <Outlet />
             {toastMessage && (
@@ -82,7 +78,7 @@ export default function App() {
           </SideMenu>
         ) : (
           <Outlet />
-        )} */}
+        )}
         <ScrollRestoration />
         <Scripts />
         <LiveReload />
