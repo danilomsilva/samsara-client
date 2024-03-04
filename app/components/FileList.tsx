@@ -18,33 +18,6 @@ export default function FileList({
     removeFileFetcher.state === 'submitting' ||
     removeFileFetcher.state === 'loading';
 
-  const handleDownloadFile = async (file: FileTypes) => {
-    const { collectionId, id, file: fileName } = file;
-
-    try {
-      const response = await fetch(
-        `http://159.223.244.247/api/files/${collectionId}/${id}/${fileName}`
-      );
-
-      if (response.ok) {
-        // Trigger file download on the client side
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName[0];
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-      } else {
-        console.error('File download failed');
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const handleRemoveFile = (file: FileTypes) => {
     setRemovingFile(file.id);
     removeFileFetcher.submit(
@@ -68,12 +41,14 @@ export default function FileList({
             <div key={item?.id} className="flex gap-2 items-center over">
               <DocumentIcon className="h-4 w-4" />
               <div className="truncate overflow-hidden flex">
-                <div
-                  className="hover:text-blue cursor-pointer max-w-[165px] truncate"
-                  onClick={() => handleDownloadFile(item)}
+                <a
+                  href={`http://159.223.244.247/api/files/${item.collectionId}/${item.id}/${item.file}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  download={true}
                 >
                   {splitName[0]}
-                </div>
+                </a>
                 <div>{`.${splitName[1]}`}</div>
               </div>
               {isRemovingFile && removingFile === item.id ? (
