@@ -9,6 +9,7 @@ import XIcon from './icons/XIcon';
 import Tooltip from './Tooltip';
 import TooltipDisabled from './TooltipDisabled';
 import InfoIcon from './icons/InfoIcon';
+import { useNavigate } from '@remix-run/react';
 
 type PropTypes = {
   pagination: PaginationType;
@@ -37,6 +38,7 @@ export default function OperacaoTable({
   setActiveFilters,
 }: PropTypes) {
   const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
+  const navigate = useNavigate();
 
   useEffect(() => {
     setSelectedRow('');
@@ -137,6 +139,7 @@ export default function OperacaoTable({
               variant="blue"
               text="Limpar filtros"
               onClick={() => {
+                navigate('/operacao');
                 setActiveFilters({});
                 setFilterVisible(false);
               }}

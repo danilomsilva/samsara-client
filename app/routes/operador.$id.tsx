@@ -167,7 +167,7 @@ export default function NewOperador() {
               name="codigo"
               label="Código"
               className="!w-[100px]"
-              defaultValue={operador ? operador?.codigo : `OP-${newCode}`}
+              defaultValue={operador ? operador?.codigo : newCode}
               error={actionData?.errors?.codigo}
               disabled
             />

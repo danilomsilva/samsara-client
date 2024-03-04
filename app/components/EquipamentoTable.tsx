@@ -8,7 +8,7 @@ import Button from './Button';
 import XIcon from './icons/XIcon';
 import Tooltip from './Tooltip';
 import InfoIcon from './icons/InfoIcon';
-import { Link } from '@remix-run/react';
+import { Link, useNavigate } from '@remix-run/react';
 import TooltipDisabled from './TooltipDisabled';
 
 type PropTypes = {
@@ -44,6 +44,7 @@ export default function EquipamentoTable({
   setActiveFilters,
 }: PropTypes) {
   const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
+  const navigate = useNavigate();
 
   useEffect(() => {
     setSelectedRow('');
@@ -161,6 +162,7 @@ export default function EquipamentoTable({
               variant="blue"
               text="Limpar filtros"
               onClick={() => {
+                navigate('/equipamento');
                 setActiveFilters({});
                 setFilterVisible(false);
               }}

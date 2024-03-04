@@ -8,6 +8,7 @@ import Button from './Button';
 import XIcon from './icons/XIcon';
 import TooltipDisabled from './TooltipDisabled';
 import InfoIcon from './icons/InfoIcon';
+import { useNavigate } from '@remix-run/react';
 
 type PropTypes = {
   pagination: PaginationType;
@@ -35,6 +36,7 @@ export default function OSTable({
   setActiveFilters,
 }: PropTypes) {
   const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
+  const navigate = useNavigate();
 
   useEffect(() => {
     setSelectedRow('');
@@ -110,6 +112,7 @@ export default function OSTable({
               variant="blue"
               text="Limpar filtros"
               onClick={() => {
+                navigate('/ordem-servico');
                 setActiveFilters({});
                 setFilterVisible(false);
               }}

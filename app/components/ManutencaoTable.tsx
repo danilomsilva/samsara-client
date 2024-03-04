@@ -6,7 +6,7 @@ import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import { useEffect } from 'react';
 import Button from './Button';
 import XIcon from './icons/XIcon';
-import { Link } from '@remix-run/react';
+import { Link, useNavigate } from '@remix-run/react';
 import CogIcon from './icons/CogIcon';
 import TooltipDisabled from './TooltipDisabled';
 import InfoIcon from './icons/InfoIcon';
@@ -42,6 +42,7 @@ export default function ManutencaoTable({
   setActiveFilters,
 }: PropTypes) {
   const { selectedRow, setSelectedRow } = useSelectRow() as UseSelectedRow;
+  const navigate = useNavigate();
 
   useEffect(() => {
     setSelectedRow('');
@@ -135,6 +136,7 @@ export default function ManutencaoTable({
               variant="blue"
               text="Limpar filtros"
               onClick={() => {
+                navigate('/manutencao');
                 setActiveFilters({});
                 setFilterVisible(false);
               }}

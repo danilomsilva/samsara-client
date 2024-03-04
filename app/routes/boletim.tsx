@@ -243,7 +243,7 @@ export default function BoletinsPage() {
       });
       const splitFilters = newFilters.split(')(');
       const joinedFilters = splitFilters.join(')&&(');
-      if (joinedFilters) newSearchParams.set('filter', joinedFilters);
+      newSearchParams.set('filter', joinedFilters);
       navigate(`${location.pathname}?${newSearchParams.toString()}`);
     }, 1000);
     return () => clearTimeout(timeout);
