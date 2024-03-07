@@ -54,7 +54,10 @@ export const links: LinksFunction = () => [
 export default function App() {
   const { nomeCompleto, tipoAcesso, toastMessage } = useLoaderData();
   const location = useLocation();
-  const isNotOnLoginRoute = location.pathname !== '/login';
+  const showSideMenu =
+    location.pathname !== '/login' &&
+    location.pathname !== '/forgot-password' &&
+    location.pathname !== '/confirm-password-reset';
   return (
     <html lang="en">
       <head>
@@ -64,7 +67,7 @@ export default function App() {
         <Links />
       </head>
       <body className="text-grey">
-        {isNotOnLoginRoute ? (
+        {showSideMenu ? (
           <SideMenu user={nomeCompleto} tipoAcesso={tipoAcesso}>
             <Outlet />
             {toastMessage && (
@@ -77,7 +80,17 @@ export default function App() {
             )}
           </SideMenu>
         ) : (
-          <Outlet />
+          <>
+            {toastMessage && (
+              <ToastMessage
+                title={toastMessage?.title}
+                message={toastMessage?.message}
+                variant={toastMessage?.variant}
+                timestamp={toastMessage?.timestamp}
+              />
+            )}
+            <Outlet />
+          </>
         )}
         <ScrollRestoration />
         <Scripts />

@@ -5,16 +5,20 @@ import {
   type V2_MetaFunction,
   redirect,
 } from '@remix-run/node';
-import { createUserSession, getUserSession } from '~/session.server';
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 import Input from '~/components/Input';
 import Button from '~/components/Button';
 import { Form, Link, useActionData, useNavigation } from '@remix-run/react';
 import ArrowRightIcon from '~/components/icons/ArrowRightIcon';
-import Tooltip from '~/components/Tooltip';
 import ErrorMessage from '~/components/ErrorMessage';
 import { z } from 'zod';
-import { verifyCredentials } from '~/models/auth.server';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
+import { confirmPasswordRequest } from '~/models/auth.server';
 
 // page title
 export const meta: V2_MetaFunction = () => {
@@ -30,43 +34,77 @@ export async function loader({ request }: LoaderArgs) {
 
 // will verify credentials and if valid, create user session and redirect to dashboard
 export async function action({ request }: ActionArgs) {
+  const session = await getSession(request);
+  const queryParams = new URL(request.url).searchParams;
+  const token = queryParams.get('token');
   const formData = Object.fromEntries(await request.formData());
-
+  console.log(token, formData);
   const validationScheme = z.object({
-    email: z
-      .string()
-      .min(1, { message: 'Campo obrigatório' })
-      .email('Digite um email válido'),
     password: z.string().min(1, { message: 'Campo obrigatório' }),
+    passwordConfirm: z.string().min(1, { message: 'Campo obrigatório' }),
   });
 
   const validatedScheme = validationScheme.safeParse(formData);
 
   if (!validatedScheme.success) {
     const errors = validatedScheme.error.format();
+    console.log('getting here...', errors);
     return {
       errors: {
-        email: errors.email?._errors[0],
         password: errors.password?._errors[0],
+        passwordConfirm: errors.passwordConfirm?._errors[0],
       },
     };
   }
 
-  const user = await verifyCredentials(
-    formData.email as string,
-    formData.password as string
+  const confirmStatus = await confirmPasswordRequest(
+    token as string,
+    formData.password as string,
+    formData.passwordConfirm as string
   );
-
-  if (user.token) {
-    return createUserSession(request, user, '/dashboard');
-  } else {
-    return {
-      invalidLoginError: 'Usuário ou senha inválido',
-    };
+  if (confirmStatus === 200 || confirmStatus === 204) {
+    setToastMessage(
+      session,
+      'Sucesso',
+      `Senha atualizada com sucesso!`,
+      'success'
+    );
+    return redirect('/login', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
+  if (confirmStatus === 400) {
+    setToastMessage(
+      session,
+      'Aviso!',
+      'Senha informada não são identicas e/ou muito curtas/fracas',
+      'info'
+    );
+    return redirect('.', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+  if (confirmStatus === 500) {
+    setToastMessage(
+      session,
+      'Erro',
+      'Ocorreu um erro ao trocar sua senha. Tente novamente ou contate o administrador.',
+      'error'
+    );
+    return redirect('.', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+  return json({});
 }
 
-export default function Login() {
+export default function ConfirmPasswordReset() {
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -78,15 +116,15 @@ export default function Login() {
         <img src="/assets/logo.png" alt="logo" width={60} height={60} />
         <Form method="post" className="flex flex-col gap-2 w-[250px]">
           <Input
-            type="text"
-            name="email"
-            label="Email"
-            error={actionData?.errors?.email}
+            type="password"
+            name="password"
+            label="Nova senha"
+            error={actionData?.errors?.password}
           />
           <Input
             type="password"
-            name="password"
-            label="Senha"
+            name="passwordConfirm"
+            label="Repita a nova senha"
             error={actionData?.errors?.password}
           />
           {actionData?.invalidLoginError && (
@@ -94,8 +132,8 @@ export default function Login() {
           )}
           <div className="mt-4 flex flex-col gap-4 items-center w-full">
             <Button
-              name="avancar"
-              value="create"
+              name="submit"
+              value="submit"
               text="Avançar"
               icon={
                 isSubmitting ? (
@@ -106,8 +144,8 @@ export default function Login() {
               }
               variant="blue"
             />
-            <Link to="/forgot-password" className="text-sm text-grey">
-              Esqueci minha senha
+            <Link to="/login" className="text-sm text-grey">
+              Fazer login
             </Link>
           </div>
         </Form>

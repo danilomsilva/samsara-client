@@ -5,15 +5,23 @@ import {
   type V2_MetaFunction,
   redirect,
 } from '@remix-run/node';
-import { createUserSession, getUserSession } from '~/session.server';
+import {
+  commitSession,
+  createUserSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 import Input from '~/components/Input';
 import Button from '~/components/Button';
 import { Form, Link, useActionData, useNavigation } from '@remix-run/react';
 import ArrowRightIcon from '~/components/icons/ArrowRightIcon';
-import Tooltip from '~/components/Tooltip';
 import ErrorMessage from '~/components/ErrorMessage';
 import { z } from 'zod';
-import { verifyCredentials } from '~/models/auth.server';
+import {
+  requestPasswordRequest,
+  verifyCredentials,
+} from '~/models/auth.server';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 
 // page title
@@ -30,6 +38,7 @@ export async function loader({ request }: LoaderArgs) {
 
 // will verify credentials and if valid, create user session and redirect to dashboard
 export async function action({ request }: ActionArgs) {
+  const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
   const validationScheme = z.object({
@@ -37,7 +46,6 @@ export async function action({ request }: ActionArgs) {
       .string()
       .min(1, { message: 'Campo obrigatório' })
       .email('Digite um email válido'),
-    password: z.string().min(1, { message: 'Campo obrigatório' }),
   });
 
   const validatedScheme = validationScheme.safeParse(formData);
@@ -47,26 +55,54 @@ export async function action({ request }: ActionArgs) {
     return {
       errors: {
         email: errors.email?._errors[0],
-        password: errors.password?._errors[0],
       },
     };
   }
 
-  const user = await verifyCredentials(
-    formData.email as string,
-    formData.password as string
-  );
-
-  if (user.token) {
-    return createUserSession(request, user, '/dashboard');
-  } else {
-    return {
-      invalidLoginError: 'Usuário ou senha inválido',
-    };
+  const requestStatus = await requestPasswordRequest(formData.email as string);
+  if (requestStatus === 200 || requestStatus === 204) {
+    setToastMessage(
+      session,
+      'Sucesso',
+      `Um email com instruções para troca de senha foi enviado para ${formData.email}`,
+      'success'
+    );
+    return redirect('/login', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
   }
+  if (requestStatus === 400) {
+    setToastMessage(
+      session,
+      'Aviso!',
+      'Um email para troca de senha já foi enviado. Tente novamente em alguns minutos.',
+      'info'
+    );
+    return redirect('/login', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+  if (requestStatus === 500) {
+    setToastMessage(
+      session,
+      'Erro',
+      'Ocorreu um erro an enviar o email. Tente novamente em alguns minutos ou contate seu administrador.',
+      'error'
+    );
+    return redirect('/login', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+  return json({});
 }
 
-export default function Login() {
+export default function ForgotPassword() {
   const actionData = useActionData();
   const navigation = useNavigation();
   const isSubmitting =
@@ -83,19 +119,13 @@ export default function Login() {
             label="Email"
             error={actionData?.errors?.email}
           />
-          <Input
-            type="password"
-            name="password"
-            label="Senha"
-            error={actionData?.errors?.password}
-          />
           {actionData?.invalidLoginError && (
             <ErrorMessage error={actionData?.invalidLoginError} />
           )}
           <div className="mt-4 flex flex-col gap-4 items-center w-full">
             <Button
-              name="avancar"
-              value="create"
+              name="submit"
+              value="submit"
               text="Avançar"
               icon={
                 isSubmitting ? (
@@ -106,8 +136,8 @@ export default function Login() {
               }
               variant="blue"
             />
-            <Link to="/forgot-password" className="text-sm text-grey">
-              Esqueci minha senha
+            <Link to="/login" className="text-sm text-grey cursor-default">
+              Fazer login
             </Link>
           </div>
         </Form>
