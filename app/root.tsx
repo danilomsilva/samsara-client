@@ -57,7 +57,8 @@ export default function App() {
   const showSideMenu =
     location.pathname !== '/login' &&
     location.pathname !== '/forgot-password' &&
-    location.pathname !== '/confirm-password-reset';
+    location.pathname !== '/confirm-password-reset' &&
+    location.pathname !== '/confirm-verification';
   return (
     <html lang="en">
       <head>

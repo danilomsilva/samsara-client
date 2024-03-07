@@ -66,7 +66,7 @@ export async function getUsuarios(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -80,6 +80,7 @@ export async function getUsuarios(
       obraX: item.obraX,
       inativo: item?.inativo,
       motivo: item?.motivo,
+      verificado: item?.verified,
     }));
     return { ...data, items: transformedData };
   } catch (error) {
@@ -98,7 +99,7 @@ export async function getUsuario(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -127,7 +128,7 @@ export async function createUsuario(userToken: User['token'], body: Usuario) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -165,7 +166,7 @@ export async function updateUsuario(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -185,7 +186,7 @@ export async function deleteUsuario(userToken: User['token'], userId: string) {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );

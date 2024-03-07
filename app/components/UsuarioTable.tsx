@@ -9,6 +9,8 @@ import XIcon from './icons/XIcon';
 import TooltipDisabled from './TooltipDisabled';
 import InfoIcon from './icons/InfoIcon';
 import { useNavigate } from '@remix-run/react';
+import CheckIcon from './icons/CheckIcon';
+import ExclamationTriangle from './icons/ExclamationTriangle';
 
 type PropTypes = {
   pagination: PaginationType;
@@ -83,7 +85,23 @@ export default function UsuarioTable({
               >
                 {columns.map((col: ColumnType, colIndex: number) => (
                   <td key={colIndex} className="px-2 whitespace-nowrap">
-                    {row[col.key]}
+                    <div className="flex gap-3">
+                      {col.key === 'codigo' ? (
+                        row.verificado ? (
+                          <>
+                            <p>{row[col.key]}</p>
+                            <CheckIcon className="h-4 w-4 text-green" />
+                          </>
+                        ) : (
+                          <>
+                            <p>{row[col.key]}</p>
+                            <ExclamationTriangle className="h-4 w-4 text-orange" />
+                          </>
+                        )
+                      ) : (
+                        row[col.key]
+                      )}
+                    </div>
                   </td>
                 ))}
                 {row.inativo && row.motivo.length > 0 && (

@@ -20,6 +20,7 @@ import Select from '~/components/Select';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
+import { verifyEmail } from '~/models/auth.server';
 import { type Obra, getObras } from '~/models/obra.server';
 import {
   type Usuario,
@@ -93,10 +94,16 @@ export async function action({ params, request }: ActionArgs) {
       emailVisibility: true,
     };
     const user = await _createUsuario(userToken, body);
+    await verifyEmail(formData.email as string);
     if (user.data) {
       return json({ error: user.data });
     }
-    setToastMessage(session, 'Sucesso', 'Usuário adicionado!', 'success');
+    setToastMessage(
+      session,
+      'Sucesso',
+      'Usuário criado! Pendente confirmação de email.',
+      'success'
+    );
     return redirect('/usuario', {
       headers: {
         'Set-Cookie': await commitSession(session),
@@ -160,7 +167,7 @@ export default function NewUsuario() {
               name="codigo"
               label="Código"
               className="w-[100px]"
-              defaultValue={usuario ? usuario?.codigo : `U-${newCode}`}
+              defaultValue={usuario ? usuario?.codigo : newCode}
               error={actionData?.errors?.codigo}
               disabled
             />

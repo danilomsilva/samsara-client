@@ -53,3 +53,31 @@ export async function confirmPasswordRequest(
   );
   return response.status;
 }
+
+export async function verifyEmail(email: string) {
+  const response = await fetch(
+    `${process.env.BASE_API_URL}/collections/usuario/request-verification`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
+    }
+  );
+  return response.status;
+}
+
+export async function confirmVerification(token: string) {
+  const response = await fetch(
+    `${process.env.BASE_API_URL}/collections/usuario/confirm-verification`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ token }),
+    }
+  );
+  return response.status;
+}
