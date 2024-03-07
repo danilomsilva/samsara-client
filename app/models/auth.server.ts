@@ -39,7 +39,7 @@ export async function requestPasswordRequest(email: string) {
 export async function confirmPasswordRequest(
   token: string,
   password: string,
-  confirmPassword: string
+  passwordConfirm: string
 ) {
   const response = await fetch(
     `${process.env.BASE_API_URL}/collections/usuario/confirm-password-reset`,
@@ -48,9 +48,8 @@ export async function confirmPasswordRequest(
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ token, password, confirmPassword }),
+      body: JSON.stringify({ token, password, passwordConfirm }),
     }
   );
-  console.log('>>>>>>>>>>>>>>>', response.status);
   return response.status;
 }

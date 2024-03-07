@@ -38,7 +38,6 @@ export async function action({ request }: ActionArgs) {
   const queryParams = new URL(request.url).searchParams;
   const token = queryParams.get('token');
   const formData = Object.fromEntries(await request.formData());
-  console.log(token, formData);
   const validationScheme = z.object({
     password: z.string().min(1, { message: 'Campo obrigatório' }),
     passwordConfirm: z.string().min(1, { message: 'Campo obrigatório' }),
@@ -48,7 +47,6 @@ export async function action({ request }: ActionArgs) {
 
   if (!validatedScheme.success) {
     const errors = validatedScheme.error.format();
-    console.log('getting here...', errors);
     return {
       errors: {
         password: errors.password?._errors[0],
@@ -62,6 +60,7 @@ export async function action({ request }: ActionArgs) {
     formData.password as string,
     formData.passwordConfirm as string
   );
+
   if (confirmStatus === 200 || confirmStatus === 204) {
     setToastMessage(
       session,
@@ -82,7 +81,7 @@ export async function action({ request }: ActionArgs) {
       'Senha informada não são identicas e/ou muito curtas/fracas',
       'info'
     );
-    return redirect('.', {
+    return redirect('/confirm-password-reset', {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -95,7 +94,7 @@ export async function action({ request }: ActionArgs) {
       'Ocorreu um erro ao trocar sua senha. Tente novamente ou contate o administrador.',
       'error'
     );
-    return redirect('.', {
+    return redirect('/confirm-password-reset', {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
