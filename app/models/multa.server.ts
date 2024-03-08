@@ -11,11 +11,12 @@ export type MultaResponse = {
 export type Multa = {
   id?: string;
   created?: string;
+  data_infracao?: string;
+  codigo_infracao?: string;
+  valor_infracao?: string;
   condutor?: string;
   equipamento?: string;
   modelo_equipamentoX?: string;
-  codigo_infracao?: string;
-  valor?: string;
   pago?: string;
   inativo?: boolean;
   motivo?: string;

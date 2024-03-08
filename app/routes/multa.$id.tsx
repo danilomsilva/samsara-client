@@ -36,6 +36,7 @@ import {
   getManutencao,
   _updateManutencao,
 } from '~/models/manutencao.server';
+import { Multa, createMulta } from '~/models/multa.server';
 import { getOperadores } from '~/models/operador.server';
 import {
   commitSession,
@@ -60,36 +61,18 @@ import {
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
-  const { searchParams } = new URL(request.url);
-  const equipCodigo = searchParams.get('equip');
-  // perPage to be set when need to get all items
-  const operadores = await getOperadores(userToken, 'created', '', '', '500');
-  const equipamentos = await getEquipamentos(userToken, 'created', '');
-
   if (params.id === 'new') {
-    if (equipCodigo) {
-      const findEquip = equipamentos?.items?.find(
-        (item) => item.codigo === equipCodigo
-      );
-      return json({
-        operadores,
-        equipamentos,
-        equipamento: {
-          name: findEquip?.id,
-          displayName: `${findEquip?.codigo} - ${findEquip?.tipo_equipamentoX}`,
-          IM_atual: findEquip?.instrumento_medicao_atual,
-        },
-      });
-    }
+    const operadores = await getOperadores(userToken, 'created', '', '', '500');
+    const equipamentos = await getEquipamentos(
+      userToken,
+      'created',
+      '',
+      '',
+      '500'
+    );
     return json({ operadores, equipamentos });
   } else {
-    const manutencao = await getManutencao(userToken, params.id as string);
-    const allFiles = await getFiles(userToken, 'manutencao');
-    const files = allFiles?.filter(
-      (item: FileTypes) => item.manutencao === params.id
-    );
-
-    return json({ operadores, equipamentos, manutencao, files });
+    return json({});
   }
 }
 
@@ -99,81 +82,70 @@ export async function action({ params, request }: ActionArgs) {
   const formData = Object.fromEntries(await request.formData());
 
   const validationScheme = z.object({
-    tipo_manutencao: z.string(),
-    data_manutencao: z.string().refine((val) => {
-      return isDateBefore(val, getTomorrowDate());
-    }, CAMPO_OBRIGATORIO),
-    feito_por: z.string().min(1, CAMPO_OBRIGATORIO),
+    data_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
+    codigo_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
+    valor_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
+    condutor: z.string().min(1, CAMPO_OBRIGATORIO),
     equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-    IM_atual: z.string().min(1, CAMPO_OBRIGATORIO),
-    descricao: z.string().min(1, CAMPO_OBRIGATORIO),
   });
 
   const validatedScheme = validationScheme.safeParse(formData);
 
   if (!validatedScheme.success) {
     const errors = validatedScheme.error.format();
+
     return {
       errors: {
-        tipo_manutencao: errors.tipo_manutencao?._errors[0],
-        data_manutencao: errors.data_manutencao?._errors[0],
-        feito_por: errors.feito_por?._errors[0],
+        data_infracao: errors.data_infracao?._errors[0],
+        codigo_infracao: errors.codigo_infracao?._errors[0],
+        valor_infracao: errors.valor_infracao?._errors[0],
+        condutor: errors.condutor?._errors[0],
         equipamento: errors.equipamento?._errors[0],
-        IM_atual: errors.IM_atual?._errors[0],
-        descricao: errors.descricao?._errors[0],
       },
     };
   }
 
   if (formData._action === 'create') {
-    const body: Partial<Manutencao> = {
+    const body: Multa = {
       ...formData,
-      boletim: '-',
-      data_manutencao: convertDateToISO(formData.data_manutencao as string),
-      IM_atual: removeIMSuffix(formData.IM_atual as string),
+      data_infracao: convertDateToISO(formData.data_infracao as string),
     };
-    const manutencao = await _createManutencao(userToken, body);
-
-    if (manutencao.data) {
-      return json({ error: manutencao.data });
+    const multa = await createMulta(userToken, body);
+    if (multa.data) {
+      return json({ error: multa.data });
     }
-    setToastMessage(session, 'Sucesso', 'Manutenção adicionada!', 'success');
-    return redirect('/manutencao', {
+    setToastMessage(session, 'Sucesso', 'Multa adicionada!', 'success');
+    return redirect('/multa', {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
     });
   }
 
-  if (formData._action === 'edit') {
-    const editBody: Partial<Manutencao> = {
-      ...formData,
-      data_manutencao: convertDateToISO(formData.data_manutencao as string),
-      IM_atual: removeIMSuffix(formData.IM_atual as string),
-    };
-    await _updateManutencao(
-      userToken,
-      params.id as string,
-      editBody as Partial<Manutencao>
-    );
-    setToastMessage(session, 'Sucesso', 'Manutenção editada!', 'success');
-    return redirect('/manutencao', {
-      headers: {
-        'Set-Cookie': await commitSession(session),
-      },
-    });
-  }
+  // if (formData._action === 'edit') {
+  //   const editBody = {
+  //     ...formData,
+  //     nome: capitalizeWords(formData.nome as string),
+  //     cidade: capitalizeWords(formData.cidade as string),
+  //     data_inicio: convertDateToISO(formData.data_inicio as string),
+  //     data_final_previsto: convertDateToISO(
+  //       formData.data_final_previsto as string
+  //     ),
+  //   };
+  //   await updateObra(userToken, params.id as string, editBody as Partial<Obra>);
+  //   setToastMessage(session, 'Sucesso', 'Obra editada!', 'success');
+  //   return redirect('/obra', {
+  //     headers: {
+  //       'Set-Cookie': await commitSession(session),
+  //     },
+  //   });
+  // }
   return redirect('..');
 }
 
 export default function NewOperador() {
-  const {
-    manutencao,
-    operadores,
-    equipamentos,
-    equipamento: paramEquipamento,
-    files,
-  } = useLoaderData<typeof loader>();
+  const { operadores, equipamentos, files, multa } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
@@ -181,40 +153,11 @@ export default function NewOperador() {
   const isReadMode = searchParams.get('read');
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
-  const [selectedEquipamento, setSelectedEquipamento] = useState<Option | null>(
-    null
-  );
+
   const uploadFileFetcher = useFetcher();
   const isUploadingFile =
     uploadFileFetcher.state === 'submitting' ||
     uploadFileFetcher.state === 'loading';
-
-  const [equipamento, setEquipamento] = useState<Equipamento>(
-    manutencao?.expand?.equipamento
-  );
-  const [selectedIMSuffix, setSelectedIMSuffix] = useState<string>();
-
-  useEffect(() => {
-    if (equipamento) {
-      if (equipamento.instrumento_medicao === 'Horímetro') {
-        setSelectedIMSuffix(' h');
-      }
-      if (equipamento.instrumento_medicao === 'Odômetro') {
-        setSelectedIMSuffix(' km');
-      }
-    }
-  }, [equipamento]);
-
-  useEffect(() => {
-    if (selectedEquipamento) {
-      setEquipamento(
-        equipamentos?.items?.find(
-          (equip) => equip.id === selectedEquipamento.name
-        ) || {}
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEquipamento]);
 
   const sortedOperadores: Option[] = operadores?.items
     ?.filter((item) => !item?.inativo)
@@ -246,7 +189,6 @@ export default function NewOperador() {
     const formData = new FormData();
     formData.append('file', files[0]);
     formData.append('name', files[0]?.name ?? '');
-    formData.append('manutencao', manutencao.id);
 
     uploadFileFetcher.submit(formData, {
       method: 'post',
@@ -257,10 +199,8 @@ export default function NewOperador() {
 
   return (
     <Modal
-      title={`${isReadMode ? '' : manutencao ? 'Editar' : 'Adicionar'} ${
-        equip ? 'Revisão' : 'Manutenção'
-      }`}
-      variant={isReadMode ? 'green' : manutencao ? 'grey' : 'blue'}
+      title={`${isReadMode ? '' : multa ? 'Editar' : 'Adicionar'} Multa`}
+      variant={isReadMode ? 'green' : multa ? 'grey' : 'blue'}
       size={files ? 'lg' : 'md'}
       content={
         <>
@@ -269,58 +209,50 @@ export default function NewOperador() {
               files ? 'grid-cols-[350px_350px] gap-4' : 'grid-cols-1'
             } grid`}
           >
-            <div>
-              <Row>
-                {equip ? (
-                  <RadioOptions
-                    name="tipo_manutencao"
-                    label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
-                    options={TIPOS_REVISAO}
-                    defaultValue="Revisão"
-                    disabled={
-                      (manutencao && manutencao?.boletim !== '-') ||
-                      !!isReadMode
-                    }
-                  />
-                ) : (
-                  <RadioOptions
-                    name="tipo_manutencao"
-                    label="Tipo de Manutenção:"
-                    options={TIPOS_MANUTENCAO}
-                    defaultValue={manutencao?.tipo_manutencao}
-                    disabled={
-                      (manutencao && manutencao?.boletim !== '-') ||
-                      !!isReadMode
-                    }
-                  />
-                )}
-              </Row>
+            <div className="flex flex-col gap-2">
               <Row>
                 <InputMask
                   mask="99/99/9999"
                   type="text"
-                  name="data_manutencao"
-                  label="Data"
-                  defaultValue={
-                    manutencao
-                      ? convertISOToDate(manutencao?.data_manutencao)
-                      : getCurrentDate()
+                  name="data_infracao"
+                  label="Data da Infração"
+                  defaultValue={convertISOToDate(multa?.data_infracao)}
+                  className="!w-36"
+                  error={
+                    actionData?.errors?.data_infracao ||
+                    actionData?.errors?.invalidDate
                   }
-                  error={actionData?.errors?.data_manutencao}
-                  disabled={
-                    (manutencao && manutencao?.boletim !== '-') || !!isReadMode
-                  }
+                  disabled={!!isReadMode}
+                />
+                <Input
+                  type="text"
+                  name="codigo_infracao"
+                  label="Código da Infração"
+                  defaultValue={multa?.nome}
+                  error={actionData?.errors?.nome}
+                  autoFocus={!isReadMode}
+                  disabled={!!isReadMode}
+                />
+              </Row>
+              <Row>
+                <Input
+                  type="currency"
+                  name="valor_infracao"
+                  label="Valor da Infração"
+                  defaultValue={multa?.valor_infracao}
+                  error={actionData?.errors?.valor_infracao}
+                  className="!w-36"
+                  placeholder="Ex.: R$ 1.000,00"
+                  disabled={!!isReadMode}
                 />
                 <Select
-                  name="feito_por"
+                  name="condutor"
                   options={sortedOperadores}
-                  label="Feito por"
-                  defaultValue={manutencao?.feito_por}
+                  label="Condutor"
+                  defaultValue={multa?.condutor}
                   placeholder="-"
-                  error={actionData?.errors?.feito_por}
-                  disabled={
-                    (manutencao && manutencao?.boletim !== '-') || !!isReadMode
-                  }
+                  error={actionData?.errors?.condutor}
+                  disabled={(multa && multa?.boletim !== '-') || !!isReadMode}
                 />
               </Row>
               <Row>
@@ -328,61 +260,9 @@ export default function NewOperador() {
                   name="equipamento"
                   options={sortedEquipamentos}
                   label="Código do Equipamento"
-                  defaultValue={
-                    paramEquipamento
-                      ? paramEquipamento.name
-                      : manutencao?.equipamento
-                  }
+                  defaultValue={multa?.equipamento}
                   placeholder="-"
                   error={actionData?.errors?.equipamento}
-                  onChange={setSelectedEquipamento}
-                  disabled={
-                    (manutencao && manutencao?.boletim !== '-') ||
-                    paramEquipamento ||
-                    !!isReadMode
-                  }
-                />
-                <Input
-                  type="IM"
-                  name="IM_atual"
-                  label={`${
-                    equipamento
-                      ? equipamento?.instrumento_medicao
-                      : 'Horím./Odôm.'
-                  }`}
-                  className="!w-[130px]"
-                  defaultValue={
-                    paramEquipamento
-                      ? paramEquipamento?.IM_atual
-                      : manutencao?.IM_atual
-                  }
-                  error={actionData?.errors?.IM_atual}
-                  suffix={selectedIMSuffix}
-                  disabled={
-                    (manutencao && manutencao?.boletim !== '-') ||
-                    paramEquipamento ||
-                    !!isReadMode
-                  }
-                />
-              </Row>
-              <Row>
-                {manutencao?.boletim && (
-                  <Input
-                    type="text"
-                    name="boletim"
-                    label="Código do Boletim"
-                    defaultValue={manutencao?.boletim}
-                    error={actionData?.errors?.boletim}
-                    disabled
-                  />
-                )}
-              </Row>
-              <Row>
-                <Textarea
-                  name="descricao"
-                  label="Descrição"
-                  defaultValue={manutencao?.descricao}
-                  error={actionData?.errors?.descricao}
                   disabled={!!isReadMode}
                 />
               </Row>
@@ -391,10 +271,10 @@ export default function NewOperador() {
               <div className="border-l border-grey/50 w-[300px]">
                 {files && (
                   <Row className="pl-2">
-                    <FileList files={files} path="manutencao" />
+                    <FileList files={files} path="multa" />
                   </Row>
                 )}
-                {manutencao && (
+                {multa && (
                   <Row>
                     <FileUploader
                       onChange={handleFileUpload}
@@ -405,40 +285,24 @@ export default function NewOperador() {
               </div>
             )}
           </div>
-          {manutencao && manutencao?.boletim !== '-' && (
-            <div className="flex items-center gap-1 mt-4">
-              <InfoIcon className="h-5 w-5 text-orange" />
-              <p>
-                Manutenção criada através do Boletim{' '}
-                {
-                  <Link
-                    to={`/boletim/${manutencao?.boletim}`}
-                    className="font-semibold text-blue"
-                  >
-                    {manutencao?.boletim}
-                  </Link>
-                }
-              </p>
-            </div>
-          )}
         </>
       }
       footerActions={
         isReadMode ? null : (
           <Button
-            variant={manutencao ? 'grey' : 'blue'}
+            variant={multa ? 'grey' : 'blue'}
             icon={
               isSubmitting ? (
                 <SpinnerIcon />
-              ) : manutencao ? (
+              ) : multa ? (
                 <PencilIcon />
               ) : (
                 <PlusCircleIcon />
               )
             }
-            text={manutencao ? 'Editar' : 'Adicionar'}
+            text={multa ? 'Editar' : 'Adicionar'}
             name="_action"
-            value={manutencao ? 'edit' : 'create'}
+            value={multa ? 'edit' : 'create'}
           />
         )
       }
