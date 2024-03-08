@@ -5,7 +5,12 @@ import {
   type V2_MetaFunction,
   redirect,
 } from '@remix-run/node';
-import { getUserSession } from '~/session.server';
+import {
+  commitSession,
+  getSession,
+  getUserSession,
+  setToastMessage,
+} from '~/session.server';
 import Button from '~/components/Button';
 import { Form, useNavigation } from '@remix-run/react';
 import ArrowRightIcon from '~/components/icons/ArrowRightIcon';
@@ -27,10 +32,21 @@ export async function loader({ request }: LoaderArgs) {
 // will verify credentials and if valid, create user session and redirect to dashboard
 export async function action({ request }: ActionArgs) {
   const queryParams = new URL(request.url).searchParams;
+  const session = await getSession(request);
   const token = queryParams.get('token');
 
   await confirmVerification(token as string);
-  return json({});
+  setToastMessage(
+    session,
+    'Sucesso',
+    'Email verificado com sucesso',
+    'success'
+  );
+  return redirect(`/login`, {
+    headers: {
+      'Set-Cookie': await commitSession(session),
+    },
+  });
 }
 
 export default function ForgotPassword() {

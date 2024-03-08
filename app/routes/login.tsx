@@ -10,7 +10,6 @@ import Input from '~/components/Input';
 import Button from '~/components/Button';
 import { Form, Link, useActionData, useNavigation } from '@remix-run/react';
 import ArrowRightIcon from '~/components/icons/ArrowRightIcon';
-import Tooltip from '~/components/Tooltip';
 import ErrorMessage from '~/components/ErrorMessage';
 import { z } from 'zod';
 import { verifyCredentials } from '~/models/auth.server';
@@ -58,7 +57,13 @@ export async function action({ request }: ActionArgs) {
   );
 
   if (user.token) {
-    return createUserSession(request, user, '/dashboard');
+    if (user?.record?.verified) {
+      return createUserSession(request, user, '/dashboard');
+    } else {
+      return {
+        invalidLoginError: 'Pendente confirmação de email',
+      };
+    }
   } else {
     return {
       invalidLoginError: 'Usuário ou senha inválido',

@@ -1,5 +1,10 @@
+import { type User } from '~/session.server';
+
 // if valid will retrieve jwt token and user data
-export async function verifyCredentials(email: string, password: string) {
+export async function verifyCredentials(
+  email: string,
+  password: string
+): Promise<User> {
   try {
     const response = await fetch(
       `${process.env.BASE_API_URL}/collections/usuario/auth-with-password`,

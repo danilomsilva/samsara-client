@@ -7,7 +7,7 @@ import { type Usuario } from './models/usuario.server';
 
 // types
 export type User = {
-  token: number;
+  token: string;
   record: Usuario;
 };
 
