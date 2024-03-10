@@ -1,4 +1,5 @@
 import type { User } from '~/session.server';
+import { formatCurrency, formatDate, formatDateTime } from '~/utils/utils';
 
 export type MultaResponse = {
   page: number;
@@ -13,7 +14,7 @@ export type Multa = {
   created?: string;
   data_infracao?: string;
   codigo_infracao?: string;
-  valor_infracao?: string;
+  valor_infracao?: number | string;
   condutor?: string;
   equipamento?: string;
   modelo_equipamentoX?: string;
@@ -32,7 +33,7 @@ export async function getMultas(
   let url = `${process.env.BASE_API_URL}/collections/multa/records`;
 
   const queryParams = new URLSearchParams();
-  queryParams.set('expand', 'equipamento');
+  queryParams.set('expand', 'equipamento,condutor');
   queryParams.set('sort', sortingBy ?? '');
   queryParams.set('page', page ?? '1');
   queryParams.set('perPage', perPage ?? '30');
@@ -48,7 +49,18 @@ export async function getMultas(
     },
   });
   const data = await response.json();
-  return data;
+
+  const transformedData = data.items.map((item) => {
+    return {
+      ...item,
+      created: item?.created && formatDateTime(item.created),
+      data_infracao: item?.data_infracao && formatDate(item.data_infracao),
+      condutor: item.expand.condutor.nome_completo,
+      equipamento: `${item.expand.equipamento.codigo} - ${item.expand.equipamento.modelo}`,
+      valor_infracao: formatCurrency(Number(item.valor_infracao)),
+    };
+  });
+  return { ...data, items: transformedData };
 }
 
 export async function getMulta(

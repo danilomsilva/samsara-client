@@ -5,14 +5,12 @@ import {
   json,
 } from '@remix-run/node';
 import {
-  Link,
   useActionData,
   useFetcher,
   useLoaderData,
   useNavigation,
   useSearchParams,
 } from '@remix-run/react';
-import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
 import FileList from '~/components/FileList';
@@ -20,23 +18,13 @@ import FileUploader from '~/components/FileUploader';
 import Input from '~/components/Input';
 import InputMask from '~/components/InputMask';
 import Modal from '~/components/Modal';
-import RadioOptions from '~/components/RadioOptions';
 import Row from '~/components/Row';
 import Select from '~/components/Select';
-import Textarea from '~/components/Textarea';
-import InfoIcon from '~/components/icons/InfoIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
-import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
-import { type FileTypes, getFiles } from '~/models/files.server';
-import {
-  type Manutencao,
-  _createManutencao,
-  getManutencao,
-  _updateManutencao,
-} from '~/models/manutencao.server';
-import { Multa, createMulta } from '~/models/multa.server';
+import { getEquipamentos } from '~/models/equipamento.server';
+import { type Multa, createMulta } from '~/models/multa.server';
 import { getOperadores } from '~/models/operador.server';
 import {
   commitSession,
@@ -44,19 +32,11 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
+import { type Option, CAMPO_OBRIGATORIO } from '~/utils/consts';
 import {
-  type Option,
-  CAMPO_OBRIGATORIO,
-  TIPOS_MANUTENCAO,
-  TIPOS_REVISAO,
-} from '~/utils/consts';
-import {
+  convertCurrencyStringToNumber,
   convertDateToISO,
   convertISOToDate,
-  getCurrentDate,
-  getTomorrowDate,
-  isDateBefore,
-  removeIMSuffix,
 } from '~/utils/utils';
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -109,6 +89,9 @@ export async function action({ params, request }: ActionArgs) {
     const body: Multa = {
       ...formData,
       data_infracao: convertDateToISO(formData.data_infracao as string),
+      valor_infracao: Number(
+        convertCurrencyStringToNumber(formData.valor_infracao as string)
+      ) as number,
     };
     const multa = await createMulta(userToken, body);
     if (multa.data) {
@@ -122,24 +105,6 @@ export async function action({ params, request }: ActionArgs) {
     });
   }
 
-  // if (formData._action === 'edit') {
-  //   const editBody = {
-  //     ...formData,
-  //     nome: capitalizeWords(formData.nome as string),
-  //     cidade: capitalizeWords(formData.cidade as string),
-  //     data_inicio: convertDateToISO(formData.data_inicio as string),
-  //     data_final_previsto: convertDateToISO(
-  //       formData.data_final_previsto as string
-  //     ),
-  //   };
-  //   await updateObra(userToken, params.id as string, editBody as Partial<Obra>);
-  //   setToastMessage(session, 'Sucesso', 'Obra editada!', 'success');
-  //   return redirect('/obra', {
-  //     headers: {
-  //       'Set-Cookie': await commitSession(session),
-  //     },
-  //   });
-  // }
   return redirect('..');
 }
 
@@ -230,7 +195,6 @@ export default function NewOperador() {
                   label="Código da Infração"
                   defaultValue={multa?.nome}
                   error={actionData?.errors?.nome}
-                  autoFocus={!isReadMode}
                   disabled={!!isReadMode}
                 />
               </Row>
