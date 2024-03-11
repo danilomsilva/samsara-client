@@ -1,6 +1,7 @@
 import type { User } from '~/session.server';
 import { formatCurrency, formatDate, formatDateTime } from '~/utils/utils';
 import { getEquipamento } from './equipamento.server';
+import { getOperador } from './operador.server';
 
 export type MultaResponse = {
   page: number;
@@ -85,8 +86,11 @@ export async function getMulta(
 export async function _createMulta(userToken: User['token'], body: Multa) {
   const multa = await createMulta(userToken, body);
   const equipamento = await getEquipamento(userToken, multa.equipamento);
+  const condutor = await getOperador(userToken, multa.condutor);
   const editBody = {
     modelo_equipamento: equipamento.modelo,
+    condutorX: condutor.nome_completo,
+    equipamentoX: equipamento.codigo,
   };
   await updateMulta(userToken, multa.id, editBody as Multa);
   return multa;
@@ -115,8 +119,11 @@ export async function _updateMulta(
 ) {
   const multa = await updateMulta(userToken, multaId, body);
   const equipamento = await getEquipamento(userToken, multa.equipamento);
+  const condutor = await getOperador(userToken, multa.condutor);
   const editBody = {
     modelo_equipamento: equipamento.modelo,
+    condutorX: condutor.nome_completo,
+    equipamentoX: equipamento.codigo,
   };
   await updateMulta(userToken, multa.id, editBody as Multa);
   return multa;

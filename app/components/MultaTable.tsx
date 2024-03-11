@@ -25,8 +25,8 @@ const columns = [
   { key: 'data_infracao', label: 'Data da Infração' },
   { key: 'codigo_infracao', label: 'Código da Infração' },
   { key: 'valor_infracao', label: 'Valor da Infração' },
-  { key: 'condutor', label: 'Condutor' },
-  { key: 'equipamento', label: 'Equipamento' },
+  { key: 'condutorX', label: 'Condutor' },
+  { key: 'equipamentoX', label: 'Equipamento' },
   { key: 'modelo_equipamento', label: 'Modelo do Equipamento' },
 ];
 

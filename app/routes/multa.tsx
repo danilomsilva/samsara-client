@@ -7,7 +7,6 @@ import {
 } from '@remix-run/node';
 import {
   Form,
-  Link,
   Outlet,
   useLoaderData,
   useLocation,
@@ -22,12 +21,6 @@ import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
-import {
-  type Manutencao,
-  getManutencoes,
-  updateManutencao,
-} from '~/models/manutencao.server';
 import {
   commitSession,
   getSession,
@@ -40,8 +33,7 @@ import Textarea from '~/components/Textarea';
 import ReadIcon from '~/components/icons/ReadIcon';
 import ExportOptions from '~/components/ExportOptions';
 import FilterIcon from '~/components/icons/FilterIcon';
-import ManutencaoTable from '~/components/ManutencaoTable';
-import { Multa, getMultas, updateMulta } from '~/models/multa.server';
+import { type Multa, getMultas, updateMulta } from '~/models/multa.server';
 import MultaTable from '~/components/MultaTable';
 
 // page title
@@ -141,8 +133,14 @@ export default function MultaPage() {
               newFilters += `(${key}>'${date}')`;
             }
           }
-        } else if (key === 'IM_atual') {
-          newFilters += `(${key}>='${value}')`;
+        } else if (key === 'data_infracao') {
+          if (value.length === 10 && checkDateValid(value)) {
+            const [day, month, year] = value.split('/');
+            const date = `${year}-${month}-${day}`;
+            if (Date.parse(date)) {
+              newFilters += `(${key}~'${date}')`;
+            }
+          }
         } else {
           newFilters += `(${key}~'${value}')`;
         }
@@ -222,8 +220,8 @@ export default function MultaPage() {
                   { key: 'data_infracao', label: 'Data da Infração' },
                   { key: 'codigo_infracao', label: 'Código da Infração' },
                   { key: 'valor_infracao', label: 'Valor da Infração' },
-                  { key: 'condutor', label: 'Condutor' },
-                  { key: 'equipamento', label: 'Equipamento' },
+                  { key: 'condutorX', label: 'Condutor' },
+                  { key: 'equipamentoX', label: 'Equipamento' },
                   { key: 'modelo_equipamento', label: 'Modelo do Equipamento' },
                 ]}
                 data={multas.items}
