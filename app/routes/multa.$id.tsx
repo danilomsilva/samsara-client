@@ -24,7 +24,12 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { getEquipamentos } from '~/models/equipamento.server';
-import { type Multa, createMulta } from '~/models/multa.server';
+import {
+  type Multa,
+  _createMulta,
+  getMulta,
+  _updateMulta,
+} from '~/models/multa.server';
 import { getOperadores } from '~/models/operador.server';
 import {
   commitSession,
@@ -34,6 +39,7 @@ import {
 } from '~/session.server';
 import { type Option, CAMPO_OBRIGATORIO } from '~/utils/consts';
 import {
+  checkDateValid,
   convertCurrencyStringToNumber,
   convertDateToISO,
   convertISOToDate,
@@ -41,18 +47,19 @@ import {
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
+  const operadores = await getOperadores(userToken, 'created', '', '', '500');
+  const equipamentos = await getEquipamentos(
+    userToken,
+    'created',
+    '',
+    '',
+    '500'
+  );
   if (params.id === 'new') {
-    const operadores = await getOperadores(userToken, 'created', '', '', '500');
-    const equipamentos = await getEquipamentos(
-      userToken,
-      'created',
-      '',
-      '',
-      '500'
-    );
     return json({ operadores, equipamentos });
   } else {
-    return json({});
+    const multa = await getMulta(userToken, params.id as string);
+    return json({ multa, operadores, equipamentos });
   }
 }
 
@@ -61,13 +68,17 @@ export async function action({ params, request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  const validationScheme = z.object({
-    data_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
-    codigo_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
-    valor_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
-    condutor: z.string().min(1, CAMPO_OBRIGATORIO),
-    equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
-  });
+  const validationScheme = z
+    .object({
+      data_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
+      codigo_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
+      valor_infracao: z.string().min(1, CAMPO_OBRIGATORIO),
+      condutor: z.string().min(1, CAMPO_OBRIGATORIO),
+      equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
+    })
+    .refine((schema) => checkDateValid(schema.data_infracao), {
+      message: 'Data inválida!',
+    });
 
   const validatedScheme = validationScheme.safeParse(formData);
 
@@ -81,6 +92,7 @@ export async function action({ params, request }: ActionArgs) {
         valor_infracao: errors.valor_infracao?._errors[0],
         condutor: errors.condutor?._errors[0],
         equipamento: errors.equipamento?._errors[0],
+        invalidDate: errors?._errors[0],
       },
     };
   }
@@ -93,7 +105,7 @@ export async function action({ params, request }: ActionArgs) {
         convertCurrencyStringToNumber(formData.valor_infracao as string)
       ) as number,
     };
-    const multa = await createMulta(userToken, body);
+    const multa = await _createMulta(userToken, body);
     if (multa.data) {
       return json({ error: multa.data });
     }
@@ -105,16 +117,35 @@ export async function action({ params, request }: ActionArgs) {
     });
   }
 
+  if (formData._action === 'edit') {
+    const body: Multa = {
+      ...formData,
+      data_infracao: convertDateToISO(formData.data_infracao as string),
+      valor_infracao: Number(
+        convertCurrencyStringToNumber(formData.valor_infracao as string)
+      ) as number,
+    };
+    const multa = await _updateMulta(userToken, params.id as string, body);
+    if (multa.data) {
+      return json({ error: multa.data });
+    }
+    setToastMessage(session, 'Sucesso', 'Multa atualizada!', 'success');
+    return redirect('/multa', {
+      headers: {
+        'Set-Cookie': await commitSession(session),
+      },
+    });
+  }
+
   return redirect('..');
 }
 
-export default function NewOperador() {
+export default function NewMulta() {
   const { operadores, equipamentos, files, multa } =
     useLoaderData<typeof loader>();
   const actionData = useActionData();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
-  const equip = searchParams.get('equip');
   const isReadMode = searchParams.get('read');
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
@@ -193,7 +224,7 @@ export default function NewOperador() {
                   type="text"
                   name="codigo_infracao"
                   label="Código da Infração"
-                  defaultValue={multa?.nome}
+                  defaultValue={multa?.codigo_infracao}
                   error={actionData?.errors?.nome}
                   disabled={!!isReadMode}
                 />
@@ -216,7 +247,7 @@ export default function NewOperador() {
                   defaultValue={multa?.condutor}
                   placeholder="-"
                   error={actionData?.errors?.condutor}
-                  disabled={(multa && multa?.boletim !== '-') || !!isReadMode}
+                  disabled={!!isReadMode}
                 />
               </Row>
               <Row>

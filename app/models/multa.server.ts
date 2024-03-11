@@ -1,5 +1,6 @@
 import type { User } from '~/session.server';
 import { formatCurrency, formatDate, formatDateTime } from '~/utils/utils';
+import { getEquipamento } from './equipamento.server';
 
 export type MultaResponse = {
   page: number;
@@ -45,7 +46,7 @@ export async function getMultas(
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${userToken}`,
+      'Authorization': `Bearer ${userToken}`,
     },
   });
   const data = await response.json();
@@ -56,7 +57,7 @@ export async function getMultas(
       created: item?.created && formatDateTime(item.created),
       data_infracao: item?.data_infracao && formatDate(item.data_infracao),
       condutor: item.expand.condutor.nome_completo,
-      equipamento: `${item.expand.equipamento.codigo} - ${item.expand.equipamento.modelo}`,
+      equipamento: item.expand.equipamento.codigo,
       valor_infracao: formatCurrency(Number(item.valor_infracao)),
     };
   });
@@ -73,12 +74,22 @@ export async function getMulta(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     }
   );
   const data = await response.json();
   return data;
+}
+
+export async function _createMulta(userToken: User['token'], body: Multa) {
+  const multa = await createMulta(userToken, body);
+  const equipamento = await getEquipamento(userToken, multa.equipamento);
+  const editBody = {
+    modelo_equipamento: equipamento.modelo,
+  };
+  await updateMulta(userToken, multa.id, editBody as Multa);
+  return multa;
 }
 
 export async function createMulta(userToken: User['token'], body: Multa) {
@@ -88,13 +99,27 @@ export async function createMulta(userToken: User['token'], body: Multa) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
       body: JSON.stringify(body),
     }
   );
   const data = await response.json();
   return data;
+}
+
+export async function _updateMulta(
+  userToken: User['token'],
+  multaId: string,
+  body: Multa
+) {
+  const multa = await updateMulta(userToken, multaId, body);
+  const equipamento = await getEquipamento(userToken, multa.equipamento);
+  const editBody = {
+    modelo_equipamento: equipamento.modelo,
+  };
+  await updateMulta(userToken, multa.id, editBody as Multa);
+  return multa;
 }
 
 export async function updateMulta(
@@ -108,7 +133,7 @@ export async function updateMulta(
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
       body: JSON.stringify(body),
     }
@@ -124,7 +149,7 @@ export async function deleteMulta(userToken: User['token'], multaId: string) {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     }
   );
