@@ -13,6 +13,7 @@ import {
 } from '@remix-run/react';
 import { z } from 'zod';
 import Button from '~/components/Button';
+import Checkbox from '~/components/Checkbox';
 import FileList from '~/components/FileList';
 import FileUploader from '~/components/FileUploader';
 import Input from '~/components/Input';
@@ -20,6 +21,7 @@ import InputMask from '~/components/InputMask';
 import Modal from '~/components/Modal';
 import Row from '~/components/Row';
 import Select from '~/components/Select';
+import Textarea from '~/components/Textarea';
 import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
@@ -107,13 +109,15 @@ export async function action({ params, request }: ActionArgs) {
       valor_infracao: Number(
         convertCurrencyStringToNumber(formData.valor_infracao as string)
       ) as number,
+      pago: formData?.pago === 'on' ? true : false,
+      reconhecido: formData?.reconhecido === 'on' ? true : false,
     };
     const multa = await _createMulta(userToken, body);
     if (multa.data) {
       return json({ error: multa.data });
     }
     setToastMessage(session, 'Sucesso', 'Multa adicionada!', 'success');
-    return redirect('/multa', {
+    return redirect(`/multa/${multa.id}`, {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -127,6 +131,8 @@ export async function action({ params, request }: ActionArgs) {
       valor_infracao: Number(
         convertCurrencyStringToNumber(formData.valor_infracao as string)
       ) as number,
+      pago: formData?.pago === 'on' ? true : false,
+      reconhecido: formData?.reconhecido === 'on' ? true : false,
     };
     const multa = await _updateMulta(userToken, params.id as string, body);
     if (multa.data) {
@@ -244,6 +250,24 @@ export default function NewMulta() {
                   placeholder="Ex.: R$ 1.000,00"
                   disabled={!!isReadMode}
                 />
+                <div className="-translate-y-4">
+                  <Checkbox
+                    label="Pago"
+                    name="pago"
+                    value={multa?.pago}
+                    disabled={!!isReadMode}
+                  />
+                </div>
+                <div className="-translate-y-4">
+                  <Checkbox
+                    label="Reconhecido"
+                    name="reconhecido"
+                    value={multa?.reconhecido}
+                    disabled={!!isReadMode}
+                  />
+                </div>
+              </Row>
+              <Row>
                 <Select
                   name="condutor"
                   options={sortedOperadores}
@@ -262,6 +286,15 @@ export default function NewMulta() {
                   defaultValue={multa?.equipamento}
                   placeholder="-"
                   error={actionData?.errors?.equipamento}
+                  disabled={!!isReadMode}
+                />
+              </Row>
+              <Row>
+                <Textarea
+                  name="observacoes"
+                  label="Observações"
+                  defaultValue={multa?.observacoes}
+                  error={actionData?.errors?.observacoes}
                   disabled={!!isReadMode}
                 />
               </Row>
@@ -299,7 +332,7 @@ export default function NewMulta() {
                 <PlusCircleIcon />
               )
             }
-            text={multa ? 'Editar' : 'Adicionar'}
+            text={multa ? 'Concluir' : 'Adicionar'}
             name="_action"
             value={multa ? 'edit' : 'create'}
           />

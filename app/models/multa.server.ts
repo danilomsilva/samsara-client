@@ -20,7 +20,8 @@ export type Multa = {
   condutor?: string;
   equipamento?: string;
   modelo_equipamentoX?: string;
-  pago?: string;
+  pago?: boolean;
+  reconhecido?: boolean;
   inativo?: boolean;
   motivo?: string;
 };
