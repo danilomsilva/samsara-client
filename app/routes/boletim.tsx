@@ -99,9 +99,15 @@ export async function loader({ request }: LoaderArgs) {
           }
         : transformedBoletins;
 
-    const equipamentos = await getEquipamentos(userToken, 'created', '');
-    const operacoes = await getOperacoes(userToken, 'created');
-    const OSs = await getOSs(userToken, 'created');
+    const equipamentos = await getEquipamentos(
+      userToken,
+      'created',
+      '',
+      '',
+      '500'
+    );
+    const operacoes = await getOperacoes(userToken, 'created', '', '', '500');
+    const OSs = await getOSs(userToken, 'created', '', '', '500');
 
     const boletinsToExport = boletins.items.flatMap((boletim) => {
       return boletim.equipamento_logs.map((log) => {
@@ -114,7 +120,6 @@ export async function loader({ request }: LoaderArgs) {
 
     const newBoletinsToExport = boletinsToExport.map((boletim) => {
       const findOS = OSs.items.find((item) => {
-        console.log(item.id, boletim.OS, item.id === boletim.OS);
         return item.id === boletim.OS;
       });
 
@@ -158,7 +163,6 @@ export async function loader({ request }: LoaderArgs) {
         IM_final: boletim.IM_final,
       };
     });
-    // console.log(newBoletinsToExport);
 
     return json({ boletins, newBoletinsToExport });
   } else {
