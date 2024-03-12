@@ -46,14 +46,15 @@ export default function SideMenu({ tipoAcesso, children, user }: PropTypes) {
               <div className="ml-3 flex flex-col gap-2 ">
                 {fullAccess ? (
                   <>
-                    <NavItem to="/obra" text="Obra" />
+                    <NavItem to="/boletim" text="Boletim" />
                     <NavItem to="/equipamento" text="Equipamento" />
                     <NavItem to="/equipamento_tipo" text="Tipos Equipamento" />
                     <NavItem to="/manutencao" text="Manutenção" />
-                    <NavItem to="/ordem-servico" text="Ordem de Serviço" />
+                    <NavItem to="/multa" text="Multa" />
+                    <NavItem to="/obra" text="Obra" />
                     <NavItem to="/operacao" text="Operação" />
-                    <NavItem to="/boletim" text="Boletim" />
                     <NavItem to="/operador" text="Operador" />
+                    <NavItem to="/ordem-servico" text="Ordem de Serviço" />
                     <NavItem to="/usuario" text="Usuário" />
                   </>
                 ) : (
