@@ -24,6 +24,7 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { getEquipamentos } from '~/models/equipamento.server';
+import { type FileTypes, getFiles } from '~/models/files.server';
 import {
   type Multa,
   _createMulta,
@@ -55,11 +56,13 @@ export async function loader({ params, request }: LoaderArgs) {
     '',
     '500'
   );
+  const allFiles = await getFiles(userToken, 'multa');
+  const files = allFiles?.filter((item: FileTypes) => item.multa === params.id);
   if (params.id === 'new') {
     return json({ operadores, equipamentos });
   } else {
     const multa = await getMulta(userToken, params.id as string);
-    return json({ multa, operadores, equipamentos });
+    return json({ multa, operadores, equipamentos, files });
   }
 }
 
@@ -185,10 +188,11 @@ export default function NewMulta() {
     const formData = new FormData();
     formData.append('file', files[0]);
     formData.append('name', files[0]?.name ?? '');
+    formData.append('multa', multa.id);
 
     uploadFileFetcher.submit(formData, {
       method: 'post',
-      action: '../../upload-file-manutencao',
+      action: '../../upload-file-multa',
       encType: 'multipart/form-data',
     });
   };
