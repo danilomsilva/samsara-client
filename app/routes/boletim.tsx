@@ -113,7 +113,11 @@ export async function loader({ request }: LoaderArgs) {
     });
 
     const newBoletinsToExport = boletinsToExport.map((boletim) => {
-      const findOS = OSs.items.find((item) => item.id === boletim.OS);
+      const findOS = OSs.items.find((item) => {
+        console.log(item.id, boletim.OS, item.id === boletim.OS);
+        return item.id === boletim.OS;
+      });
+
       const findOP = operacoes.items.find((item) => item.id === boletim.OP);
       const findEquipamento = equipamentos.items.find(
         (item) => item.id === boletim.equipamento
@@ -129,7 +133,7 @@ export async function loader({ request }: LoaderArgs) {
         numero_serie_equipamento: findEquipamento?.numero_serie,
         modelo_equipamento: findEquipamento?.modelo,
         ano_equipamento: findEquipamento?.ano,
-        combubstivel_equipamento: findEquipamento?.combustivel,
+        combustivel_equipamento: findEquipamento?.combustivel,
         IM: findEquipamento?.instrumento_medicao,
         valor_locacao_diario: findEquipamento?.valor_locacao_diario,
         valor_locacao_mensal: findEquipamento?.valor_locacao_mensal,
@@ -154,6 +158,7 @@ export async function loader({ request }: LoaderArgs) {
         IM_final: boletim.IM_final,
       };
     });
+    // console.log(newBoletinsToExport);
 
     return json({ boletins, newBoletinsToExport });
   } else {
@@ -202,7 +207,7 @@ export default function BoletinsPage() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>(
     {}
   );
-  const { boletins } = useLoaderData<typeof loader>();
+  const { boletins, newBoletinsToExport } = useLoaderData<typeof loader>();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const navigate = useNavigate();
   const location = useLocation();
@@ -310,19 +315,55 @@ export default function BoletinsPage() {
             <>
               <ExportOptions
                 tableHeaders={[
-                  { key: 'created', label: 'Data criação' },
-                  { key: 'data_boletim', label: 'Data' },
+                  { key: 'data_criacao', label: 'Data de Criação' },
+                  { key: 'data_boletim', label: 'Data do Boletim' },
                   { key: 'codigo', label: 'Boletim' },
-                  { key: 'equipamentoX', label: 'Equip.' },
-                  { key: 'obraX', label: 'Obra' },
-                  { key: 'IM_inicioX', label: 'IM Início' },
-                  { key: 'IM_finalX', label: 'IM Final' },
-                  { key: 'total_abastecimento', label: 'Abast.' },
+                  { key: 'codigo_equipamento', label: 'Código Equipamento' },
+                  { key: 'tipo_equipamento', label: 'Tipo Equipamento' },
+                  { key: 'grupo_equipamento', label: 'Grupo Equipamento' },
+                  {
+                    key: 'numero_serie_equipamento',
+                    label: 'Número Série Equipamento',
+                  },
+                  { key: 'modelo_equipamento', label: 'Modelo Equipamento' },
+                  { key: 'ano_equipamento', label: 'Ano Equipamento' },
+                  {
+                    key: 'combustivel_equipamento',
+                    label: 'Combustível Equipamento',
+                  },
+                  { key: 'IM', label: 'Tipo IM' },
+                  {
+                    key: 'valor_locacao_diario',
+                    label: 'Valor Locação Diário',
+                  },
+                  {
+                    key: 'valor_locacao_mensal',
+                    label: 'Valor Locação Mensal',
+                  },
+                  { key: 'valor_locacao_hora', label: 'Valor Locação Hora' },
+                  { key: 'total_abastecimento', label: 'Total Abastecimento' },
+                  { key: 'lubrificacao', label: 'Lubrificação' },
                   { key: 'manutencao', label: 'Manutenção' },
-                  { key: 'operadorX', label: 'Operador' },
-                  { key: 'encarregadoX', label: 'Criado por' },
+                  {
+                    key: 'descricao_manutencao',
+                    label: 'Descrição Manutenção',
+                  },
+                  { key: 'limpeza', label: 'Limpeza' },
+                  { key: 'obra', label: 'Obra' },
+                  { key: 'nome_encarregado', label: 'Nome Encarregado' },
+                  { key: 'operador', label: 'Nome Operador' },
+                  { key: 'inativo', label: 'Boletim Inativo' },
+                  { key: 'inativo_motivo', label: 'Inativo Motivo' },
+                  { key: 'OP_codigo', label: 'Código Operação' },
+                  { key: 'OP_descricao', label: 'Descrição Operação' },
+                  { key: 'OS_codigo', label: 'Código OS' },
+                  { key: 'OS_descricao', label: 'Descrição OS' },
+                  { key: 'hora_inicio', label: 'Hora Início' },
+                  { key: 'hora_final', label: 'Hora Final' },
+                  { key: 'IM_inicio', label: 'IM Início' },
+                  { key: 'IM_final', label: 'IM Final' },
                 ]}
-                data={boletins.items}
+                data={newBoletinsToExport}
                 filename="boletim"
               />
 
