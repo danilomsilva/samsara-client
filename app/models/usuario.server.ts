@@ -2,7 +2,7 @@ import type { User } from '~/session.server';
 import { formatDateTime } from '~/utils/utils';
 import { getObra } from './obra.server';
 
-export type TipoAcesso = 'Administrador' | 'Encarregado' | 'Gerente_de_Frota';
+export type TipoAcesso = 'Administrador' | 'Encarregado' | 'RH';
 
 export type UsuarioResponse = {
   page: number;

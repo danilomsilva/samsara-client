@@ -14,7 +14,8 @@ type PropTypes = {
 export default function SideMenu({ tipoAcesso, children, user }: PropTypes) {
   const [isOpen, setIsOpen] = useState(true);
   const userFirstName = user?.split(' ')[0];
-  const fullAccess = tipoAcesso !== 'Encarregado';
+  const fullAccess = tipoAcesso !== 'Encarregado' && tipoAcesso !== 'RH';
+  const RHPermissions = tipoAcesso === 'RH';
 
   return (
     <div className="bg-grey-light h-screen flex">
@@ -56,6 +57,12 @@ export default function SideMenu({ tipoAcesso, children, user }: PropTypes) {
                     <NavItem to="/operador" text="Operador" />
                     <NavItem to="/ordem-servico" text="Ordem de Serviço" />
                     <NavItem to="/usuario" text="Usuário" />
+                  </>
+                ) : RHPermissions ? (
+                  <>
+                    <NavItem to="/multa" text="Multa" />
+                    <NavItem to="/obra" text="Obra" />
+                    <NavItem to="/operador" text="Operador" />
                   </>
                 ) : (
                   <NavItem to="/boletim" text="Boletim" />
