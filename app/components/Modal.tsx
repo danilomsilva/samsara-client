@@ -13,7 +13,7 @@ type VariantStyle = {
 type PropTypes = {
   title: string;
   variant?: 'blue' | 'grey' | 'red' | 'green';
-  size?: 'sm' | 'md' | 'lg' | 'xxl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
   content: ReactNode;
   footerSummary?: ReactNode;
   footerActions: ReactNode;
@@ -59,6 +59,8 @@ export default function Modal({
         } bg-grey-light rounded-lg border-t-8  ${
           size === 'xxl'
             ? 'w-[1200px]'
+            : size === 'xl'
+            ? 'w-[1000px]'
             : size === 'lg'
             ? 'w-[700px]'
             : size === 'sm'

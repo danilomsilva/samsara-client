@@ -2,6 +2,7 @@ import { type User } from '~/session.server';
 import { type Manutencao } from './manutencao.server';
 import { type Boletim } from './boletim.server';
 import { type Multa } from './multa.server';
+import { type Equipamento } from './equipamento.server';
 
 export type FileTypes = {
   collectionId: string;
@@ -12,6 +13,7 @@ export type FileTypes = {
   manutencao?: Manutencao['id'];
   multa?: Multa['id'];
   boletim?: Boletim['id'];
+  equipamento?: Equipamento['id'];
   name: string;
   updated: string;
 };
@@ -32,7 +34,7 @@ export async function getFiles(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${userToken}`,
+        Authorization: `Bearer ${userToken}`,
       },
     });
     const data = await response.json();

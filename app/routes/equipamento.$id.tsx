@@ -6,6 +6,7 @@ import {
 } from '@remix-run/node';
 import {
   useActionData,
+  useFetcher,
   useLoaderData,
   useNavigation,
   useSearchParams,
@@ -13,6 +14,7 @@ import {
 import { useEffect, useState } from 'react';
 import { z } from 'zod';
 import Button from '~/components/Button';
+import FileUploader from '~/components/FileUploader';
 import Input from '~/components/Input';
 import InputMask from '~/components/InputMask';
 import Modal from '~/components/Modal';
@@ -34,6 +36,7 @@ import {
   type EquipamentoTipo,
   getEquipamentoTipos,
 } from '~/models/equipamento_tipo.server';
+import { type FileTypes, getFiles } from '~/models/files.server';
 import { type Obra, getObras } from '~/models/obra.server';
 import { getUsuarios } from '~/models/usuario.server';
 import {
@@ -48,6 +51,7 @@ import {
   formatNumberWithDotDelimiter,
   removeIMSuffix,
 } from '~/utils/utils';
+import FileList from '~/components/FileList';
 
 export async function loader({ params, request }: LoaderArgs) {
   const { userToken } = await getUserSession(request);
@@ -65,16 +69,27 @@ export async function loader({ params, request }: LoaderArgs) {
       name: usuario?.id || '',
       displayName: usuario?.nome_completo || '',
     }));
+
   if (params.id === 'new') {
-    return json({ obras, encarregados, gruposEquipamento, tiposEquipamento });
+    return json({
+      obras,
+      encarregados,
+      gruposEquipamento,
+      tiposEquipamento,
+    });
   } else {
     const equipamento = await getEquipamento(userToken, params.id as string);
+    const allFiles = await getFiles(userToken, 'equipamento');
+    const files = allFiles?.filter(
+      (item: FileTypes) => item.equipamento === params.id
+    );
     return json({
       obras,
       encarregados,
       equipamento,
       gruposEquipamento,
       tiposEquipamento,
+      files,
     });
   }
 }
@@ -175,7 +190,7 @@ export async function action({ params, request }: ActionArgs) {
       });
     }
     setToastMessage(session, 'Sucesso', 'Equipamento adicionado!', 'success');
-    return redirect('/equipamento', {
+    return redirect(`/equipamento/${equipamento.id}`, {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
@@ -256,6 +271,7 @@ export default function NewEquipamento() {
     equipamento,
     gruposEquipamento,
     tiposEquipamento,
+    files,
   } = useLoaderData<typeof loader>();
   const actionData = useActionData();
   const navigation = useNavigation();
@@ -269,6 +285,10 @@ export default function NewEquipamento() {
   const [generatedCode, setGeneratedCode] = useState<string | null>(null);
   const [selectedIM, setSelectedIM] = useState<Option | null>(null);
   const [selectedIMSuffix, setSelectedIMSuffix] = useState<string>();
+  const uploadFileFetcher = useFetcher();
+  const isUploadingFile =
+    uploadFileFetcher.state === 'submitting' ||
+    uploadFileFetcher.state === 'loading';
 
   useEffect(() => {
     if (equipamento) {
@@ -359,207 +379,247 @@ export default function NewEquipamento() {
       a.displayName.localeCompare(b.displayName)
     );
 
+  const handleFileUpload = async (files: File[]) => {
+    const formData = new FormData();
+    formData.append('file', files[0]);
+    formData.append('name', files[0]?.name ?? '');
+    formData.append('equipamento', equipamento.id);
+
+    uploadFileFetcher.submit(formData, {
+      method: 'post',
+      action: '../../upload-file-equipamento',
+      encType: 'multipart/form-data',
+    });
+  };
+
   return (
     <Modal
       title={`${
         isReadMode ? '' : equipamento ? 'Editar' : 'Adicionar'
       } Equipamento`}
       variant={isReadMode ? 'green' : equipamento ? 'grey' : 'blue'}
-      size="lg"
+      size={files ? 'xl' : 'lg'}
       content={
-        <div className="flex flex-col gap-6">
-          <Row>
-            <Select
-              name="grupo_equipamento"
-              options={sortedGruposEquipamento}
-              label="Grupo"
-              defaultValue={equipamento?.grupo_equipamento}
-              placeholder="-"
-              error={actionData?.errors?.grupo_equipamento}
-              onChange={setSelectedGrupo}
-              disabled={equipamento?.grupo_equipamento || !!isReadMode}
-            />
-            <Select
-              name="tipo_equipamento"
-              options={sortedTiposEquipamento}
-              label="Tipo"
-              defaultValue={equipamento?.tipo_equipamento}
-              placeholder="-"
-              error={actionData?.errors?.tipo_equipamento}
-              disabled={!!isReadMode}
-            />
-            <Input
-              type="number"
-              name="numero"
-              label="Número"
-              className="!w-[80px]"
-              defaultValue={equipamento?.numero}
-              error={actionData?.errors?.numero}
-              onChange={setEquipNumero}
-              disabled={equipamento?.numero || !!isReadMode}
-              readOnly={equipamento?.numero}
-            />
-            <Input
-              type="text"
-              name="codigo"
-              label="Código"
-              className="!w-[80px]"
-              defaultValue={equipamento ? equipamento?.codigo : generatedCode}
-              error={actionData?.errors?.codigo}
-              disabled
-              readOnly
-            />
-          </Row>
-          <input
-            type="hidden"
-            name="instrumento_medicao"
-            value={selectedIM?.name}
-          />
-          <Row>
-            <Input
-              type="text"
-              name="modelo"
-              label="Modelo"
-              defaultValue={equipamento?.modelo}
-              error={actionData?.errors?.modelo}
-              disabled={!!isReadMode}
-            />
-            <Input
-              type="text"
-              name="numero_serie"
-              label="Número Série"
-              defaultValue={equipamento?.numero_serie}
-              error={actionData?.errors?.numero_serie}
-              disabled={!!isReadMode}
-            />
-            <InputMask
-              mask="9999"
-              type="text"
-              name="ano"
-              label="Ano"
-              defaultValue={equipamento?.ano}
-              error={actionData?.errors?.ano}
-              className="!w-20"
-              disabled={!!isReadMode}
-            />
-            <Select
-              name="combustivel"
-              options={COMBUSTIVEIS}
-              label="Combustível"
-              className="!w-[120px]"
-              placeholder="-"
-              defaultValue={equipamento?.combustivel}
-              error={actionData?.errors?.combustivel}
-              disabled={!!isReadMode}
-            />
-          </Row>
+        <>
+          <div
+            className={`${
+              files ? 'grid-cols-[650px_350px] gap-4' : 'grid-cols-1'
+            } grid`}
+          >
+            <div className="flex flex-col gap-2">
+              <Row>
+                <Select
+                  name="grupo_equipamento"
+                  options={sortedGruposEquipamento}
+                  label="Grupo"
+                  defaultValue={equipamento?.grupo_equipamento}
+                  placeholder="-"
+                  error={actionData?.errors?.grupo_equipamento}
+                  onChange={setSelectedGrupo}
+                  disabled={equipamento?.grupo_equipamento || !!isReadMode}
+                />
+                <Select
+                  name="tipo_equipamento"
+                  options={sortedTiposEquipamento}
+                  label="Tipo"
+                  defaultValue={equipamento?.tipo_equipamento}
+                  placeholder="-"
+                  error={actionData?.errors?.tipo_equipamento}
+                  disabled={!!isReadMode}
+                />
+                <Input
+                  type="number"
+                  name="numero"
+                  label="Número"
+                  className="!w-[80px]"
+                  defaultValue={equipamento?.numero}
+                  error={actionData?.errors?.numero}
+                  onChange={setEquipNumero}
+                  disabled={equipamento?.numero || !!isReadMode}
+                  readOnly={equipamento?.numero}
+                />
+                <Input
+                  type="text"
+                  name="codigo"
+                  label="Código"
+                  className="!w-[80px]"
+                  defaultValue={
+                    equipamento ? equipamento?.codigo : generatedCode
+                  }
+                  error={actionData?.errors?.codigo}
+                  disabled
+                  readOnly
+                />
+              </Row>
+              <input
+                type="hidden"
+                name="instrumento_medicao"
+                value={selectedIM?.name}
+              />
+              <Row>
+                <Input
+                  type="text"
+                  name="modelo"
+                  label="Modelo"
+                  defaultValue={equipamento?.modelo}
+                  error={actionData?.errors?.modelo}
+                  disabled={!!isReadMode}
+                />
+                <Input
+                  type="text"
+                  name="numero_serie"
+                  label="Número Série"
+                  defaultValue={equipamento?.numero_serie}
+                  error={actionData?.errors?.numero_serie}
+                  disabled={!!isReadMode}
+                />
+                <InputMask
+                  mask="9999"
+                  type="text"
+                  name="ano"
+                  label="Ano"
+                  defaultValue={equipamento?.ano}
+                  error={actionData?.errors?.ano}
+                  className="!w-20"
+                  disabled={!!isReadMode}
+                />
+                <Select
+                  name="combustivel"
+                  options={COMBUSTIVEIS}
+                  label="Combustível"
+                  className="!w-[120px]"
+                  placeholder="-"
+                  defaultValue={equipamento?.combustivel}
+                  error={actionData?.errors?.combustivel}
+                  disabled={!!isReadMode}
+                />
+              </Row>
 
-          <Row>
-            <Input
-              type="IM"
-              name={
-                equipamento
-                  ? 'instrumento_medicao_atual'
-                  : 'instrumento_medicao_inicio'
-              }
-              label={`${selectedIM ? selectedIM.displayName : 'Valor'} ${
-                equipamento ? 'atual' : 'inicial'
-              }`}
-              className="!w-[150px]"
-              defaultValue={
-                equipamento
-                  ? equipamento?.instrumento_medicao_atual
-                  : equipamento?.instrumento_medicao_inicio
-              }
-              error={
-                equipamento
-                  ? actionData?.errors?.instrumento_medicao_atual
-                  : actionData?.errors?.instrumento_medicao_inicio
-              }
-              suffix={selectedIMSuffix}
-              disabled={!!isReadMode}
-            />
-            <Input
-              type="IM"
-              name="frequencia_revisao"
-              label="Revisar a cada"
-              className="!w-[150px]"
-              defaultValue={equipamento?.frequencia_revisao}
-              error={actionData?.errors?.frequencia_revisao}
-              suffix={selectedIMSuffix}
-              disabled={!!isReadMode}
-            />
-            {equipamento && (
-              <Input
-                type="IM"
-                name="proxima_revisao"
-                label="Próxima revisão"
-                className="!w-[150px]"
-                defaultValue={equipamento?.proxima_revisao}
-                error={actionData?.errors?.proxima_revisao}
-                suffix={selectedIMSuffix}
-                disabled
-              />
-            )}
-          </Row>
-          <Row className="flex flex-col w-full border-t border-grey/30 pt-2">
-            <label className="uppercase font-semibold text-xs">
-              Valor da Locação
-            </label>
-            <div className="flex gap-4">
-              <Input
-                type="currency"
-                name="valor_locacao_mensal"
-                label="Mensal"
-                className="!w-[150px]"
-                defaultValue={equipamento?.valor_locacao_mensal}
-                error={actionData?.errors?.valor_locacao_mensal}
-                placeholder="Ex.: R$ 1.000,00"
-                disabled={!!isReadMode}
-              />
-              <Input
-                type="currency"
-                name="valor_locacao_diario"
-                label="Diário"
-                className="!w-[150px]"
-                defaultValue={equipamento?.valor_locacao_diario}
-                error={actionData?.errors?.valor_locacao_diario}
-                placeholder="Ex.: R$ 100,00"
-                disabled={!!isReadMode}
-              />
-              <Input
-                type="currency"
-                name="valor_locacao_hora"
-                label="Hora"
-                className="!w-[150px]"
-                defaultValue={equipamento?.valor_locacao_hora}
-                error={actionData?.errors?.valor_locacao_hora}
-                placeholder="Ex.: R$ 10,00"
-                disabled={!!isReadMode}
-              />
+              <Row>
+                <Input
+                  type="IM"
+                  name={
+                    equipamento
+                      ? 'instrumento_medicao_atual'
+                      : 'instrumento_medicao_inicio'
+                  }
+                  label={`${selectedIM ? selectedIM.displayName : 'Valor'} ${
+                    equipamento ? 'atual' : 'inicial'
+                  }`}
+                  className="!w-[150px]"
+                  defaultValue={
+                    equipamento
+                      ? equipamento?.instrumento_medicao_atual
+                      : equipamento?.instrumento_medicao_inicio
+                  }
+                  error={
+                    equipamento
+                      ? actionData?.errors?.instrumento_medicao_atual
+                      : actionData?.errors?.instrumento_medicao_inicio
+                  }
+                  suffix={selectedIMSuffix}
+                  disabled={!!isReadMode}
+                />
+                <Input
+                  type="IM"
+                  name="frequencia_revisao"
+                  label="Revisar a cada"
+                  className="!w-[150px]"
+                  defaultValue={equipamento?.frequencia_revisao}
+                  error={actionData?.errors?.frequencia_revisao}
+                  suffix={selectedIMSuffix}
+                  disabled={!!isReadMode}
+                />
+                {equipamento && (
+                  <Input
+                    type="IM"
+                    name="proxima_revisao"
+                    label="Próxima revisão"
+                    className="!w-[150px]"
+                    defaultValue={equipamento?.proxima_revisao}
+                    error={actionData?.errors?.proxima_revisao}
+                    suffix={selectedIMSuffix}
+                    disabled
+                  />
+                )}
+              </Row>
+              <Row className="flex flex-col w-full border-t border-grey/30 pt-2">
+                <label className="uppercase font-semibold text-xs">
+                  Valor da Locação
+                </label>
+                <div className="flex gap-4">
+                  <Input
+                    type="currency"
+                    name="valor_locacao_mensal"
+                    label="Mensal"
+                    className="!w-[150px]"
+                    defaultValue={equipamento?.valor_locacao_mensal}
+                    error={actionData?.errors?.valor_locacao_mensal}
+                    placeholder="Ex.: R$ 1.000,00"
+                    disabled={!!isReadMode}
+                  />
+                  <Input
+                    type="currency"
+                    name="valor_locacao_diario"
+                    label="Diário"
+                    className="!w-[150px]"
+                    defaultValue={equipamento?.valor_locacao_diario}
+                    error={actionData?.errors?.valor_locacao_diario}
+                    placeholder="Ex.: R$ 100,00"
+                    disabled={!!isReadMode}
+                  />
+                  <Input
+                    type="currency"
+                    name="valor_locacao_hora"
+                    label="Hora"
+                    className="!w-[150px]"
+                    defaultValue={equipamento?.valor_locacao_hora}
+                    error={actionData?.errors?.valor_locacao_hora}
+                    placeholder="Ex.: R$ 10,00"
+                    disabled={!!isReadMode}
+                  />
+                </div>
+              </Row>
+              <Row>
+                <Select
+                  name="obra"
+                  options={sortedObras}
+                  label="Alocado à obra"
+                  placeholder="-"
+                  defaultValue={equipamento?.obra}
+                  error={actionData?.errors?.obra}
+                  disabled={!!isReadMode}
+                />
+                <Select
+                  name="encarregado"
+                  options={encarregados}
+                  label="Encarregado"
+                  defaultValue={equipamento?.encarregado}
+                  placeholder="-"
+                  error={actionData?.errors?.encarregado}
+                  disabled={!!isReadMode}
+                />
+              </Row>
             </div>
-          </Row>
-          <Row>
-            <Select
-              name="obra"
-              options={sortedObras}
-              label="Alocado à obra"
-              placeholder="-"
-              defaultValue={equipamento?.obra}
-              error={actionData?.errors?.obra}
-              disabled={!!isReadMode}
-            />
-            <Select
-              name="encarregado"
-              options={encarregados}
-              label="Encarregado"
-              defaultValue={equipamento?.encarregado}
-              placeholder="-"
-              error={actionData?.errors?.encarregado}
-              disabled={!!isReadMode}
-            />
-          </Row>
-        </div>
+            {files && (
+              <div className="border-l border-grey/50 w-[300px]">
+                {files && (
+                  <Row className="pl-6">
+                    <FileList files={files} path="equipamento" />
+                  </Row>
+                )}
+                {equipamento && (
+                  <Row>
+                    <FileUploader
+                      onChange={handleFileUpload}
+                      isUploadingFile={isUploadingFile}
+                    />
+                  </Row>
+                )}
+              </div>
+            )}
+          </div>
+        </>
       }
       footerActions={
         isReadMode ? null : (
@@ -574,7 +634,7 @@ export default function NewEquipamento() {
                 <PlusCircleIcon />
               )
             }
-            text={equipamento ? 'Editar' : 'Adicionar'}
+            text={equipamento ? 'Concluir' : 'Adicionar'}
             name="_action"
             value={equipamento ? 'edit' : 'create'}
           />

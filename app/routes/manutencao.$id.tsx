@@ -36,7 +36,7 @@ import {
   getManutencao,
   _updateManutencao,
 } from '~/models/manutencao.server';
-import { type Operador, getOperadores } from '~/models/operador.server';
+import { getOperadores } from '~/models/operador.server';
 import {
   commitSession,
   getSession,
@@ -269,7 +269,7 @@ export default function NewOperador() {
               files ? 'grid-cols-[350px_350px] gap-4' : 'grid-cols-1'
             } grid`}
           >
-            <div>
+            <div className="flex flex-col gap-2">
               <Row>
                 {equip ? (
                   <RadioOptions
