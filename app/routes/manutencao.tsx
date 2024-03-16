@@ -22,7 +22,7 @@ import Modal from '~/components/Modal';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 import PencilIcon from '~/components/icons/PencilIcon';
 import Add from '~/components/icons/PlusCircleIcon';
-import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
+import { getEquipamento } from '~/models/equipamento.server';
 import {
   type Manutencao,
   getManutencoes,
@@ -54,6 +54,7 @@ export async function loader({ request }: LoaderArgs) {
   const filter = searchParams.get('filter');
   const page = searchParams.get('page' || '1');
   const perPage = searchParams.get('perPage' || '30');
+  const equipamentoFilter = searchParams.get('equipamento');
 
   const [sortColumn, order] = sortParam?.split(':') ?? [];
   const sortingBy =
@@ -63,19 +64,25 @@ export async function loader({ request }: LoaderArgs) {
 
   //encarregado do not have access to table manutencao
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const manutencoes = await getManutencoes(
+    const allManutencoes = await getManutencoes(
       userToken,
       sortingBy,
       filter as string,
       page as string,
       perPage as string
     );
-    const equipamentos = await getEquipamentos(
+    const filteredManutencoes = equipamentoFilter
+      ? allManutencoes.items.filter(
+          (item) => item.equipamento === equipamentoFilter
+        )
+      : allManutencoes.items;
+    const manutencoes = { ...allManutencoes, items: filteredManutencoes };
+    const equipamento = await getEquipamento(
       userToken,
-      'created',
-      filter as string
+      equipamentoFilter as string
     );
-    return json({ manutencoes, equipamentos: equipamentos.items });
+
+    return json({ manutencoes, equipamento });
   } else {
     throw json('Acesso proibido', { status: 403 });
   }
@@ -123,13 +130,13 @@ export default function ManutencaoPage() {
   const [activeFilters, setActiveFilters] = useState<{ [key: string]: string }>(
     {}
   );
-  const { manutencoes, equipamentos } = useLoaderData<typeof loader>();
+  const { manutencoes, equipamento } = useLoaderData<typeof loader>();
   const { selectedRow } = useSelectRow() as UseSelectedRow;
   const navigate = useNavigate();
   const location = useLocation();
 
   const [searchParams] = useSearchParams();
-  const param = searchParams.get('param');
+  const equipamentoFilter = searchParams.get('equipamento');
 
   useEffect(() => {
     const newSearchParams = new URLSearchParams(searchParams);
@@ -159,10 +166,6 @@ export default function ManutencaoPage() {
     return () => clearTimeout(timeout);
   }, [activeFilters]);
 
-  // useEffect(() => {
-  //   setSelectedRow('');
-  // }, [param, filter, setSelectedRow]);
-
   const handleCloseModalDesativar = () => {
     navigate('/manutencao');
     setModalDesativarOpen(false);
@@ -184,10 +187,6 @@ export default function ManutencaoPage() {
     }
   };
 
-  const equipamento = equipamentos?.find(
-    (equip: Equipamento) => equip.id === param
-  );
-
   const selectedManutencao = manutencoes?.items?.find(
     (manutencao: Manutencao) => manutencao.id === selectedRow
   );
@@ -196,10 +195,12 @@ export default function ManutencaoPage() {
     <>
       <div className="flex justify-between items-end">
         <div className="flex gap-2">
-          {param && <Link to="/equipamento">Lista de Equipamentos</Link>}
-          {param && '/'}
+          {equipamentoFilter && (
+            <Link to="/equipamento">Lista de Equipamentos</Link>
+          )}
+          {equipamentoFilter && '/'}
           <h1 className="font-semibold">
-            {param
+            {equipamentoFilter
               ? `Histórico de Manutenções (${equipamento?.codigo} - ${equipamento?.tipo_equipamentoX})`
               : 'Lista de Manutenções'}
           </h1>

@@ -218,7 +218,7 @@ export default function EquipamentoPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`/manutencao?param=${selectedRow}`}
+                to={`/manutencao?equipamento=${selectedRow}`}
                 variant="blue"
                 icon={<ServiceIcon />}
               >
