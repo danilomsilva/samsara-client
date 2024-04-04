@@ -188,7 +188,8 @@ export default function MultaPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`./${selectedRow}?read=true`}
+                to={`./${selectedRow}${location.search}&read=true`}
+                state={{ previousLocation: `/multa${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}
               >

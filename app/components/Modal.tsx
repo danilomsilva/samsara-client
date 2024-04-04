@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import XIcon from './icons/XIcon';
-import { Form, Link } from '@remix-run/react';
+import { Form, Link, useLocation } from '@remix-run/react';
 
 type VariantStyle = {
   [key: string]: {
@@ -29,6 +29,8 @@ export default function Modal({
   footerActions,
   handleCloseModal,
 }: PropTypes) {
+  const location = useLocation();
+
   const variantStyle: VariantStyle = {
     blue: {
       borderTop: 'border-t-blue',
@@ -89,7 +91,7 @@ export default function Modal({
             </div>
           ) : (
             <Link
-              to=".."
+              to={location?.state?.previousLocation || '..'}
               className="hover:bg-white/50 rounded-lg cursor-pointer"
             >
               <XIcon

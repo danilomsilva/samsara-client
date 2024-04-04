@@ -291,7 +291,8 @@ export default function BoletinsPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`./${selectedRow}?read=true`}
+                to={`./${selectedRow}${location.search}&read=true`}
+                state={{ previousLocation: `/boletim${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}
               >

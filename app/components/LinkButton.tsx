@@ -8,6 +8,7 @@ type PropTypes = {
   className?: string;
   icon?: ReactNode;
   variant?: 'blue' | 'grey' | 'red' | 'green' | 'outlineNone';
+  state?: { previousLocation: string };
 };
 
 export default function LinkButton({
@@ -16,6 +17,7 @@ export default function LinkButton({
   className,
   icon,
   variant,
+  state,
 }: PropTypes) {
   const variantStyle = {
     blue: 'bg-blue hover:bg-blue/50',
@@ -28,6 +30,7 @@ export default function LinkButton({
   return (
     <Link
       to={to}
+      state={state}
       className={cn(
         `${className} ${
           variant && variantStyle[variant]

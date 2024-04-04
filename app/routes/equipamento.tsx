@@ -225,7 +225,8 @@ export default function EquipamentoPage() {
                 Histórico de manutenção
               </LinkButton>
               <LinkButton
-                to={`./${selectedRow}?read=true`}
+                to={`./${selectedRow}${location.search}&read=true`}
+                state={{ previousLocation: `/equipamento${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}
               >

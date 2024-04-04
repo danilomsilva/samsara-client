@@ -179,7 +179,8 @@ export default function ObrasPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`./${selectedRow}?read=true`}
+                to={`./${selectedRow}${location.search}&read=true`}
+                state={{ previousLocation: `/obra${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}
               >

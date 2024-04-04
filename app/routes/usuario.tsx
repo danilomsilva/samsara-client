@@ -180,7 +180,8 @@ export default function UsuarioPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`./${selectedRow}?read=true`}
+                to={`./${selectedRow}${location.search}&read=true`}
+                state={{ previousLocation: `/usuario${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}
               >

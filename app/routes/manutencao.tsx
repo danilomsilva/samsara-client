@@ -209,7 +209,8 @@ export default function ManutencaoPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`./${selectedRow}?read=true`}
+                to={`./${selectedRow}${location.search}&read=true`}
+                state={{ previousLocation: `/manutencao${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}
               >
