@@ -138,7 +138,7 @@ export async function action({ params, request }: ActionArgs) {
       return json({ error: manutencao.data });
     }
     setToastMessage(session, 'Sucesso', 'Manutenção adicionada!', 'success');
-    return redirect('/manutencao', {
+    return redirect(`/manutencao/${manutencao.id}`, {
       headers: {
         'Set-Cookie': await commitSession(session),
       },
