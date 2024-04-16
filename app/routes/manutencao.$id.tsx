@@ -346,9 +346,7 @@ export default function NewOperador() {
                   type="IM"
                   name="IM_atual"
                   label={`${
-                    equipamento
-                      ? equipamento?.instrumento_medicao
-                      : 'Horím./Odôm.'
+                    equipamento ? equipamento?.instrumento_medicao : 'IM Atual'
                   }`}
                   className="!w-[130px]"
                   defaultValue={
@@ -364,6 +362,22 @@ export default function NewOperador() {
                     !!isReadMode
                   }
                 />
+                {equip && (
+                  <Input
+                    type="IM"
+                    name="IM_atual_manual"
+                    label="IM Informado"
+                    className="!w-[130px]"
+                    defaultValue={
+                      paramEquipamento
+                        ? paramEquipamento?.IM_atual_manual
+                        : manutencao?.IM_atual_manual
+                    }
+                    error={actionData?.errors?.IM_atual_manual}
+                    suffix={selectedIMSuffix}
+                    disabled={!!isReadMode}
+                  />
+                )}
               </Row>
               <Row>
                 {manutencao?.boletim && (
