@@ -97,6 +97,7 @@ export async function action({ params, request }: ActionArgs) {
   const { userToken } = await getUserSession(request);
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
+  console.log('>>>>>>>', formData);
 
   const validationScheme = z.object({
     tipo_manutencao: z.string(),
@@ -106,6 +107,7 @@ export async function action({ params, request }: ActionArgs) {
     feito_por: z.string().min(1, CAMPO_OBRIGATORIO),
     equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
     IM_atual: z.string().min(1, CAMPO_OBRIGATORIO),
+    IM_atual_manual: z.string().min(1, CAMPO_OBRIGATORIO),
     descricao: z.string().min(1, CAMPO_OBRIGATORIO),
   });
 
@@ -120,6 +122,7 @@ export async function action({ params, request }: ActionArgs) {
         feito_por: errors.feito_por?._errors[0],
         equipamento: errors.equipamento?._errors[0],
         IM_atual: errors.IM_atual?._errors[0],
+        IM_atual_manual: errors.IM_atual_manual?._errors[0],
         descricao: errors.descricao?._errors[0],
       },
     };
@@ -131,6 +134,7 @@ export async function action({ params, request }: ActionArgs) {
       boletim: '-',
       data_manutencao: convertDateToISO(formData.data_manutencao as string),
       IM_atual: removeIMSuffix(formData.IM_atual as string),
+      IM_atual_manual: removeIMSuffix(formData.IM_atual_manual as string),
     };
     const manutencao = await _createManutencao(userToken, body);
 
@@ -150,6 +154,7 @@ export async function action({ params, request }: ActionArgs) {
       ...formData,
       data_manutencao: convertDateToISO(formData.data_manutencao as string),
       IM_atual: removeIMSuffix(formData.IM_atual as string),
+      IM_atual_manual: removeIMSuffix(formData.IM_atual_manual as string),
     };
     await _updateManutencao(
       userToken,
@@ -342,13 +347,17 @@ export default function NewOperador() {
                     !!isReadMode
                   }
                 />
+              </Row>
+              <Row>
                 <Input
                   type="IM"
                   name="IM_atual"
                   label={`${
-                    equipamento ? equipamento?.instrumento_medicao : 'IM Atual'
+                    equipamento
+                      ? `${equipamento?.instrumento_medicao} Atual`
+                      : 'IM Atual'
                   }`}
-                  className="!w-[130px]"
+                  className="!w-[168px]"
                   defaultValue={
                     paramEquipamento
                       ? paramEquipamento?.IM_atual
@@ -356,18 +365,19 @@ export default function NewOperador() {
                   }
                   error={actionData?.errors?.IM_atual}
                   suffix={selectedIMSuffix}
-                  disabled={
-                    (manutencao && manutencao?.boletim !== '-') ||
-                    paramEquipamento ||
-                    !!isReadMode
-                  }
+                  disabled={!!manutencao}
                 />
-                {equip && (
+
+                {manutencao?.IM_atual_manual && (
                   <Input
                     type="IM"
                     name="IM_atual_manual"
-                    label="IM Informado"
-                    className="!w-[130px]"
+                    label={`${
+                      equipamento
+                        ? `${equipamento?.instrumento_medicao} Manual`
+                        : 'IM Manual'
+                    }`}
+                    className="!w-[168px]"
                     defaultValue={
                       paramEquipamento
                         ? paramEquipamento?.IM_atual_manual
