@@ -849,14 +849,14 @@ export default function NewBoletim() {
                 )}
               </div>
             </div>
-            <div className="w-full pl-4">
+            <div className="w-full pl-4 overflow-hidden">
               <Row>
                 <InputValue
                   type="IM"
                   name="abastecimento_1"
                   label="Abast. 1 (L)"
                   value={boletim?.abastecimento_1}
-                  className="!w-[114px]"
+                  className="!w-[113px]"
                   disabled={!!isReadMode}
                 />
                 <InputValue
@@ -895,7 +895,6 @@ export default function NewBoletim() {
                   defaultValue={boletim?.descricao_manutencao}
                   error={actionData?.errors?.descricao_manutencao}
                   disabled={!!isReadMode}
-                  //TODO: allow scroll but not edit
                 />
               </Row>
               {files && (

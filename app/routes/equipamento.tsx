@@ -179,8 +179,13 @@ export default function EquipamentoPage() {
       });
       const splitFilters = newFilters.split(')(');
       const joinedFilters = splitFilters.join(')&&(');
-      newSearchParams.set('filter', joinedFilters);
-      navigate(`${location.pathname}?${newSearchParams.toString()}`);
+      if (joinedFilters) {
+        newSearchParams.set('filter', joinedFilters);
+        navigate(`${location.pathname}?${newSearchParams.toString()}`);
+      } else {
+        newSearchParams.delete('filter');
+        navigate(`${location.pathname}?${newSearchParams.toString()}`);
+      }
     }, 1000);
     return () => clearTimeout(timeout);
   }, [activeFilters]);

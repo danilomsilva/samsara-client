@@ -32,7 +32,7 @@ export default function FileList({
   };
 
   return (
-    <div className="text-sm">
+    <div className="text-sm !w-[250px]">
       {files.length > 0 && <label>Anexos</label>}
       <div className="flex flex-wrap gap-x-4 gap-y-1 max-w-[280px] overflow-hidden">
         {files.map((item: FileTypes) => {
