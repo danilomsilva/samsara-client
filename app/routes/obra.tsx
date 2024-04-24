@@ -176,6 +176,10 @@ export default function ObrasPage() {
 
   const selectedObra = obras.items.find((obra) => obra?.id === selectedRow);
 
+  const currentURL = `./${selectedRow}${location.search}`;
+  const mountedURL = currentURL.includes('?') ? '&read=true' : '?read=true';
+  const newURL = `${currentURL}${mountedURL}`;
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -184,7 +188,7 @@ export default function ObrasPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`./${selectedRow}${location.search}&read=true`}
+                to={newURL}
                 state={{ previousLocation: `/obra${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}

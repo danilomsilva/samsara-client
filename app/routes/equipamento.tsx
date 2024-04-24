@@ -215,6 +215,10 @@ export default function EquipamentoPage() {
     (eq) => eq?.id === selectedRow
   );
 
+  const currentURL = `./${selectedRow}${location.search}`;
+  const mountedURL = currentURL.includes('?') ? '&read=true' : '?read=true';
+  const newURL = `${currentURL}${mountedURL}`;
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -230,7 +234,7 @@ export default function EquipamentoPage() {
                 Histórico de manutenção
               </LinkButton>
               <LinkButton
-                to={`./${selectedRow}${location.search}&read=true`}
+                to={newURL}
                 state={{ previousLocation: `/equipamento${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}

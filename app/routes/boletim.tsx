@@ -288,6 +288,10 @@ export default function BoletinsPage() {
     (boletim) => boletim?.id === selectedRow
   );
 
+  const currentURL = `./${selectedRow}${location.search}`;
+  const mountedURL = currentURL.includes('?') ? '&read=true' : '?read=true';
+  const newURL = `${currentURL}${mountedURL}`;
+
   return (
     <>
       <div className="flex justify-between items-end">
@@ -296,7 +300,7 @@ export default function BoletinsPage() {
           {selectedRow ? (
             <>
               <LinkButton
-                to={`./${selectedRow}${location.search}&read=true`}
+                to={newURL}
                 state={{ previousLocation: `/boletim${location?.search}` }}
                 variant="green"
                 icon={<ReadIcon />}

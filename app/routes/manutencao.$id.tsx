@@ -174,7 +174,6 @@ export default function NewOperador() {
     equipamento: paramEquipamento,
     files,
   } = useLoaderData<typeof loader>();
-  console.log(manutencao);
   const actionData = useActionData();
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
@@ -259,7 +258,9 @@ export default function NewOperador() {
   return (
     <Modal
       title={`${isReadMode ? '' : manutencao ? 'Editar' : 'Adicionar'} ${
-        equip ? 'Revisão' : 'Manutenção'
+        equip || manutencao?.tipo_manutencao === 'Revisão'
+          ? 'Revisão'
+          : 'Manutenção'
       }`}
       variant={isReadMode ? 'green' : manutencao ? 'grey' : 'blue'}
       size={files ? 'lg' : 'md'}
@@ -272,7 +273,7 @@ export default function NewOperador() {
           >
             <div className="flex flex-col gap-2">
               <Row>
-                {equip ? (
+                {equip || manutencao?.tipo_manutencao === 'Revisão' ? (
                   <RadioOptions
                     name="tipo_manutencao"
                     label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
@@ -340,7 +341,8 @@ export default function NewOperador() {
                   disabled={
                     (manutencao && manutencao?.boletim !== '-') ||
                     paramEquipamento ||
-                    !!isReadMode
+                    !!isReadMode ||
+                    manutencao?.tipo_manutencao === 'Revisão'
                   }
                 />
                 <Input
@@ -362,7 +364,8 @@ export default function NewOperador() {
                   disabled={
                     (manutencao && manutencao?.boletim !== '-') ||
                     paramEquipamento ||
-                    !!isReadMode
+                    !!isReadMode ||
+                    manutencao?.tipo_manutencao === 'Revisão'
                   }
                 />
               </Row>
