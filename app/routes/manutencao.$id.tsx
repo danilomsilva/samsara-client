@@ -106,6 +106,7 @@ export async function action({ params, request }: ActionArgs) {
     feito_por: z.string().min(1, CAMPO_OBRIGATORIO),
     equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
     IM_atual: z.string().min(1, CAMPO_OBRIGATORIO),
+    IM_atual_manual: z.string().min(1, CAMPO_OBRIGATORIO), // TODO: dynamically validate - only if revisao
     descricao: z.string().min(1, CAMPO_OBRIGATORIO),
   });
 
@@ -120,6 +121,7 @@ export async function action({ params, request }: ActionArgs) {
         feito_por: errors.feito_por?._errors[0],
         equipamento: errors.equipamento?._errors[0],
         IM_atual: errors.IM_atual?._errors[0],
+        IM_atual_manual: errors.IM_atual_manual?._errors[0], // TODO: dynamically validate - only if revisao
         descricao: errors.descricao?._errors[0],
       },
     };
@@ -131,6 +133,7 @@ export async function action({ params, request }: ActionArgs) {
       boletim: '-',
       data_manutencao: convertDateToISO(formData.data_manutencao as string),
       IM_atual: removeIMSuffix(formData.IM_atual as string),
+      IM_atual_manual: removeIMSuffix(formData.IM_atual_manual as string),
     };
     const manutencao = await _createManutencao(userToken, body);
 
@@ -150,6 +153,7 @@ export async function action({ params, request }: ActionArgs) {
       ...formData,
       data_manutencao: convertDateToISO(formData.data_manutencao as string),
       IM_atual: removeIMSuffix(formData.IM_atual as string),
+      IM_atual_manual: removeIMSuffix(formData.IM_atual_manual as string),
     };
     await _updateManutencao(
       userToken,
@@ -166,7 +170,7 @@ export async function action({ params, request }: ActionArgs) {
   return redirect('..');
 }
 
-export default function NewOperador() {
+export default function NewManutencao() {
   const {
     manutencao,
     operadores,
@@ -179,6 +183,7 @@ export default function NewOperador() {
   const [searchParams] = useSearchParams();
   const equip = searchParams.get('equip');
   const isReadMode = searchParams.get('read');
+  const isRevisao = manutencao?.tipo_manutencao === 'Revisão';
   const isSubmitting =
     navigation.state === 'submitting' || navigation.state === 'loading';
   const [selectedEquipamento, setSelectedEquipamento] = useState<Option | null>(
@@ -258,9 +263,7 @@ export default function NewOperador() {
   return (
     <Modal
       title={`${isReadMode ? '' : manutencao ? 'Editar' : 'Adicionar'} ${
-        equip || manutencao?.tipo_manutencao === 'Revisão'
-          ? 'Revisão'
-          : 'Manutenção'
+        equip || isRevisao ? 'Revisão' : 'Manutenção'
       }`}
       variant={isReadMode ? 'green' : manutencao ? 'grey' : 'blue'}
       size={files ? 'lg' : 'md'}
@@ -273,7 +276,7 @@ export default function NewOperador() {
           >
             <div className="flex flex-col gap-2">
               <Row>
-                {equip || manutencao?.tipo_manutencao === 'Revisão' ? (
+                {equip || isRevisao ? (
                   <RadioOptions
                     name="tipo_manutencao"
                     label={`Tipo de ${equip ? 'Serviço' : 'Manutenção'}:`}
@@ -303,6 +306,7 @@ export default function NewOperador() {
                   type="text"
                   name="data_manutencao"
                   label="Data"
+                  className="w-[120px]"
                   defaultValue={
                     manutencao
                       ? convertISOToDate(manutencao?.data_manutencao)
@@ -342,18 +346,20 @@ export default function NewOperador() {
                     (manutencao && manutencao?.boletim !== '-') ||
                     paramEquipamento ||
                     !!isReadMode ||
-                    manutencao?.tipo_manutencao === 'Revisão'
+                    isRevisao
                   }
                 />
+              </Row>
+              <Row>
                 <Input
                   type="IM"
                   name="IM_atual"
+                  className="w-[167px]"
                   label={`${
                     equipamento
                       ? equipamento?.instrumento_medicao
                       : 'Horím./Odôm.'
-                  }`}
-                  className="!w-[130px]"
+                  } ${isRevisao ? '(Ref.)' : 'Atual'}`}
                   defaultValue={
                     paramEquipamento
                       ? paramEquipamento?.IM_atual
@@ -365,9 +371,27 @@ export default function NewOperador() {
                     (manutencao && manutencao?.boletim !== '-') ||
                     paramEquipamento ||
                     !!isReadMode ||
-                    manutencao?.tipo_manutencao === 'Revisão'
+                    isRevisao
                   }
                 />
+                {equip || isRevisao ? (
+                  <Input
+                    type="IM"
+                    name="IM_atual_manual"
+                    label="IM Verdadeiro"
+                    className={
+                      equip || isRevisao || manutencao ? 'w-[167px]' : ''
+                    }
+                    defaultValue={
+                      paramEquipamento
+                        ? paramEquipamento?.IM_atual_manual
+                        : manutencao?.IM_atual_manual
+                    }
+                    error={actionData?.errors?.IM_atual_manual}
+                    suffix={selectedIMSuffix}
+                    disabled={!!isReadMode}
+                  />
+                ) : null}
               </Row>
               <Row>
                 {manutencao?.boletim && (

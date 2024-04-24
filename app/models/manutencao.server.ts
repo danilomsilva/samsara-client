@@ -28,6 +28,7 @@ export type Manutencao = {
   boletim?: string;
   equipamento?: string;
   IM_atual?: string;
+  IM_atual_manual?: string;
   tipo_manutencao?: string;
   feito_por?: string;
   feito_porX?: string;
