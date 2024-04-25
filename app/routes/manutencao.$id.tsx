@@ -98,7 +98,7 @@ export async function action({ params, request }: ActionArgs) {
   const session = await getSession(request);
   const formData = Object.fromEntries(await request.formData());
 
-  const validationScheme = z.object({
+  const commonValidation = {
     tipo_manutencao: z.string(),
     data_manutencao: z.string().refine((val) => {
       return isDateBefore(val, getTomorrowDate());
@@ -106,25 +106,47 @@ export async function action({ params, request }: ActionArgs) {
     feito_por: z.string().min(1, CAMPO_OBRIGATORIO),
     equipamento: z.string().min(1, CAMPO_OBRIGATORIO),
     IM_atual: z.string().min(1, CAMPO_OBRIGATORIO),
-    IM_atual_manual: z.string().min(1, CAMPO_OBRIGATORIO), // TODO: dynamically validate - only if revisao
     descricao: z.string().min(1, CAMPO_OBRIGATORIO),
-  });
+  };
 
-  const validatedScheme = validationScheme.safeParse(formData);
-
-  if (!validatedScheme.success) {
-    const errors = validatedScheme.error.format();
-    return {
-      errors: {
-        tipo_manutencao: errors.tipo_manutencao?._errors[0],
-        data_manutencao: errors.data_manutencao?._errors[0],
-        feito_por: errors.feito_por?._errors[0],
-        equipamento: errors.equipamento?._errors[0],
-        IM_atual: errors.IM_atual?._errors[0],
-        IM_atual_manual: errors.IM_atual_manual?._errors[0], // TODO: dynamically validate - only if revisao
-        descricao: errors.descricao?._errors[0],
-      },
-    };
+  if (formData.tipo_manutencao === 'Revisão') {
+    const validationScheme = z.object({
+      ...commonValidation,
+      IM_atual_manual: z.string().min(1, CAMPO_OBRIGATORIO),
+    });
+    const validatedScheme = validationScheme.safeParse(formData);
+    if (!validatedScheme.success) {
+      const errors = validatedScheme.error.format();
+      return {
+        errors: {
+          tipo_manutencao: errors.tipo_manutencao?._errors[0],
+          data_manutencao: errors.data_manutencao?._errors[0],
+          feito_por: errors.feito_por?._errors[0],
+          equipamento: errors.equipamento?._errors[0],
+          IM_atual: errors.IM_atual?._errors[0],
+          IM_atual_manual: errors.IM_atual_manual?._errors[0],
+          descricao: errors.descricao?._errors[0],
+        },
+      };
+    }
+  } else {
+    const validationScheme = z.object({
+      ...commonValidation,
+    });
+    const validatedScheme = validationScheme.safeParse(formData);
+    if (!validatedScheme.success) {
+      const errors = validatedScheme.error.format();
+      return {
+        errors: {
+          tipo_manutencao: errors.tipo_manutencao?._errors[0],
+          data_manutencao: errors.data_manutencao?._errors[0],
+          feito_por: errors.feito_por?._errors[0],
+          equipamento: errors.equipamento?._errors[0],
+          IM_atual: errors.IM_atual?._errors[0],
+          descricao: errors.descricao?._errors[0],
+        },
+      };
+    }
   }
 
   if (formData._action === 'create') {
@@ -354,7 +376,7 @@ export default function NewManutencao() {
                 <Input
                   type="IM"
                   name="IM_atual"
-                  className="w-[167px]"
+                  className="!w-[167px]"
                   label={`${
                     equipamento
                       ? equipamento?.instrumento_medicao
@@ -380,7 +402,7 @@ export default function NewManutencao() {
                     name="IM_atual_manual"
                     label="IM Verdadeiro"
                     className={
-                      equip || isRevisao || manutencao ? 'w-[167px]' : ''
+                      equip || isRevisao || manutencao ? '!w-[167px]' : ''
                     }
                     defaultValue={
                       paramEquipamento
