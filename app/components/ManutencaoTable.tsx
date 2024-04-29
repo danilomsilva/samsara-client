@@ -85,29 +85,34 @@ export default function ManutencaoTable({
                 } h-10 border-b border-grey/10`}
                 onClick={() => setSelectedRow(row.id)}
               >
-                {columns.map((col: ColumnType, colIndex: number) => (
-                  <td key={colIndex} className="px-2 whitespace-nowrap">
-                    {col.key === 'boletim' && row[col.key] !== '-' ? (
-                      <Link
-                        to={`/boletim/${row[col.key]}`}
-                        className="text-blue font-semibold cursor-pointer"
-                      >
-                        {row[col.key]}
-                      </Link>
-                    ) : (
-                      <div className="mr-2 whitespace-nowrap">
-                        {typeof row[col.key] === 'boolean' ? (
-                          <div className="flex gap-1 items-center">
-                            <CogIcon />
-                            <p>{row[col.key] ? 'Sim' : 'Não'}</p>
-                          </div>
-                        ) : (
-                          row[col.key]
-                        )}
-                      </div>
-                    )}
-                  </td>
-                ))}
+                {columns.map((col: ColumnType, colIndex: number) => {
+                  return (
+                    <td key={colIndex} className="px-2 whitespace-nowrap">
+                      {col.key === 'boletim' && row[col.key] !== '-' ? (
+                        <Link
+                          to={`/boletim/${row[col.key]}`}
+                          className="text-blue font-semibold cursor-pointer"
+                        >
+                          {row[col.key]}
+                        </Link>
+                      ) : col.key === 'IM_revisao' &&
+                        row[col.key] === '0  Km' ? (
+                        '-'
+                      ) : (
+                        <div className="mr-2 whitespace-nowrap">
+                          {typeof row[col.key] === 'boolean' ? (
+                            <div className="flex gap-1 items-center">
+                              <CogIcon />
+                              <p>{row[col.key] ? 'Sim' : 'Não'}</p>
+                            </div>
+                          ) : (
+                            row[col.key]
+                          )}
+                        </div>
+                      )}
+                    </td>
+                  );
+                })}
                 {row.inativo && row.motivo.length > 0 && (
                   <td className="px-2 whitespace-nowrap">
                     <div className="flex items-center justify-center h-10">
