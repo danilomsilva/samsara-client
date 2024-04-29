@@ -216,6 +216,19 @@ export async function _updateManutencao(
     feito_porX: operador.nome_completo,
     encarregadoX: operador.encarregadoX,
   };
+
+  if (body?.tipo_manutencao === 'Revisão') {
+    const equipBody = {
+      ...equipamento,
+      proxima_revisao: Number(
+        Number(body?.IM_revisao) + Number(equipamento.frequencia_revisao)
+      ).toFixed(2),
+    };
+    await _updateEquipamento(userToken, equipamento.id as string, equipBody, {
+      skipProxRevisaoCalc: true,
+    });
+  }
+
   await updateManutencao(userToken, manutencao.id, editBody);
   if (body.boletim) {
     const boletins = await getBoletins(userToken, 'created', '');
