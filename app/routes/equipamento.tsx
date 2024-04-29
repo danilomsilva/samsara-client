@@ -80,6 +80,7 @@ export async function loader({ request }: LoaderArgs) {
           item.instrumento_medicao_inicio &&
           formatNumberWithDotDelimiter(Number(item.instrumento_medicao_inicio))
         } ${suffix}`,
+        IM_atual: item.instrumento_medicao_atual,
         instrumento_medicao_atual: `${
           item.instrumento_medicao_atual &&
           formatNumberWithDotDelimiter(Number(item.instrumento_medicao_atual))
@@ -88,6 +89,7 @@ export async function loader({ request }: LoaderArgs) {
           item.frequencia_revisao &&
           formatNumberWithDotDelimiter(Number(item.frequencia_revisao))
         } ${suffix}`,
+        prox_revisao: item.proxima_revisao,
         proxima_revisao: `${
           item.proxima_revisao &&
           formatNumberWithDotDelimiter(Number(item.proxima_revisao))

@@ -29,7 +29,6 @@ const columns = [
   { key: 'instrumento_medicao_inicio', label: 'IM Início' },
   { key: 'instrumento_medicao_atual', label: 'IM Atual' },
   { key: 'proxima_revisao', label: 'Próx. Revisão' },
-  { key: 'revisao_status', label: 'Restante' },
   { key: 'encarregadoX', label: 'Encarregado' },
   { key: 'obraX', label: 'Obra' },
 ];
@@ -78,80 +77,83 @@ export default function EquipamentoTable({
             </tr>
           </thead>
           <tbody>
-            {rows.map((row: any, rowIndex: number) => (
-              <tr
-                key={rowIndex}
-                className={`${row.inativo && 'text-grey/30'}  ${
-                  selectedRow === row.id && 'bg-blue/20 text-blue'
-                } h-10 border-b border-grey/10`}
-                onClick={() => setSelectedRow(row.id)}
-              >
-                {columns.map((col: ColumnType, colIndex: number) => {
-                  const colorsConditions =
-                    row.grupo_equipamentoX === 'Máquina' ||
-                    row.grupo_equipamentoX === 'Motocicleta'
-                      ? 100
-                      : row.grupo_equipamentoX === 'Caminhão' ||
-                        row.grupo_equipamentoX === 'Automóvel'
-                      ? 1000
-                      : 100;
+            {rows.map((row: any, rowIndex: number) => {
+              return (
+                <tr
+                  key={rowIndex}
+                  className={`${row.inativo && 'text-grey/30'}  ${
+                    selectedRow === row.id && 'bg-blue/20 text-blue'
+                  } h-10 border-b border-grey/10`}
+                  onClick={() => setSelectedRow(row.id)}
+                >
+                  {columns.map((col: ColumnType, colIndex: number) => {
+                    const colValues =
+                      col.key === 'proxima_revisao'
+                        ? row.prox_revisao - row.IM_atual
+                        : row[col.key];
+                    const colorsConditions =
+                      row.grupo_equipamentoX === 'Máquina' ||
+                      row.grupo_equipamentoX === 'Motocicleta'
+                        ? 100
+                        : row.grupo_equipamentoX === 'Caminhão' ||
+                          row.grupo_equipamentoX === 'Automóvel'
+                        ? 1000
+                        : 100;
 
-                  const revisaoStatusColor =
-                    col.key === 'revisao_status' && row[col.key] <= 0
-                      ? 'red'
-                      : row[col.key] > 0 && row[col.key] <= colorsConditions
-                      ? 'orange'
-                      : 'green';
+                    const revisaoStatusColor =
+                      col.key === 'proxima_revisao' && colValues <= 0
+                        ? 'red'
+                        : colValues > 0 && colValues <= colorsConditions
+                        ? 'orange'
+                        : 'green';
 
-                  return (
-                    <td key={colIndex} className="px-2 whitespace-nowrap">
-                      {col.key === 'codigo' ? (
-                        <div className="flex justify-between items-center w-full mr-1 gap-1">
-                          <div className="whitespace-nowrap">
-                            {row[col.key]}
+                    return (
+                      <td key={colIndex} className="px-2 whitespace-nowrap">
+                        {col.key === 'codigo' ? (
+                          <div className="flex justify-between items-center w-full mr-1 gap-1">
+                            <div className="whitespace-nowrap">
+                              {row[col.key]}
+                            </div>
+                            <Tooltip
+                              contentClassName="z-50"
+                              content={`Número de série: ${row.numero_serie}`}
+                            >
+                              <InfoIcon className="h-6 w-6 text-orange" />
+                            </Tooltip>
                           </div>
-                          <Tooltip
-                            contentClassName="z-50"
-                            content={`Número de série: ${row.numero_serie}`}
+                        ) : col.key === 'proxima_revisao' ? (
+                          <Link
+                            to={`/manutencao/new?equip=${row.codigo}`}
+                            className={`bg-${revisaoStatusColor} w-fit rounded-lg px-2 py-1 text-white font-semibold items-center justify-center mr-1 whitespace-nowrap`}
                           >
-                            <InfoIcon className="h-6 w-6 text-orange" />
-                          </Tooltip>
-                        </div>
-                      ) : col.key === 'revisao_status' ? (
-                        <Link
-                          to={`/manutencao/new?equip=${row.codigo}`}
-                          className={`bg-${revisaoStatusColor} w-fit rounded-lg px-2 py-1 text-white font-semibold items-center justify-center mr-1 whitespace-nowrap`}
+                            {row[col.key]}{' '}
+                          </Link>
+                        ) : (
+                          row[col.key]
+                        )}
+                      </td>
+                    );
+                  })}
+                  {row.inativo && row.motivo.length > 0 && (
+                    <td className="px-2 whitespace-nowrap">
+                      <div className="flex items-center justify-center h-10">
+                        <TooltipDisabled
+                          contentClassName="z-50 -ml-60 w-72"
+                          content={
+                            <>
+                              <p>Motivo da desativação:</p>
+                              <p>{row.motivo}</p>
+                            </>
+                          }
                         >
-                          {row[col.key]}{' '}
-                          {`${
-                            row.instrumento_medicao === 'Horímetro' ? 'h' : 'km'
-                          }`}
-                        </Link>
-                      ) : (
-                        row[col.key]
-                      )}
+                          <InfoIcon className="h-6 w-6 text-orange" />
+                        </TooltipDisabled>
+                      </div>
                     </td>
-                  );
-                })}
-                {row.inativo && row.motivo.length > 0 && (
-                  <td className="px-2 whitespace-nowrap">
-                    <div className="flex items-center justify-center h-10">
-                      <TooltipDisabled
-                        contentClassName="z-50 -ml-60 w-72"
-                        content={
-                          <>
-                            <p>Motivo da desativação:</p>
-                            <p>{row.motivo}</p>
-                          </>
-                        }
-                      >
-                        <InfoIcon className="h-6 w-6 text-orange" />
-                      </TooltipDisabled>
-                    </div>
-                  </td>
-                )}
-              </tr>
-            ))}
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         {!rows.length && (

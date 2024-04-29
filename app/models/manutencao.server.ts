@@ -28,7 +28,7 @@ export type Manutencao = {
   boletim?: string;
   equipamento?: string;
   IM_atual?: string;
-  IM_atual_manual?: string;
+  IM_revisao?: string;
   tipo_manutencao?: string;
   feito_por?: string;
   feito_porX?: string;
@@ -82,7 +82,7 @@ export async function getManutencoes(
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${userToken}`,
+        'Authorization': `Bearer ${userToken}`,
       },
     });
     const data = await response.json();
@@ -100,6 +100,10 @@ export async function getManutencoes(
         boletim: item.boletim,
         IM_atual: `${
           item.IM_atual && formatNumberWithDotDelimiter(Number(item.IM_atual))
+        } ${suffix}`,
+        IM_revisao: `${
+          item.IM_revisao &&
+          formatNumberWithDotDelimiter(Number(item.IM_revisao))
         } ${suffix}`,
         tipo_manutencao: item.tipo_manutencao,
         feito_porX: item?.feito_porX,
@@ -128,7 +132,7 @@ export async function getManutencao(
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
@@ -155,18 +159,20 @@ export async function _createManutencao(
     encarregadoX: operador.encarregadoX,
   };
   await updateManutencao(userToken, manutencao.id, editBody);
+
   //will update equipamento to reset IM and revisao calcs
   if (body?.tipo_manutencao === 'Revisão') {
     const equipBody = {
       ...equipamento,
-      proxima_revisao:
-        equipamento.instrumento_medicao_atual + equipamento.frequencia_revisao,
+      proxima_revisao: Number(
+        Number(body?.IM_revisao) + Number(equipamento.frequencia_revisao)
+      ).toFixed(2),
       revisao_status:
-        Number(equipamento?.proxima_revisao) -
-        (Number(equipamento?.instrumento_medicao_atual) * 100) /
-          Number(equipamento?.frequencia_revisao),
+        Number(equipamento?.proxima_revisao) - Number(body?.IM_revisao),
     };
-    await _updateEquipamento(userToken, equipamento.id, equipBody);
+    await _updateEquipamento(userToken, equipamento.id, equipBody, {
+      skipProxRevisaoCalc: true,
+    });
   }
   return manutencao;
 }
@@ -182,7 +188,7 @@ export async function createManutencao(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -237,7 +243,7 @@ export async function updateManutencao(
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
         body: JSON.stringify(body),
       }
@@ -271,7 +277,7 @@ export async function deleteManutencao(
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${userToken}`,
+          'Authorization': `Bearer ${userToken}`,
         },
       }
     );
