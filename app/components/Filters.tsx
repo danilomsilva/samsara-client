@@ -48,8 +48,8 @@ export default function Filters({
   };
 
   return (
-    <div className="my-2 ml-1 relative min-w-[110px]">
-      <div className="flex overflow-hidden gap-1">
+    <div className="my-2 ml-1 min-w-[110px]">
+      <div className="flex gap-1 relative">
         <input
           type="text"
           name={column}
@@ -63,7 +63,7 @@ export default function Filters({
           }
           onChange={handleFilterOnChange}
           className={`${
-            column === 'created' ? 'w-[150px]' : 'w-full'
+            column === 'created' ? 'min-w-[150px] w-full' : 'w-full'
           } p-1 px-2 border border-grey/30 rounded-md outline-blue`}
         />
         <div
@@ -104,7 +104,7 @@ export default function Filters({
             value={createdAtEnd}
             placeholder="Até: dd/mm/aaaa"
             onChange={handleFilterOnChangeEnd}
-            className="w-[150px] p-1 px-2 border border-grey/30 rounded-md outline-blue"
+            className="min-w-[150px] w-full p-1 px-2 border border-grey/30 rounded-md outline-blue"
           />
         )}
       </div>
