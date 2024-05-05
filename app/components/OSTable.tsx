@@ -21,7 +21,7 @@ type PropTypes = {
 };
 
 const columns = [
-  { key: 'created', label: 'Data de criação' },
+  // { key: 'created', label: 'Data de criação' },
   { key: 'codigo', label: 'Código' },
   { key: 'descricao', label: 'Descrição' },
 ];

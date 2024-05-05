@@ -122,17 +122,22 @@ export default function UsuarioPage() {
     const timeout = setTimeout(() => {
       let newFilters = '';
       Object.entries(activeFilters).forEach(([key, value]) => {
-        if (
-          key === 'created' ||
-          key === 'data_inicio' ||
-          key === 'data_final_previsto'
-        ) {
+        if (key === 'created') {
           // check if length of value is 10
           if (value.length === 10 && checkDateValid(value)) {
             const [day, month, year] = value.split('/');
             const date = `${year}-${month}-${day}`;
             if (Date.parse(date)) {
-              newFilters += `(${key}>'${date}')`;
+              newFilters += `(${key}>='${date}')`;
+            }
+          }
+        } else if (key === 'createdAtEnd') {
+          // check if length of value is 10
+          if (value.length === 10 && checkDateValid(value)) {
+            const [day, month, year] = value.split('/');
+            const date = `${year}-${month}-${day}`;
+            if (Date.parse(date)) {
+              newFilters = newFilters.replace("')", `'&&created<='${date}')`);
             }
           }
         } else {

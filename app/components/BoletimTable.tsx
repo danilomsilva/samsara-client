@@ -22,7 +22,7 @@ type PropTypes = {
 };
 
 const columns = [
-  { key: 'created', label: 'Data criação' },
+  { key: 'created', label: 'Data de criação' },
   { key: 'data_boletim', label: 'Data' },
   { key: 'codigo', label: 'Boletim' },
   { key: 'equipamentoX', label: 'Equip.' },
