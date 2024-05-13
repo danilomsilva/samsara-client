@@ -15,6 +15,7 @@ export default function Filters({
 }: PropTypes) {
   const [filterValue, setFilterValue] = useState('');
   const [createdAtEnd, setCreatedAtEnd] = useState('');
+  const [dataBoletimEnd, setDataBoletimEnd] = useState('');
 
   const handleFilterOnChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -38,12 +39,25 @@ export default function Filters({
     setActiveFilters(updatedFilters);
   };
 
+  const handleFilterOnChangeEndBoletim = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setDataBoletimEnd(value);
+
+    const updatedFilters = { ...activeFilters };
+    if (value) updatedFilters['dataBoletimEnd'] = value;
+    else delete updatedFilters['dataBoletimEnd'];
+
+    setActiveFilters(updatedFilters);
+  };
+
   const handleClearFilter = () => {
     setFilterValue('');
     setCreatedAtEnd('');
+    setDataBoletimEnd('');
     const updatedFilters = { ...activeFilters };
     delete updatedFilters[column];
     delete updatedFilters['createdAtEnd'];
+    delete updatedFilters['dataBoletimEnd'];
     setActiveFilters(updatedFilters);
   };
 
@@ -56,6 +70,7 @@ export default function Filters({
           value={filterValue}
           placeholder={
             column === 'created' ||
+            column === 'data_boletim' ||
             column === 'data_inicio' ||
             column === 'data_final_previsto'
               ? 'De: dd/mm/aaaa'
@@ -63,8 +78,10 @@ export default function Filters({
           }
           onChange={handleFilterOnChange}
           className={`${
-            column === 'created' ? 'min-w-[150px] w-full' : 'w-full'
-          } p-1 px-2 border border-grey/30 rounded-md outline-blue`}
+            column === 'created' || column === 'data_boletim'
+              ? 'min-w-[130px] w-full'
+              : 'w-full'
+          } p-1 px-2 border border-grey/30 rounded-md outline-blue placeholder:text-xs`}
         />
         <div
           className="absolute top-[6px] right-2 cursor-default"
@@ -104,7 +121,17 @@ export default function Filters({
             value={createdAtEnd}
             placeholder="Até: dd/mm/aaaa"
             onChange={handleFilterOnChangeEnd}
-            className="min-w-[150px] w-full p-1 px-2 border border-grey/30 rounded-md outline-blue"
+            className="min-w-[130px] w-full p-1 px-2 border border-grey/30 rounded-md outline-blue placeholder:text-xs"
+          />
+        )}
+        {column === 'data_boletim' && (
+          <input
+            type="text"
+            name="data_boletim_end"
+            value={dataBoletimEnd}
+            placeholder="Até: dd/mm/aaaa"
+            onChange={handleFilterOnChangeEndBoletim}
+            className="min-w-[130px] w-full p-1 px-2 border border-grey/30 rounded-md outline-blue placeholder:text-xs"
           />
         )}
       </div>

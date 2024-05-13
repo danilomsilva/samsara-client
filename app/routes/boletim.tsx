@@ -233,13 +233,18 @@ export default function BoletinsPage() {
               newFilters += `(${key}>='${date}')`;
             }
           }
-        } else if (key === 'createdAtEnd') {
+        } else if (key === 'createdAtEnd' || key === 'dataBoletimEnd') {
           // check if length of value is 10
           if (value.length === 10 && checkDateValid(value)) {
             const [day, month, year] = value.split('/');
             const date = `${year}-${month}-${day}`;
             if (Date.parse(date)) {
-              newFilters = newFilters.replace("')", `'&&created<='${date}')`);
+              newFilters = newFilters.replace(
+                "')",
+                `'&&${
+                  key === 'createdAtEnd' ? 'created' : 'data_boletim'
+                }<='${date}')`
+              );
             }
           }
         } else if (key === 'manutencao') {
