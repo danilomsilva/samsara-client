@@ -2,6 +2,7 @@ import { type Usuario } from '~/models/usuario.server';
 import { PairLabelValue } from './PairLabelValue';
 import { type Equipamento } from '~/models/equipamento.server';
 import { type Boletim } from '~/models/boletim.server';
+import { convertNumberIntoStringWithComma } from '~/utils/utils';
 
 type PropTypes = {
   boletim: Boletim;
@@ -51,7 +52,11 @@ export default function FooterSummary({
             ? equipamento?.instrumento_medicao
             : 'IM'
         } `}
-        value={`${IMInicio ?? '-'} / ${IMFinal ?? '-'} ${suffix}`}
+        value={`${
+          (IMInicio && convertNumberIntoStringWithComma(IMInicio)) || '-'
+        } / ${
+          (IMFinal && convertNumberIntoStringWithComma(IMFinal)) || '-'
+        } ${suffix}`}
       />
       <PairLabelValue
         label={`${
@@ -61,7 +66,13 @@ export default function FooterSummary({
         } Total`}
         value={
           IMInicio && IMFinal
-            ? `${(Number(IMFinal) - Number(IMInicio)).toFixed(2)} ${suffix}`
+            ? `${
+                IMInicio &&
+                IMFinal &&
+                convertNumberIntoStringWithComma(
+                  (Number(IMFinal) - Number(IMInicio)).toFixed(2)
+                )
+              } ${suffix}`
             : '-'
         }
         tooltip={
