@@ -87,19 +87,14 @@ export async function getManutencoes(
     });
     const data = await response.json();
     const transformedData = data?.items?.map((item: Manutencao) => {
-      const isHorimetro =
-        item.expand?.equipamento?.instrumento_medicao ===
-        ('Horímetro' as string);
-      const suffix = isHorimetro ? ' h' : ' Km';
-
       return {
         id: item.id,
         data_manutencao:
           item?.data_manutencao && formatDate(item?.data_manutencao),
         created: item?.created && formatDateTime(item.created),
         boletim: item.boletim,
-        IM_atual: `${item.IM_atual} ${suffix}`,
-        IM_revisao: `${item.IM_revisao} ${suffix}`,
+        IM_atual: item.IM_atual,
+        IM_revisao: item.IM_revisao,
         tipo_manutencao: item.tipo_manutencao,
         feito_porX: item?.feito_porX,
         equipamento: item?.equipamento,

@@ -34,7 +34,10 @@ import {
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import ReadIcon from '~/components/icons/ReadIcon';
-import { checkDateValid } from '~/utils/utils';
+import {
+  checkDateValid,
+  convertNumberIntoStringWithComma,
+} from '~/utils/utils';
 import ExportOptions from '~/components/ExportOptions';
 import FilterIcon from '~/components/icons/FilterIcon';
 import BoletimTable from '~/components/BoletimTable';
@@ -74,8 +77,12 @@ export async function loader({ request }: LoaderArgs) {
       const suffix = isHorimetro ? ' h' : ' Km';
       return {
         ...item,
-        IM_inicioX: `${item.IM_inicioX} ${suffix}`,
-        IM_finalX: `${item.IM_finalX} ${suffix}`,
+        IM_inicioX: `${
+          item.IM_inicioX && convertNumberIntoStringWithComma(item.IM_inicioX)
+        } ${suffix}`,
+        IM_finalX: `${
+          item.IM_finalX && convertNumberIntoStringWithComma(item.IM_finalX)
+        } ${suffix}`,
         total_abastecimento: `${item.total_abastecimento} L`,
       };
     });

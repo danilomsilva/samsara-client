@@ -170,3 +170,7 @@ export const exportPDF = (title: string, tableName: string) => {
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const convertNumberIntoStringWithComma = (number: number | string) => {
+  return number.toString().replace('.', ',');
+};

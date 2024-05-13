@@ -34,7 +34,10 @@ import {
   getUserSession,
   setToastMessage,
 } from '~/session.server';
-import { checkDateValid } from '~/utils/utils';
+import {
+  checkDateValid,
+  convertNumberIntoStringWithComma,
+} from '~/utils/utils';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
 import Textarea from '~/components/Textarea';
 import ReadIcon from '~/components/icons/ReadIcon';
@@ -64,19 +67,37 @@ export async function loader({ request }: LoaderArgs) {
 
   //encarregado do not have access to table manutencao
   if (userToken && tipoAcesso !== 'Encarregado') {
-    const allManutencoes = await getManutencoes(
+    const manutencoesResponse = await getManutencoes(
       userToken,
       sortingBy,
       filter as string,
       page as string,
       perPage as string
     );
+
+    const transformedItems = manutencoesResponse?.items?.map((item) => {
+      const isHorimetro =
+        item.expand?.equipamento?.instrumento_medicao ===
+        ('Horímetro' as string);
+      const suffix = isHorimetro ? 'h' : 'Km';
+
+      return {
+        ...item,
+        IM_atual: `${
+          item.IM_atual && convertNumberIntoStringWithComma(item.IM_atual)
+        } ${suffix}`,
+        IM_revisao: `${
+          item.IM_revisao && convertNumberIntoStringWithComma(item.IM_revisao)
+        } ${suffix}`,
+      };
+    });
+
     const filteredManutencoes = equipamentoFilter
-      ? allManutencoes.items.filter(
+      ? transformedItems.filter(
           (item) => item.equipamento === equipamentoFilter
         )
-      : allManutencoes.items;
-    const manutencoes = { ...allManutencoes, items: filteredManutencoes };
+      : transformedItems;
+    const manutencoes = { ...manutencoesResponse, items: filteredManutencoes };
     const equipamento = await getEquipamento(
       userToken,
       equipamentoFilter as string

@@ -34,7 +34,10 @@ import {
   setToastMessage,
 } from '~/session.server';
 import { type UseSelectedRow, useSelectRow } from '~/stores/useSelectRow';
-import { checkDateValid, formatNumberWithDotDelimiter } from '~/utils/utils';
+import {
+  checkDateValid,
+  convertNumberIntoStringWithComma,
+} from '~/utils/utils';
 import ReadIcon from '~/components/icons/ReadIcon';
 import FilterIcon from '~/components/icons/FilterIcon';
 import ExportOptions from '~/components/ExportOptions';
@@ -71,17 +74,26 @@ export async function loader({ request }: LoaderArgs) {
 
     const transformedItems = equipamentosResponse.items.map((item) => {
       const isHorimetro = item.instrumento_medicao === ('Horímetro' as string);
-      const suffix = isHorimetro ? ' h' : ' Km';
+      const suffix = isHorimetro ? 'h' : 'Km';
 
       return {
         ...item,
         combustivel: item.combustivel?.replaceAll('_', ' '),
-        instrumento_medicao_inicio: `${item.instrumento_medicao_inicio} ${suffix}`,
+        instrumento_medicao_inicio: `${
+          item.instrumento_medicao_inicio &&
+          convertNumberIntoStringWithComma(item.instrumento_medicao_inicio)
+        } ${suffix}`,
         IM_atual: item.instrumento_medicao_atual,
-        instrumento_medicao_atual: `${item.instrumento_medicao_atual} ${suffix}`,
+        instrumento_medicao_atual: `${
+          item.instrumento_medicao_atual &&
+          convertNumberIntoStringWithComma(item.instrumento_medicao_atual)
+        } ${suffix}`,
         frequencia_revisao: `${item.frequencia_revisao} ${suffix}`,
         prox_revisao: item.proxima_revisao,
-        proxima_revisao: `${item.proxima_revisao} ${suffix}`,
+        proxima_revisao: `${
+          item.proxima_revisao &&
+          convertNumberIntoStringWithComma(item.proxima_revisao)
+        } ${suffix}`,
       };
     });
 
