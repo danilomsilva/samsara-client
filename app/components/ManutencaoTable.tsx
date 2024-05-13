@@ -96,7 +96,7 @@ export default function ManutencaoTable({
                           {row[col.key]}
                         </Link>
                       ) : col.key === 'IM_revisao' &&
-                        row[col.key] === '0  Km' ? (
+                        row[col.key] === '0 Km' ? (
                         '-'
                       ) : (
                         <div className="mr-2 whitespace-nowrap">
