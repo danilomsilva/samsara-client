@@ -59,7 +59,7 @@ import { getEquipamentoTipos } from '~/models/equipamento_tipo.server';
 import { CSVLink } from 'react-csv';
 import FileUploader from '~/components/FileUploader';
 import FileList from '~/components/FileList';
-import { type FileTypes, getFiles } from '~/models/files.server';
+import { getFiles } from '~/models/files.server';
 import MinusCircleIcon from '~/components/icons/MinusCircleIcon';
 
 export async function loader({ params, request }: LoaderArgs) {
@@ -206,10 +206,7 @@ export async function loader({ params, request }: LoaderArgs) {
       boletimToExport = mixedLogs;
     }
 
-    const allFiles = await getFiles(userToken, 'boletim');
-    const files = allFiles?.filter(
-      (item: FileTypes) => item.boletim === params.id
-    );
+    const files = await getFiles(userToken, 'boletim', params.id as string);
 
     return json({
       ...commonProperties,
@@ -897,18 +894,19 @@ export default function NewBoletim() {
                   disabled={!!isReadMode}
                 />
               </Row>
-              {files && (
-                <Row className="pl-2 mt-2">
-                  <FileList files={files} path="boletim" />
-                </Row>
-              )}
-              {!isReadMode && boletim && (
-                <Row>
-                  <FileUploader
-                    onChange={handleFileUpload}
-                    isUploadingFile={isUploadingFile}
-                  />
-                </Row>
+
+              {boletim && (
+                <>
+                  <Row className="pl-2 mt-3">
+                    <FileList files={files} path="boletim" />
+                  </Row>
+                  <Row>
+                    <FileUploader
+                      onChange={handleFileUpload}
+                      isUploadingFile={isUploadingFile}
+                    />
+                  </Row>
+                </>
               )}
               {isReadMode && boletim && boletimToExport && (
                 <Row className="mt-6">

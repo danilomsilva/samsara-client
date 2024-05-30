@@ -26,7 +26,7 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { getEquipamentos } from '~/models/equipamento.server';
-import { type FileTypes, getFiles } from '~/models/files.server';
+import { getFiles } from '~/models/files.server';
 import {
   type Multa,
   _createMulta,
@@ -58,8 +58,8 @@ export async function loader({ params, request }: LoaderArgs) {
     '',
     '500'
   );
-  const allFiles = await getFiles(userToken, 'multa');
-  const files = allFiles?.filter((item: FileTypes) => item.multa === params.id);
+  const files = await getFiles(userToken, 'multa', params.id as string);
+
   if (params.id === 'new') {
     return json({ operadores, equipamentos });
   } else {
@@ -299,21 +299,17 @@ export default function NewMulta() {
                 />
               </Row>
             </div>
-            {files && (
+            {multa && (
               <div className="border-l border-grey/50 w-[300px]">
-                {files && (
-                  <Row className="pl-2">
-                    <FileList files={files} path="multa" />
-                  </Row>
-                )}
-                {multa && (
-                  <Row>
-                    <FileUploader
-                      onChange={handleFileUpload}
-                      isUploadingFile={isUploadingFile}
-                    />
-                  </Row>
-                )}
+                <Row className="pl-6">
+                  <FileList files={files} path="multa" />
+                </Row>
+                <Row>
+                  <FileUploader
+                    onChange={handleFileUpload}
+                    isUploadingFile={isUploadingFile}
+                  />
+                </Row>
               </div>
             )}
           </div>

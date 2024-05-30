@@ -29,7 +29,7 @@ import PencilIcon from '~/components/icons/PencilIcon';
 import PlusCircleIcon from '~/components/icons/PlusCircleIcon';
 import SpinnerIcon from '~/components/icons/SpinnerIcon';
 import { type Equipamento, getEquipamentos } from '~/models/equipamento.server';
-import { type FileTypes, getFiles } from '~/models/files.server';
+import { getFiles } from '~/models/files.server';
 import {
   type Manutencao,
   _createManutencao,
@@ -84,10 +84,7 @@ export async function loader({ params, request }: LoaderArgs) {
     return json({ operadores, equipamentos });
   } else {
     const manutencao = await getManutencao(userToken, params.id as string);
-    const allFiles = await getFiles(userToken, 'manutencao');
-    const files = allFiles?.filter(
-      (item: FileTypes) => item.manutencao === params.id
-    );
+    const files = await getFiles(userToken, 'manutencao', params.id as string);
 
     return json({ operadores, equipamentos, manutencao, files });
   }
@@ -437,21 +434,17 @@ export default function NewManutencao() {
                 />
               </Row>
             </div>
-            {files && (
+            {manutencao && (
               <div className="border-l border-grey/50 w-[300px]">
-                {files && (
-                  <Row className="pl-2">
-                    <FileList files={files} path="manutencao" />
-                  </Row>
-                )}
-                {manutencao && (
-                  <Row>
-                    <FileUploader
-                      onChange={handleFileUpload}
-                      isUploadingFile={isUploadingFile}
-                    />
-                  </Row>
-                )}
+                <Row className="pl-6">
+                  <FileList files={files} path="manutencao" />
+                </Row>
+                <Row>
+                  <FileUploader
+                    onChange={handleFileUpload}
+                    isUploadingFile={isUploadingFile}
+                  />
+                </Row>
               </div>
             )}
           </div>

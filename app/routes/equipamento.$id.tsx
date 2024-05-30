@@ -36,7 +36,7 @@ import {
   type EquipamentoTipo,
   getEquipamentoTipos,
 } from '~/models/equipamento_tipo.server';
-import { type FileTypes, getFiles } from '~/models/files.server';
+import { getFiles } from '~/models/files.server';
 import { type Obra, getObras } from '~/models/obra.server';
 import { getUsuarios } from '~/models/usuario.server';
 import {
@@ -79,10 +79,8 @@ export async function loader({ params, request }: LoaderArgs) {
     });
   } else {
     const equipamento = await getEquipamento(userToken, params.id as string);
-    const allFiles = await getFiles(userToken, 'equipamento');
-    const files = allFiles?.filter(
-      (item: FileTypes) => item.equipamento === params.id
-    );
+    const files = await getFiles(userToken, 'equipamento', params.id as string);
+
     return json({
       obras,
       encarregados,
@@ -601,21 +599,17 @@ export default function NewEquipamento() {
                 />
               </Row>
             </div>
-            {files && (
+            {equipamento && (
               <div className="border-l border-grey/50 w-[300px]">
-                {files && (
-                  <Row className="pl-6">
-                    <FileList files={files} path="equipamento" />
-                  </Row>
-                )}
-                {equipamento && (
-                  <Row>
-                    <FileUploader
-                      onChange={handleFileUpload}
-                      isUploadingFile={isUploadingFile}
-                    />
-                  </Row>
-                )}
+                <Row className="pl-6">
+                  <FileList files={files} path="equipamento" />
+                </Row>
+                <Row>
+                  <FileUploader
+                    onChange={handleFileUpload}
+                    isUploadingFile={isUploadingFile}
+                  />
+                </Row>
               </div>
             )}
           </div>

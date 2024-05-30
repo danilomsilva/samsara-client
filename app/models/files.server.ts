@@ -20,12 +20,13 @@ export type FileTypes = {
 
 export async function getFiles(
   userToken: User['token'],
-  path: string
+  path: string,
+  id: string
 ): Promise<FileTypes[]> {
   let url = `${process.env.BASE_API_URL}/collections/${path}_files/records`;
 
   const queryParams = new URLSearchParams();
-  queryParams.set('perPage', '2000'); //set max items per page when querying db
+  queryParams.set('filter', `(${path}='${id}')`);
 
   if (queryParams.toString()) url += `?${queryParams.toString()}`;
 

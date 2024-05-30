@@ -2,7 +2,6 @@ import { useRef } from 'react';
 import DocumentIcon from './icons/DocumentIcon';
 import SpinnerIcon from './icons/SpinnerIcon';
 
-//TODO: improve on this types!!
 export default function FileUploader({
   onChange,
   isUploadingFile,
@@ -35,7 +34,7 @@ export default function FileUploader({
           >
             <DocumentIcon className="w-10 h-10 text-grey/50" />
             <span className="text-xs">
-              Clique aqui para <br /> adicionar de arquivos.
+              Clique aqui para <br /> adicionar arquivos.
             </span>
             <input
               id="file-upload"
